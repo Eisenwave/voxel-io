@@ -180,7 +180,7 @@ argb32 Reader::decodeColor(u8 data[])
     VXIO_FORWARD_ERROR(readPalette());
 
     u32 metaSize = stream.readBig<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (metaSize != 0) {
         VXIO_FORWARD_ERROR(skipString());  // vendorName
         stream.seekRelative(metaSize);
@@ -193,7 +193,7 @@ argb32 Reader::decodeColor(u8 data[])
     static_assert(std::is_same_v<unsigned char, u8>, "reinterpretation of char as u8 impossible");
     out = makeArrayU8(bytes);
     stream.read(out.get(), bytes);
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     return ReadResult::ok();
 }
 
@@ -201,21 +201,21 @@ argb32 Reader::decodeColor(u8 data[])
 {
     out.resize(length);
     stream.read(reinterpret_cast<u8 *>(out.data()), length);
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     return ReadResult::ok();
 }
 
 [[nodiscard]] ReadResult Reader::readString(std::string &out)
 {
     u16 length = stream.readBig<u16>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     return readString(length, out);
 }
 
 [[nodiscard]] ReadResult Reader::skipString()
 {
     u16 length = stream.readBig<u16>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     stream.seekRelative(length);
     return ReadResult::ok();
 }
@@ -223,7 +223,7 @@ argb32 Reader::decodeColor(u8 data[])
 [[nodiscard]] ReadResult Reader::readExtensions()
 {
     u16 extensionsSize = stream.readBig<u16>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     std::unordered_set<std::string> extSet;
 
     for (size_t i = 0; i < extensionsSize; ++i) {
@@ -251,7 +251,7 @@ argb32 Reader::decodeColor(u8 data[])
 [[nodiscard]] ReadResult Reader::readPalette()
 {
     palette.bits = stream.readU8();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (recognizedPaletteBits.find(palette.bits) == recognizedPaletteBits.end()) {
         return ReadResult::unexpectedSymbol(stream.position(), "unrecognized palette bits: " + stringify(palette.bits));
     }
@@ -277,7 +277,7 @@ argb32 Reader::decodeColor(u8 data[])
         VXIO_DEBUG_ASSERT_UNREACHABLE();
     }
     }
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     VXIO_FORWARD_ERROR(readArrayU8(palette.size * colorByteCount, palette.content));
     return ReadResult::ok();
 }
@@ -285,7 +285,7 @@ argb32 Reader::decodeColor(u8 data[])
 [[nodiscard]] ReadResult Reader::readColorFormat()
 {
     u8 result = stream.readU8();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (recognizedColorFormats.find(result) == recognizedColorFormats.end()) {
         return ReadResult::unexpectedSymbol(stream.position(), "unknown color format: 0x" + stringifyHex(result));
     }
@@ -297,7 +297,7 @@ argb32 Reader::decodeColor(u8 data[])
 [[nodiscard]] ReadResult Reader::readDataFormat()
 {
     u8 result = stream.readU8();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (recognizedDataFormats.find(result) == recognizedDataFormats.end()) {
         return ReadResult::unexpectedSymbol(stream.position(), "unknown data format: 0x" + stringifyHex(result));
     }
@@ -318,7 +318,7 @@ argb32 Reader::decodeColor(u8 data[])
         state.arrDims[0] = transform(stream.readBig<u32>());
         state.arrDims[1] = transform(stream.readBig<u32>());
         state.arrDims[2] = transform(stream.readBig<u32>());
-        VXIO_NO_EOF;
+        VXIO_NO_EOF();
         // TODO overflow safety
         state.arrLim = state.arrDims[0] * state.arrDims[1] * state.arrDims[2];
     }
@@ -333,7 +333,7 @@ argb32 Reader::decodeColor(u8 data[])
             state.arrDims[1] = transform(stream.readU8());
             state.arrDims[2] = transform(stream.readU8());
         }
-        VXIO_NO_EOF;
+        VXIO_NO_EOF();
         state.arrLim = state.arrDims[0] * state.arrDims[1] * state.arrDims[2];
     }
 
@@ -375,7 +375,7 @@ argb32 Reader::decodeColor(u8 data[])
     }
     default: VXIO_DEBUG_ASSERT_UNREACHABLE();
     }
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     out = decodeColor(palette.content.get() + index * colorByteCount);
     return ReadResult::ok();
 }
@@ -386,7 +386,7 @@ argb32 Reader::decodeColor(u8 data[])
         if (not resume) {
             state.grpIndex = 0;
             state.grpLim = stream.readBig<u32>();
-            VXIO_NO_EOF;
+            VXIO_NO_EOF();
         }
 
         return state.grpIndex++ < state.grpLim ? readGroup(resume) : ReadResult::end(writeHelper.voxelsWritten());
@@ -405,7 +405,7 @@ argb32 Reader::decodeColor(u8 data[])
 {
     if (not resume) {
         u16 popCount = stream.readBig<u16>();
-        VXIO_NO_EOF;
+        VXIO_NO_EOF();
         if (not popGroups(popCount)) {
             return ReadResult::parseError(stream.position(), "too many groups popped (" + stringify(popCount) + ")");
         }
@@ -440,7 +440,7 @@ argb32 Reader::decodeColor(u8 data[])
 
         state.datIndex = 0;
         state.datLim = stream.readBig<u32>();
-        VXIO_NO_EOF;
+        VXIO_NO_EOF();
     }
 
     // we will always return OK (incomplete read) if there are more arrays or voxels
@@ -481,7 +481,7 @@ argb32 Reader::decodeColor(u8 data[])
 
     Vec3i32 pos;
     stream.readBig<3>(pos.data());
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     argb32 color;
     VXIO_FORWARD_ERROR(readVoxel(color));
     writeHelper.write(static_vec_cast<i64>(pos), color);
@@ -492,7 +492,7 @@ argb32 Reader::decodeColor(u8 data[])
 {
     if (not resume) {
         stream.readBig<3, i64>(state.arrPos.data());
-        VXIO_NO_EOF;
+        VXIO_NO_EOF();
         VXIO_FORWARD_ERROR(readDimensions());
         state.arrIndex = 0;
     }
@@ -504,7 +504,7 @@ argb32 Reader::decodeColor(u8 data[])
 {
     if (not resume) {
         stream.readBig<3, i64>(state.arrPos.data());
-        VXIO_NO_EOF;
+        VXIO_NO_EOF();
         state.arrPos = mul(state.arrPos, static_vec_cast<i64>(state.arrDims));
     }
 
@@ -524,7 +524,7 @@ argb32 Reader::decodeColor(u8 data[])
         u32 existenceBytes = divCeil(static_cast<u32>(state.arrLim), 8);
         VXIO_FORWARD_ERROR(readArrayU8(existenceBytes, state.existArr));
         state.arrLim = stream.readBig<u32>();
-        VXIO_NO_EOF;
+        VXIO_NO_EOF();
         state.arrIndex = 0;
         if (not initialized) {
             initialized = true;

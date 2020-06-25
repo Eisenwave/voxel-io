@@ -53,7 +53,7 @@ ReadResult Reader::readHeaderFields()
     bool done = 0;
     while (stream.good() && not done) {
         stream.readLineTo(headerLine);
-        VXIO_NO_EOF;
+        VXIO_NO_EOF();
         state.lineNum++;
 
         auto result = parseHeaderLine(headerLine);
@@ -151,7 +151,7 @@ ReadResult Reader::readNextVoxels(Voxel64 buffer[], size_t bufferLength)
     }
 
     stream.read(voxelBuffer, sizeof(voxelBuffer));
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
 
     u8 value = voxelBuffer[0];
     u8 count = voxelBuffer[1];

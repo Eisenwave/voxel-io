@@ -3,13 +3,12 @@
 
 #include "results.hpp"
 
-// it's okay to have global definitions here since this header is only meant to be included in voxelio cpp files
 #define VXIO_FORWARD_ERROR(expr)                                                                          \
     if (auto exprResult__ = expr; ::voxelio::isError(static_cast<::voxelio::ResultCode>(exprResult__))) { \
         return exprResult__;                                                                              \
     }
 
-#define VXIO_NO_EOF                                \
+#define VXIO_NO_EOF()                              \
     if constexpr (::voxelio::build::DEBUG)         \
         VXIO_DEBUG_ASSERT(not this->stream.eof()); \
     else if (this->stream.eof())                   \

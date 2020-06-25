@@ -308,7 +308,7 @@ void Reader::updateTransformForCurrentShape()
 
     u8 xyzi[4];
     stream.read(xyzi, sizeof(xyzi));
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
 
     Vec3i32 pos = state.transform.apply(Vec3u32{xyzi[0], xyzi[1], xyzi[2]}, doublePivot);
     // swap necessary because gravity axis is z for magica and y for us
@@ -391,9 +391,9 @@ ReadResult Reader::expectChars(const char name[CHUNK_NAME_LENGTH]) noexcept
 [[nodiscard]] ReadResult Reader::readString(std::string &out) noexcept
 {
     u32 size = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     stream.readStringTo(out, static_cast<size_t>(size));
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
 
     return ReadResult::ok();
 }
@@ -404,7 +404,7 @@ ReadResult Reader::expectChars(const char name[CHUNK_NAME_LENGTH]) noexcept
     std::string value;
 
     u32 size = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     for (size_t i = 0; i < size; ++i) {
         VXIO_FORWARD_ERROR(readString(key));
         VXIO_FORWARD_ERROR(readString(value));
@@ -426,16 +426,16 @@ ReadResult Reader::expectChars(const char name[CHUNK_NAME_LENGTH]) noexcept
 [[nodiscard]] ReadResult Reader::skipString() noexcept
 {
     u32 size = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     stream.seekRelative(size);
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     return ReadResult::ok();
 }
 
 [[nodiscard]] ReadResult Reader::skipDict() noexcept
 {
     u32 size = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     for (size_t i = 0; i < size * 2; ++i) {
         VXIO_FORWARD_ERROR(skipString());
     }
@@ -454,7 +454,7 @@ ReadResult Reader::readMagicAndVersion() noexcept
     }
 
     u32 version = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (version != CURRENT_VERSION) {
         return {0, ResultCode::READ_ERROR_UNKNOWN_VERSION};
     }
@@ -487,7 +487,7 @@ ReadResult Reader::readChunkHeader(bool isEofAtFirstByteAllowed, ChunkHeader &ou
 
     u32 selfSize = stream.readLittle<u32>();
     u32 childrenSize = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
 
     const auto produceLogMessage = [=]() -> std::string {
         std::stringstream ss;
@@ -575,7 +575,7 @@ ReadResult Reader::readChunkContent_main() noexcept
         auto &voxelChunk = voxelChunkInfos.back();
         voxelChunk.voxelCount = stream.readLittle<u32>();
         voxelChunk.pos = stream.position();
-        VXIO_NO_EOF;
+        VXIO_NO_EOF();
         VXIO_ASSERT(voxelChunk.pos != u64(-1));
         VXIO_LOG(SPAM, "Memorizing " + voxelChunk.toString() + " for 2nd pass");
 
@@ -589,7 +589,7 @@ ReadResult Reader::readChunkContent_rgba() noexcept
 {
     for (size_t i = 0; i < PALETTE_SIZE; ++i) {
         u32 rgba = stream.readBig<u32>();
-        VXIO_NO_EOF;
+        VXIO_NO_EOF();
         this->palette[(i + 1) % PALETTE_SIZE] = reorderColor<RGBA, ARGB>(rgba);
     }
     return ReadResult::ok();
@@ -599,7 +599,7 @@ ReadResult Reader::readChunkContent_size() noexcept
 {
     Vec3u32 size;
     stream.readLittle<3>(size.data());
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     this->voxelChunkInfos.push_back({size, 0, u64(-1)});
     return ReadResult::ok();
 }
@@ -619,13 +619,13 @@ ReadResult Reader::makeError_expectedButGot(const std::string &field, i64 expect
 ReadResult Reader::readChunkContent_nodeTransform() noexcept
 {
     u32 nodeId = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     VXIO_FORWARD_ERROR(skipDict());  // attributes, unused
     u32 childNodeId = stream.readLittle<u32>();
     i32 reservedId = stream.readLittle<i32>();
     stream.seekRelative(sizeof(i32));  // layerId, unused
     u32 numOfFrames = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
 
     if (reservedId != -1) return makeError_expectedButGot("reservedId", -1, reservedId);
     if (numOfFrames != 1) return makeError_expectedButGot("numOfFrames", 1, numOfFrames);
@@ -655,16 +655,16 @@ ReadResult Reader::readChunkContent_nodeTransform() noexcept
 ReadResult Reader::readChunkContent_nodeGroup() noexcept
 {
     u32 nodeId = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     VXIO_FORWARD_ERROR(skipDict());  // attributes, unused
     u32 numOfChildNodes = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
 
     std::vector<u32> children;
     for (size_t i = 0; i < numOfChildNodes; ++i) {
         children.push_back(stream.readLittle<u32>());
     }
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
 
     if (auto parentIter = nodeParentMap.find(nodeId); parentIter == nodeParentMap.end()) {
         return ReadResult::parseError(stream.position(), "nGRP without parent found");
@@ -683,14 +683,14 @@ ReadResult Reader::readChunkContent_nodeShape() noexcept
     u32 nodeId = stream.readLittle<u32>();
     VXIO_FORWARD_ERROR(skipDict());  // attributes, unused
     u32 numOfModels = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (numOfModels != 1) {
         return makeError_expectedButGot("numOfModels", 1, numOfModels);
     }
 
     // for every model, but there is only one, so we don't loop
     u32 modelId = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (modelId >= voxelChunkInfos.size()) {
         return ReadResult::parseError(stream.position(), "modelId " + stringify(modelId) + " out of range");
     }
@@ -712,7 +712,7 @@ ReadResult Reader::readChunkContent_nodeShape() noexcept
 ReadResult Reader::readChunkContent_layer() noexcept
 {
     stream.seekRelative(sizeof(u32));  // u32 layerId, unused
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     VXIO_FORWARD_ERROR(skipDict());  // attributes, unused
     i32 reservedId = stream.readLittle<i32>();
     if (reservedId != -1) {

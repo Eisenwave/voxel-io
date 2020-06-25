@@ -4,8 +4,6 @@
 
 namespace voxelio {
 
-using RgbEncoder = void (*)(Color32 rgb, u8 *out, size_t bitOffset);
-
 static constexpr void encodeV1(Color32 rgb, u8 *out, size_t bitOffset)
 {
     u8 mask = static_cast<u8>(1 << (7 - bitOffset));
@@ -41,7 +39,7 @@ static constexpr void encodeArgb32(Color32 rgb, u8 *out, size_t)
     out[3] = static_cast<u8>(rgb.b);
 }
 
-static constexpr RgbEncoder encoderOf(ColorFormat format)
+static constexpr detail::RgbEncoder encoderOf(ColorFormat format)
 {
     switch (format) {
     case ColorFormat::V1: return encodeV1;

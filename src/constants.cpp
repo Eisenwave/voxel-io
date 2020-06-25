@@ -36,7 +36,9 @@ std::optional<FileType> detectFileTypeUsingName(const std::string &path)
         return std::nullopt;
     }
 
-    const auto lowerCaseSuffix = toLowerCase(path.substr(separatorIndex + 1));
+    std::string lowerCaseSuffix = path.substr(separatorIndex + 1);
+    toLowerCase(lowerCaseSuffix);
+
     auto type = SUFFIX_MAP.find(lowerCaseSuffix);
     if (type == SUFFIX_MAP.end()) return std::nullopt;
 

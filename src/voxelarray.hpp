@@ -60,12 +60,8 @@ public:
 }  // namespace detail
 
 /**
- * <p>
- * An array of voxels backed by a three-dimensional array of integers.
- * </p>
- * <p>
+ * @brief An 3D, dynamically sized array.
  * This class is optimized for randomly accessing, setting, drawing etc. of voxels.
- * </p>
  */
 class VoxelArray {
 private:

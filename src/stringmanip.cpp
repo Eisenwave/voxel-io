@@ -7,16 +7,14 @@
 
 namespace voxelio {
 
-std::string toUpperCase(std::string str)
+void toUpperCase(std::string &str)
 {
     std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-    return str;
 }
 
-std::string toLowerCase(std::string str)
+void toLowerCase(std::string &str)
 {
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-    return str;
 }
 
 void ltrim(std::string &s)

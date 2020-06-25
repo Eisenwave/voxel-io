@@ -16,6 +16,7 @@ void stringstream_precision(std::stringstream *stream, std::streamsize precision
 std::string stringstream_to_string(std::stringstream *stream);
 
 void stringstream_free(std::stringstream *);
+
 }  // namespace voxelio::detail
 
 #endif  // SSTREAMWRAP_HPP

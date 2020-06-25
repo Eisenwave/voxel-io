@@ -28,7 +28,11 @@ static constexpr bool usesId(ChannelType type)
 
 std::string Channel::fullFileNameFormat() const
 {
-    return toLowerCase(xmlNameOf(type)) + '/' + fileNameFormat;
+    std::string fileName = xmlNameOf(type);
+    toLowerCase(fileName);
+    fileName += '/';
+    fileName += fileNameFormat;
+    return fileName;
 }
 
 std::string Channel::toXml() const

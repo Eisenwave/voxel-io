@@ -12,6 +12,16 @@ namespace voxelio {
 
 namespace detail {
 
+template <typename T>
+bool parseUsingStream(const std::string &str, T &out) noexcept
+{
+    std::stringstream *stream = detail::stringstream_make(str);
+    *stream >> out;
+    bool result = not detail::stringstream_fail(stream);
+    detail::stringstream_free(stream);
+    return result;
+}
+
 }  // namespace detail
 
 template <typename Int, std::enable_if_t<not std::is_same_v<Int, bool>, int> = 0>
@@ -29,10 +39,10 @@ bool parseFloat(const std::string &str, Float &out) noexcept
         if constexpr (std::is_same_v<Float, float>) {
             out = std::stof(str);
         }
-        if constexpr (std::is_same_v<Float, double>) {
+        else if constexpr (std::is_same_v<Float, double>) {
             out = std::stod(str);
         }
-        if constexpr (std::is_same_v<Float, long double>) {
+        else if constexpr (std::is_same_v<Float, long double>) {
             out = std::stold(str);
         }
         return true;
@@ -40,16 +50,6 @@ bool parseFloat(const std::string &str, Float &out) noexcept
     catch (...) {
         return false;
     }
-}
-
-template <typename T>
-bool parseUsingStream(const std::string &str, T &out) noexcept
-{
-    std::stringstream *stream = detail::stringstream_make(str);
-    *stream >> out;
-    bool result = not detail::stringstream_fail(stream);
-    detail::stringstream_free(stream);
-    return result;
 }
 
 template <typename T>
@@ -62,7 +62,7 @@ bool parse(const std::string &str, T &out) noexcept
         return parseFloat(str, out);
     }
     else {
-        return parseUsingStream(str, out);
+        return detail::parseUsingStream(str, out);
     }
 }
 

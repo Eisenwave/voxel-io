@@ -12,7 +12,7 @@ namespace voxelio::cub {
         return {0, ResultCode::WARNING_DOUBLE_INIT};
     }
     stream.readLittle<3, u32>(size.data());
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
 
     initialized = true;
 
@@ -46,7 +46,7 @@ namespace voxelio::cub {
                 }
                 u8 rgb[3];
                 stream.read(rgb, 3);
-                VXIO_NO_EOF;
+                VXIO_NO_EOF();
                 if ((rgb[0] | rgb[1] | rgb[2]) == 0) {
                     // this implies that pure black is not possible to encode
                     continue;

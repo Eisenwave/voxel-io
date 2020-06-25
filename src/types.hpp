@@ -124,7 +124,7 @@ constexpr const char *nameOf(Axis endian)
 
 // COMMON STRUCTS
 
-/** 64-bit generic voxel representation. */
+/** @brief 64-bit generic voxel representation. */
 struct Voxel64 {
     using pos_t = Vec3i64;
 
@@ -138,7 +138,7 @@ struct Voxel64 {
     };
 };
 
-/** 32-bit generic voxel representation. */
+/** @brief 32-bit generic voxel representation. */
 struct Voxel32 {
     using pos_t = Vec3i32;
 

@@ -126,7 +126,7 @@ ReadResult Reader::read(Voxel64 buffer[], size_t bufferLength) noexcept
 ReadResult Reader::deserializeHeader_version() noexcept
 {
     auto version = stream.readBig<QBVersion>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (version != QBVersion::CURRENT) {
         return ReadResult::unknownVersion(stream.position(),
                                           stringifyHex(static_cast<u32>(version)) + " != current (" +
@@ -138,7 +138,7 @@ ReadResult Reader::deserializeHeader_version() noexcept
 ReadResult Reader::deserializeHeader_colorFormat() noexcept
 {
     header.colorFormat = stream.readBig<ColorFormat>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (header.colorFormat != ColorFormat::RGBA && header.colorFormat != ColorFormat::BGRA) {
         return ReadResult::unknownFeature(stream.position(), "unknown color format: " + stringify(header.colorFormat));
     }
@@ -148,7 +148,7 @@ ReadResult Reader::deserializeHeader_colorFormat() noexcept
 ReadResult Reader::deserializeHeader_zOrient() noexcept
 {
     auto zAxisOrientation = stream.readBig<ZOrient>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (zAxisOrientation != ZOrient::LEFT && zAxisOrientation != ZOrient::RIGHT) {
         return ReadResult::unknownFeature(stream.position(),
                                           "unknown z axis orientation: " + stringify(zAxisOrientation));
@@ -160,7 +160,7 @@ ReadResult Reader::deserializeHeader_zOrient() noexcept
 ReadResult Reader::deserializeHeader_compression() noexcept
 {
     auto compressedInt = stream.readLittle<Compressed>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (compressedInt != Compressed::FALSE && compressedInt != Compressed::TRUE) {
         return ReadResult::unknownFeature(stream.position(), "unknown compression: " + stringify(compressedInt));
     }
@@ -171,7 +171,7 @@ ReadResult Reader::deserializeHeader_compression() noexcept
 ReadResult Reader::deserializeHeader_visMaskEncoded() noexcept
 {
     auto visEncodedInt = stream.readLittle<VisMaskEncoded>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     if (visEncodedInt != VisMaskEncoded::FALSE && visEncodedInt != VisMaskEncoded::TRUE) {
         return ReadResult::unknownFeature(stream.position(), "unknown vis mask encoding: " + stringify(visEncodedInt));
     }
@@ -187,7 +187,7 @@ ReadResult Reader::deserializeHeader() noexcept
     VXIO_FORWARD_ERROR(deserializeHeader_compression());
     VXIO_FORWARD_ERROR(deserializeHeader_visMaskEncoded());
     header.numMatrices = stream.readLittle<u32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
 
     VXIO_LOG(DEBUG,
              "deserializing " + stringify(header.numMatrices) + " matrices with" +
@@ -200,9 +200,9 @@ ReadResult Reader::deserializeHeader() noexcept
 ReadResult Reader::deserializeMatrixHeaderName() noexcept
 {
     const size_t nameLength = stream.readU8();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     stream.readStringTo(matrixName, nameLength);
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
 
     return ReadResult::ok();
 }
@@ -217,7 +217,7 @@ ReadResult Reader::deserializeMatrixHeader() noexcept
     matPosX = stream.readLittle<i32>();
     matPosY = stream.readLittle<i32>();
     matPosZ = stream.readLittle<i32>();
-    VXIO_NO_EOF;
+    VXIO_NO_EOF();
     x = y = slice = index = 0;
     matVolume = matSizeX * matSizeY * matSizeZ;
 
@@ -243,7 +243,7 @@ ReadResult Reader::readUncompressed(Voxel64 buffer[], size_t bufferLength) noexc
 
     stream.read(tmpBuffer.get(), tmpBufferSize * sizeof(u32));
     if (tmpBufferSize < voxelsLeftInMatrixCount) {
-        VXIO_NO_EOF;
+        VXIO_NO_EOF();
     }
 
     static_assert(sizeof(tmpBuffer[0]) == sizeof(u8));
@@ -344,14 +344,14 @@ ReadResult Reader::readCompressed(Voxel64 buffer[], size_t bufferLength) noexcep
 
         while (true) {
             const auto data = stream.readLittle<u32>();
-            VXIO_NO_EOF;
+            VXIO_NO_EOF();
             if (static_cast<CompressionFlags>(data) == CompressionFlags::NEXTSLICEFLAG) {
                 break;
             }
             else if (static_cast<CompressionFlags>(data) == CompressionFlags::CODEFLAG) {
                 const auto count = stream.readLittle<u32>();
                 const auto colorData = stream.readBig<u32>();
-                VXIO_NO_EOF;
+                VXIO_NO_EOF();
                 const auto [actualCount, actualVolume] = writeToBuffer(z, colorData, count);
                 readVoxels += actualCount;
                 if (readVoxels == bufferLength) {

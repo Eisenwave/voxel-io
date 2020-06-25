@@ -18,6 +18,7 @@ template <typename Dividend,
 constexpr auto divCeil(Dividend x, Divisor y)
 {
     if constexpr (std::is_unsigned_v<Dividend> && std::is_unsigned_v<Divisor>) {
+        // quotient is always positive
         return x / y + (x % y != 0);  // uint / uint
     }
     else if constexpr (std::is_signed_v<Dividend> && std::is_unsigned_v<Divisor>) {
@@ -58,6 +59,7 @@ template <typename Dividend,
 constexpr auto divFloor(Dividend x, Divisor y)
 {
     if constexpr (std::is_unsigned_v<Dividend> && std::is_unsigned_v<Divisor>) {
+        // quotient is never negative
         return x / y;
     }
     else if constexpr (std::is_signed_v<Dividend> && std::is_unsigned_v<Divisor>) {

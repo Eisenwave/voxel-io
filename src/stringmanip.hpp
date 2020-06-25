@@ -6,14 +6,25 @@
 
 namespace voxelio {
 
-// STRING MANIPULATION
+// IN-PLACE CONVERSIONS ================================================================================================
 
-std::string toUpperCase(std::string str);
-std::string toLowerCase(std::string str);
+/**
+ * @brief Converts a string to upper case.
+ * @param str the string
+ */
+void toUpperCase(std::string &str);
+
+/**
+ * @brief Converts a string to lower case.
+ * @param str the string
+ */
+void toLowerCase(std::string &str);
 
 void ltrim(std::string &s);
 void rtrim(std::string &s);
 void trim(std::string &s);
+
+// COPYING CONVERSIONS =================================================================================================
 
 std::string lpad(const std::string &str, size_t length, char c);
 
@@ -27,9 +38,11 @@ std::string basename(const std::string &str, char delimiter = '/');
 std::string noext(const std::string &str, char delimiter = '.');
 std::string basenameNoext(const std::string &str);
 
+// SPLITTING ===========================================================================================================
+
 std::vector<std::string> splitAtDelimiter(const std::string &str, char delimiter, size_t maxParts = 0);
 
-// FORMATING
+// FORMATING ===========================================================================================================
 
 /**
  * Formats a function like C's printf but writes the result into a std::string.

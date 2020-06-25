@@ -133,7 +133,7 @@ constexpr Float clamp01(Float x) noexcept
 }
 }  // namespace detail
 
-constexpr Color32::Color32(u8 r, u8 g, u8 b, u8 a) :  b{b}, g{g}, r{r}, a{a} {}
+constexpr Color32::Color32(u8 r, u8 g, u8 b, u8 a) : b{b}, g{g}, r{r}, a{a} {}
 
 constexpr Color32::Color32() : Color32{u8{0}, u8{0}, u8{0}, u8{0}} {}
 
