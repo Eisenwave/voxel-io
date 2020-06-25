@@ -1,0 +1,357 @@
+#include "stream.hpp"
+
+#include "log.hpp"
+
+#include <iostream>
+
+namespace voxelio {
+
+InputStream::~InputStream() = default;
+
+OutputStream::~OutputStream() = default;
+
+static std::string openModeStringForReadOf(unsigned mode, bool &outBinary)
+{
+    std::string modeStr = (mode & OpenMode::WRITE) ? "r+" : "r";
+    if ((outBinary = (mode & OpenMode::BINARY))) {
+        modeStr += 'b';
+    }
+    return modeStr;
+}
+
+static std::string openModeStringForWriteOf(unsigned mode, bool &outBinary)
+{
+    std::string modeStr = (mode & OpenMode::READ) ? "w+" : "w";
+    if (mode & OpenMode::APPEND) {
+        modeStr += 'a';
+    }
+    if (mode & OpenMode::PRESERVE) {
+        modeStr += 'x';
+    }
+    if ((outBinary = (mode & OpenMode::BINARY))) {
+        modeStr += 'b';
+    }
+    return modeStr;
+}
+
+// =====================================================================================================================
+
+std::optional<FileInputStream> FileInputStream::open(const char *path, unsigned mode)
+{
+    bool bin;
+    std::string modeStr = openModeStringForReadOf(mode, bin);
+    cfile file = std::fopen(path, modeStr.c_str());
+
+    if (file == nullptr) {
+        return std::nullopt;
+    }
+
+    FileInputStream result{file};
+    result.flags.eof = false;
+    result.flags.err = false;
+    result.flags.bin = bin;
+
+    return result;
+}
+
+FileInputStream::FileInputStream(FileInputStream &&moveOf) : InputStream{std::move(moveOf)}, file{moveOf.file}
+{
+    moveOf.file = nullptr;
+}
+
+FileInputStream::~FileInputStream()
+{
+    if (file != nullptr && std::fclose(file) != 0) {
+        VXIO_LOG(ERROR, "Failed to close file: " + stringify(file));
+        VXIO_DEBUG_ASSERT_UNREACHABLE();
+    }
+}
+
+int FileInputStream::read()
+{
+    int rawResult = std::fgetc(file);
+    if (rawResult == EOF) {
+        updateErrorFlags();
+    }
+    return rawResult;
+}
+
+void FileInputStream::read(u8 buffer[], size_t size)
+{
+    if (size == 0) {
+        return;
+    }
+    size_t count = std::fread(reinterpret_cast<char *>(buffer), 1, size, file);
+    if (count != size) {
+        updateErrorFlags();
+    }
+}
+
+void FileInputStream::readStringTo(std::string &out, char delimiter)
+{
+    out.resize(0);
+
+    int rawChar;
+    while ((rawChar = std::fgetc(file)) != EOF) {
+        char c = static_cast<char>(rawChar);
+        if (delimiter == c) {
+            return;
+        }
+        out += c;
+    }
+}
+
+void FileInputStream::readStringTo(std::string &out, size_t length)
+{
+    out.resize(length);
+    read(reinterpret_cast<u8 *>(out.data()), length);
+}
+
+void FileInputStream::seekRelative(i64 offset)
+{
+    if (std::fseek(file, offset, SEEK_CUR) != 0) {
+        updateErrorFlags();
+    }
+}
+
+void FileInputStream::seekAbsolute(u64 offset)
+{
+    if (std::fseek(file, static_cast<long>(offset), SEEK_SET) != 0) {
+        updateErrorFlags();
+    }
+}
+
+u64 FileInputStream::position()
+{
+    long rawResult = std::ftell(file);
+    if (rawResult < 0) {
+        flags.err = true;
+        return 0;
+    }
+    return static_cast<u64>(rawResult);
+}
+
+void FileInputStream::clearErrors()
+{
+    std::clearerr(file);
+    flags.eof = false;
+    flags.err = false;
+}
+
+void FileInputStream::updateErrorFlags()
+{
+    flags.eof = std::feof(file);
+    flags.err = std::ferror(file);
+    VXIO_LOG(SUPERSPAM, "Updated error flags");
+}
+
+// =====================================================================================================================
+std::optional<FileOutputStream> FileOutputStream::open(const char *path, unsigned mode)
+{
+    bool bin;
+    std::string modeStr = openModeStringForWriteOf(mode, bin);
+    cfile file = std::fopen(path, modeStr.c_str());
+
+    if (file == nullptr) {
+        return std::nullopt;
+    }
+
+    FileOutputStream result{file};
+    result.flags.err = false;
+    result.flags.bin = bin;
+
+    return result;
+}
+
+FileOutputStream::FileOutputStream(FileOutputStream &&moveOf) : OutputStream{std::move(moveOf)}, file{moveOf.file}
+{
+    moveOf.file = nullptr;
+}
+
+FileOutputStream::~FileOutputStream()
+{
+    if (file != nullptr && std::fclose(file) != 0) {
+        VXIO_LOG(ERROR, "Failed to close file: " + stringify(file));
+        VXIO_DEBUG_ASSERT_UNREACHABLE();
+    }
+}
+
+void FileOutputStream::write(u8 byte)
+{
+    if (std::fputc(byte, file) == EOF) {
+        flags.err = true;
+    }
+}
+
+void FileOutputStream::write(const u8 *buffer, size_t size)
+{
+    if (std::fwrite(reinterpret_cast<const char *>(buffer), 1, size, file) != size) {
+        flags.err = true;
+    }
+}
+
+void FileOutputStream::write(const char *string)
+{
+    if (std::fputs(string, file) == EOF) {
+        flags.err = true;
+    }
+}
+
+void FileOutputStream::seekRelative(i64 offset)
+{
+    if (std::fseek(file, offset, SEEK_CUR) != 0) {
+        flags.err = true;
+    }
+}
+
+void FileOutputStream::seekAbsolute(u64 offset)
+{
+    if (std::fseek(file, static_cast<long>(offset), SEEK_SET) != 0) {
+        flags.err = true;
+    }
+}
+
+u64 FileOutputStream::position()
+{
+    long rawResult = std::ftell(file);
+    if (rawResult < 0) {
+        flags.err = true;
+        return 0;
+    }
+    return static_cast<u64>(rawResult);
+}
+
+void FileOutputStream::flush()
+{
+    if (std::fflush(file) != 0) {
+        flags.err = true;
+    }
+}
+
+// =====================================================================================================================
+
+StdInputStream::StdInputStream(std::istream &stream) : stream{&stream}
+{
+    flags.err = this->stream->bad();
+    flags.bin = false;
+    flags.eof = false;
+}
+
+int StdInputStream::read()
+{
+    std::istream::int_type rawResult = stream->get();
+    int result = rawResult == std::istream::traits_type::eof() ? EOF : static_cast<int>(rawResult);
+    updateErrorFlags();
+    return result;
+}
+
+void StdInputStream::read(u8 *buffer, size_t size)
+{
+    static_assert(sizeof(u8) == sizeof(std::istream::char_type));
+    stream->read(reinterpret_cast<char *>(buffer), static_cast<std::streamsize>(size));
+    updateErrorFlags();
+}
+
+void StdInputStream::readStringTo(std::string &out, char delimiter)
+{
+    std::getline(*stream, out, delimiter);
+    updateErrorFlags();
+}
+
+void StdInputStream::readStringTo(std::string &out, size_t length)
+{
+    out.resize(length);
+    read(reinterpret_cast<u8 *>(out.data()), length);
+}
+
+void StdInputStream::seekRelative(i64 offset)
+{
+    stream->seekg(offset, std::ios::cur);
+    flags.eof = stream->eof();
+    flags.err = stream->fail();
+}
+
+void StdInputStream::seekAbsolute(u64 offset)
+{
+    stream->seekg(static_cast<std::streamsize>(offset));
+    flags.eof = stream->eof();
+    flags.err = stream->fail();
+}
+
+u64 StdInputStream::position()
+{
+    u64 result = static_cast<u64>(stream->tellg());
+    updateErrorFlags();
+    return result;
+}
+
+void StdInputStream::clearErrors()
+{
+    stream->clear();
+    flags.eof = false;
+    flags.err = false;
+}
+
+void StdInputStream::updateErrorFlags()
+{
+    flags.eof = stream->eof();
+    flags.err = stream->bad();
+}
+
+// =====================================================================================================================
+
+StdOutputStream::StdOutputStream(std::ostream &stream) : stream{&stream}
+{
+    flags.err = this->stream->bad();
+    flags.bin = false;
+}
+
+void StdOutputStream::write(u8 byte)
+{
+    stream->put(static_cast<std::ostream::char_type>(byte));
+    updateErrorFlags();
+}
+
+void StdOutputStream::write(const u8 *buffer, size_t size)
+{
+    stream->write(reinterpret_cast<const char *>(buffer), static_cast<std::streamsize>(size));
+    updateErrorFlags();
+}
+
+void StdOutputStream::write(const char *string)
+{
+    *stream << string;
+    updateErrorFlags();
+}
+
+void StdOutputStream::seekRelative(i64 offset)
+{
+    stream->seekp(static_cast<std::streamsize>(offset), std::ios::cur);
+    updateErrorFlags();
+}
+
+void StdOutputStream::seekAbsolute(u64 offset)
+{
+    stream->seekp(static_cast<std::streamsize>(offset));
+    updateErrorFlags();
+}
+
+u64 StdOutputStream::position()
+{
+    u64 result = static_cast<u64>(stream->tellp());
+    updateErrorFlags();
+    return result;
+}
+
+void StdOutputStream::flush()
+{
+    stream->flush();
+    updateErrorFlags();
+}
+
+void StdOutputStream::updateErrorFlags()
+{
+    flags.err = stream->bad();
+}
+
+}  // namespace voxelio
