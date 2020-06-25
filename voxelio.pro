@@ -4,9 +4,6 @@ TEMPLATE = lib
 CONFIG -= qt
 CONFIG += c++17 strict_c strict_c++
 
-DEFINES += VOXELIO_LIBRARY
-DEFINES += QT_DEPRECATED_WARNINGS
-
 CONFIG(release, debug|release) {
     DEFINES += VXIO_RELEASE
 }
@@ -14,66 +11,68 @@ CONFIG(debug, debug|release) {
     DEFINES += VXIO_DEBUG
 }
 
+INCLUDEPATH += src
+
 SOURCES +=  \
-    3rd_party/lodepng.cpp \
-    3rd_party/miniz_cpp.cpp \
-    assert.cpp \
-    builtin.cpp \
-    format/cubeworld.cpp \
-    image.cpp \
-    log.cpp \
-    sstreamwrap.cpp \
-    stream.cpp \
-    format/svx.cpp \
-    stringmanip.cpp \
-    voxelarray.cpp \
-    voxelio.cpp \
-    format/binvox.cpp \
-    constants.cpp \
-    stringify.cpp \
-    palette.cpp \
-    format/qb.cpp \
-    format/qef.cpp \
-    util_public.cpp \
-    format/vl32.cpp \
-    format/vobj.cpp \
-    format/vox.cpp
+    src/3rd_party/lodepng.cpp \
+    src/3rd_party/miniz_cpp.cpp \
+    src/assert.cpp \
+    src/builtin.cpp \
+    src/format/cubeworld.cpp \
+    src/image.cpp \
+    src/log.cpp \
+    src/sstreamwrap.cpp \
+    src/stream.cpp \
+    src/format/svx.cpp \
+    src/stringmanip.cpp \
+    src/voxelarray.cpp \
+    src/voxelio.cpp \
+    src/format/binvox.cpp \
+    src/constants.cpp \
+    src/stringify.cpp \
+    src/palette.cpp \
+    src/format/qb.cpp \
+    src/format/qef.cpp \
+    src/util_public.cpp \
+    src/format/vl32.cpp \
+    src/format/vobj.cpp \
+    src/format/vox.cpp
 
 HEADERS +=  \
-    3rd_party/lodepng.hpp \
-    3rd_party/lodepngfwd.hpp \
-    3rd_party/miniz.hpp \
-    3rd_party/miniz_cpp.hpp \
-    3rd_party/miniz_cppfwd.hpp \
-    assert.hpp \
-    build.hpp \
-    builtin.hpp \
-    color.hpp \
-    endian.hpp \
-    format/cubeworld.hpp \
-    image.hpp \
-    intdiv.hpp \
-    log.hpp \
-    macro.hpp \
-    parse.hpp \
-    sstreamwrap.hpp \
-    stream.hpp \
-    format/svx.hpp \
-    stringmanip.hpp \
-    vec.hpp \
-    log2.hpp \
-    stringify.hpp \
-    voxelarray.hpp \
-    voxelio.hpp \
-    format/binvox.hpp \
-    constants.hpp \
-    palette.hpp \
-    format/qb.hpp \
-    format/qbt.hpp \
-    format/qef.hpp \
-    results.hpp \
-    types.hpp \
-    util_public.hpp \
-    format/vl32.hpp \
-    format/vobj.hpp \
-    format/vox.hpp
+    src/3rd_party/lodepng.hpp \
+    src/3rd_party/lodepngfwd.hpp \
+    src/3rd_party/miniz.hpp \
+    src/3rd_party/miniz_cpp.hpp \
+    src/3rd_party/miniz_cppfwd.hpp \
+    src/assert.hpp \
+    src/build.hpp \
+    src/builtin.hpp \
+    src/color.hpp \
+    src/endian.hpp \
+    src/format/cubeworld.hpp \
+    src/image.hpp \
+    src/intdiv.hpp \
+    src/log.hpp \
+    src/macro.hpp \
+    src/parse.hpp \
+    src/sstreamwrap.hpp \
+    src/stream.hpp \
+    src/format/svx.hpp \
+    src/stringmanip.hpp \
+    src/vec.hpp \
+    src/log2.hpp \
+    src/stringify.hpp \
+    src/voxelarray.hpp \
+    src/voxelio.hpp \
+    src/format/binvox.hpp \
+    src/constants.hpp \
+    src/palette.hpp \
+    src/format/qb.hpp \
+    src/format/qbt.hpp \
+    src/format/qef.hpp \
+    src/results.hpp \
+    src/types.hpp \
+    src/util_public.hpp \
+    src/format/vl32.hpp \
+    src/format/vobj.hpp \
+    src/format/vox.hpp
