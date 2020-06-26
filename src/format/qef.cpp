@@ -415,7 +415,11 @@ void Deserializer::parseVoxelDefinition(size_t num, const std::string &line) noe
     if (ints.size() < 4) {
         throw std::runtime_error(stringify(num) + ": voxel has fewer than 4 values");
     }
-    (*voxels)[{ints[0], ints[1], ints[2]}] = colors[ints[3]];
+    Vec3size pos = {ints[0], ints[1], ints[2]};
+    if (voxels->contains(pos)) {
+        VXIO_LOG(WARNING, "Duplicate QEF voxel at " + pos.toString());
+    }
+    (*voxels)[pos] = colors[ints[3]];
 }
 
 }  // namespace voxelio::qef

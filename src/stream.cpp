@@ -49,7 +49,6 @@ std::optional<FileInputStream> FileInputStream::open(const char *path, unsigned 
     FileInputStream result{file};
     result.flags.eof = false;
     result.flags.err = false;
-    result.flags.bin = bin;
 
     return result;
 }
@@ -76,35 +75,16 @@ int FileInputStream::read()
     return rawResult;
 }
 
-void FileInputStream::read(u8 buffer[], size_t size)
+size_t FileInputStream::read(u8 buffer[], size_t size)
 {
     if (size == 0) {
-        return;
+        return 0;
     }
     size_t count = std::fread(reinterpret_cast<char *>(buffer), 1, size, file);
     if (count != size) {
         updateErrorFlags();
     }
-}
-
-void FileInputStream::readStringTo(std::string &out, char delimiter)
-{
-    out.resize(0);
-
-    int rawChar;
-    while ((rawChar = std::fgetc(file)) != EOF) {
-        char c = static_cast<char>(rawChar);
-        if (delimiter == c) {
-            return;
-        }
-        out += c;
-    }
-}
-
-void FileInputStream::readStringTo(std::string &out, size_t length)
-{
-    out.resize(length);
-    read(reinterpret_cast<u8 *>(out.data()), length);
+    return count;
 }
 
 void FileInputStream::seekRelative(i64 offset)
@@ -233,7 +213,6 @@ void FileOutputStream::flush()
 StdInputStream::StdInputStream(std::istream &stream) : stream{&stream}
 {
     flags.err = this->stream->bad();
-    flags.bin = false;
     flags.eof = false;
 }
 
@@ -245,23 +224,18 @@ int StdInputStream::read()
     return result;
 }
 
-void StdInputStream::read(u8 *buffer, size_t size)
+size_t StdInputStream::read(u8 buffer[], size_t size)
 {
     static_assert(sizeof(u8) == sizeof(std::istream::char_type));
     stream->read(reinterpret_cast<char *>(buffer), static_cast<std::streamsize>(size));
     updateErrorFlags();
+    return static_cast<size_t>(stream->gcount());
 }
 
-void StdInputStream::readStringTo(std::string &out, char delimiter)
+void StdInputStream::readStringToUntil(std::string &out, char delimiter)
 {
     std::getline(*stream, out, delimiter);
     updateErrorFlags();
-}
-
-void StdInputStream::readStringTo(std::string &out, size_t length)
-{
-    out.resize(length);
-    read(reinterpret_cast<u8 *>(out.data()), length);
 }
 
 void StdInputStream::seekRelative(i64 offset)

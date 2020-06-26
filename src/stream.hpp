@@ -25,14 +25,14 @@ protected:
     struct Flags {
         bool eof : 1;
         bool err : 1;
-        bool bin : 1;
     };
 
     u8 readBuffer[sizeof(uintmax_t) * 4 - sizeof(Flags)];
     Flags flags;
 
 public:
-    // VIRTUAL
+    // VIRTUAL ----
+    // --------------------------------------------------------------------------------------------------------
 
     InputStream() = default;
     InputStream(const InputStream &) = default;
@@ -52,32 +52,7 @@ public:
      * @param buffer the buffer
      * @param maxSize the maximum number of characters to read
      */
-    virtual void read(u8 buffer[], size_t maxSize) = 0;
-
-    static_assert(not std::is_same_v<char, size_t>, "readStringTo() is ambiguous if char and size_t are the same type");
-    /**
-     * @brief Reads characters into a string until a delimiter or EOF is reached.
-     * The delimiter is not included in the string.
-     * May set eof and err.
-     * @param out the string
-     * @param delimiter the delimiter
-     */
-    virtual void readStringTo(std::string &out, char delimiter) = 0;
-
-    /**
-     * @brief Reads a number of characters into a string.
-     * May set eof and err.
-     * @param out the string
-     * @param length the number of characters to read
-     */
-    virtual void readStringTo(std::string &out, size_t length) = 0;
-
-    /**
-     * @brief Moves the read position relatively by a given offset.
-     * May set eof and err.
-     * @param offset the offset from the current read position
-     */
-    virtual void seekRelative(i64 offset) = 0;
+    virtual size_t read(u8 buffer[], size_t maxSize) = 0;
 
     /**
      * @brief Moves the read position to a given absolute position.
@@ -100,7 +75,91 @@ public:
      */
     virtual void clearErrors() = 0;
 
-    // FLAGS
+    // DEFAULTS
+    // ------------------------------------------------------------------------------------------------------------
+
+    /**
+     * @brief Reads bytes with a given maximum length until a delimiter.
+     * The delimiter can be any byte.
+     * May set err and eof.
+     *
+     * If the delimiter is not found in the read data, maxSize will be returned.
+     * Otherwise the number of bytes before the delimiter is returned.
+     * If the delimiter is the first read byte, then 0 is returned.
+     *
+     * Examples:
+     * - if the maxSize is 1024 and the first byte is the delimiter, 0 is returned
+     * - if the maxSize is 1024 and 10 bytes are read before the delimiter, 10 is returned
+     * - if the maxSize is 1024 and the final byte is a delimiter, 1023 is returned
+     * - if the maxSize is 1024 and no delimiter is found, 1024 is returned
+     *
+     * @param out the ouput string
+     * @param length the maximum length
+     * @param delimiter the delimiter
+     * @return the number of bytes read
+     */
+    virtual size_t read(u8 buffer[], size_t size, u8 delimiter)
+    {
+        size_t readCount = read(buffer, size);
+        if (err()) {
+            return 0;
+        }
+
+        // At this point we either reached the EOF or read all characters.
+        // It doesn't really matter, we need to find the delimiter in the stream either way.
+        for (size_t i = 0; i < readCount; ++i) {
+            if (buffer[i] == delimiter) {
+                auto seekDistance = -static_cast<i64>(readCount - i - 1);
+                if (seekDistance != 0 && eof()) {
+                    clearErrors();
+                }
+                seekRelative(seekDistance);
+                return i;
+            }
+        }
+        return readCount;
+    }
+
+    /**
+     * @brief Reads characters into a string until a delimiter or EOF is reached.
+     * The delimiter is not included in the string.
+     * May set eof and err.
+     * @param out the string
+     * @param delimiter the delimiter
+     */
+    virtual void readStringToUntil(std::string &out, char delimiter)
+    {
+        constexpr size_t chunkSize = 128;
+        const u8 delimiterByte = static_cast<u8>(delimiter);
+        size_t totalSize = 0;
+
+        do {
+            out.resize(totalSize + chunkSize);
+            u8 *stringData = reinterpret_cast<u8 *>(out.data());
+            size_t readSize = read(stringData + totalSize, chunkSize, delimiterByte);
+            totalSize += readSize;
+            if (readSize != chunkSize) {
+                out.resize(totalSize);
+                return;
+            }
+        } while (good());
+    }
+
+    /**
+     * @brief Moves the read position relatively by a given offset.
+     * May set eof and err.
+     * @param offset the offset from the current read position
+     */
+    virtual void seekRelative(i64 offset)
+    {
+        i64 pos = static_cast<i64>(position()) + offset;
+        if (not err()) {
+            seekAbsolute(static_cast<u64>(pos));
+        }
+    }
+
+    // FLAG HANDLING
+    // -------------------------------------------------------------------------------------------------------
 
     /**
      * @brief Returns true if the EOF (end of file) has been reached.
@@ -131,31 +190,38 @@ public:
         return !eof() && !err();
     }
 
-    /**
-     * @brief Returns true if the stream was opened in binary mode.
-     * @return true if the stream was openend in binary mode
-     */
-    bool bin() const
-    {
-        return flags.bin;
-    }
-
     // UTILITY
+    // -------------------------------------------------------------------------------------------------------------
+
+    /**
+     * @brief Reads a number of characters into a string.
+     * May set eof and err.
+     * @param out the string
+     * @param length the number of characters to read
+     */
+    void readStringTo(std::string &out, size_t length)
+    {
+        out.resize(length);
+        read(reinterpret_cast<u8 *>(out.data()), length);
+    }
 
     /**
      * @brief Reads a LF or CRLF terminated line.
      * Both cases are handled even when the stream is not opened in binary mode.
      * May set eof and err.
+     *
+     * This is to ensure that CRLF-terminated files coming from Windows systems can be interpreted on Unix systems
+     * as well using this function.
+     * There are also some OS-independent formats such as HTTP headers which use CRLF.
+     *
      * @param out the string to write
      */
     void readLineTo(std::string &out)
     {
-        readStringTo(out, '\n');
-#ifdef _WIN32
-        if (flags.bin && not out.empty() && out.back() == '\r') {
+        readStringToUntil(out, '\n');
+        if (not out.empty() && out.back() == '\r') {
             out.resize(out.size() - 1);
         }
-#endif
     }
 
     /**
@@ -175,10 +241,10 @@ public:
      * May set eof and err.
      * @return the read line
      */
-    std::string readString(char delimiter = 0)
+    std::string readStringUntil(char delimiter = 0)
     {
         std::string result;
-        readStringTo(result, delimiter);
+        readStringToUntil(result, delimiter);
         return result;
     }
 
@@ -324,6 +390,9 @@ protected:
     Flags flags;
 
 public:
+    // ABSTRACT
+    // ------------------------------------------------------------------------------------------------------------
+
     OutputStream() = default;
     OutputStream(const OutputStream &) = default;
     OutputStream(OutputStream &&) = default;
@@ -352,13 +421,6 @@ public:
     virtual void write(const char *string) = 0;
 
     /**
-     * @brief Moves the write position relatively by a given offset.
-     * May set err.
-     * @param offset the offset from the current write position
-     */
-    virtual void seekRelative(i64 offset) = 0;
-
-    /**
      * @brief Moves the write position to a given absolute position.
      * May set err.
      * @param position the position to move to
@@ -379,7 +441,24 @@ public:
      */
     virtual void flush() = 0;
 
-    // FLAGS
+    // DEFAULTS
+    // ------------------------------------------------------------------------------------------------------------
+
+    /**
+     * @brief Moves the write position relatively by a given offset.
+     * May set err.
+     * @param offset the offset from the current write position
+     */
+    virtual void seekRelative(i64 offset)
+    {
+        i64 pos = static_cast<i64>(position()) + offset;
+        if (not err()) {
+            seekAbsolute(static_cast<u64>(pos));
+        }
+    }
+
+    // FLAG HANDLING
+    // -------------------------------------------------------------------------------------------------------
 
     /**
      * @brief Returns true if a write operation failed.
@@ -409,6 +488,7 @@ public:
     }
 
     // UTILITY
+    // -------------------------------------------------------------------------------------------------------------
 
     /**
      * @brief Writes a string to the stream.
@@ -594,9 +674,7 @@ public:
     ~FileInputStream() final;
 
     int read() final;
-    void read(u8 *buffer, size_t size) final;
-    void readStringTo(std::string &out, char delimiter) final;
-    void readStringTo(std::string &out, size_t length) final;
+    size_t read(u8 buffer[], size_t size) final;
     void seekRelative(i64 offset) final;
     void seekAbsolute(u64 offset) final;
     u64 position() final;
@@ -653,9 +731,8 @@ public:
     explicit StdInputStream(std::istream &stream);
 
     int read() final;
-    void read(u8 *buffer, size_t size) final;
-    void readStringTo(std::string &out, char delimiter) final;
-    void readStringTo(std::string &out, size_t length) final;
+    size_t read(u8 *buffer, size_t size) final;
+    void readStringToUntil(std::string &out, char delimiter) final;
     void seekRelative(i64 offset) final;
     void seekAbsolute(u64 offset) final;
     u64 position() final;

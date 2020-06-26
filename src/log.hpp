@@ -1,5 +1,5 @@
-#ifndef LOG_HPP
-#define LOG_HPP
+#ifndef VXIO_LOG_HPP
+#define VXIO_LOG_HPP
 
 #include "assert.hpp"
 #include "build.hpp"

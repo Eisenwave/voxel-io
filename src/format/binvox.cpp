@@ -28,7 +28,7 @@ ReadResult Reader::init() noexcept
 
 ReadResult Reader::readMagicAndVersion()
 {
-    std::string line = stream.readString(' ');
+    std::string line = stream.readStringUntil(' ');
 
     if (line != "#binvox") {
         return ReadResult::unexpectedMagic(state.lineNum, "expected \"#binvox\", got \"" + line + "\"");

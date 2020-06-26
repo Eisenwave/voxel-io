@@ -201,7 +201,7 @@ ReadResult Reader::deserializeMatrixHeaderName() noexcept
 {
     const size_t nameLength = stream.readU8();
     VXIO_NO_EOF();
-    stream.readStringTo(matrixName, nameLength);
+    stream.readStringToUntil(matrixName, nameLength);
     VXIO_NO_EOF();
 
     return ReadResult::ok();
@@ -434,7 +434,7 @@ void Deserializer::deserializeMatrix(Model &mesh) noexcept(false)
 {
     // read matrix name
     const u8 nameLength = streamWrapper.readU8();
-    std::string name = streamWrapper.readString(size_t{nameLength});
+    std::string name = streamWrapper.readString(nameLength);
     if (not streamWrapper.good()) {
         throw std::runtime_error("I/O error");
     }
