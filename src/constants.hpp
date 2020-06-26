@@ -1,6 +1,8 @@
 ﻿#ifndef VXIO_CONSTANTS_HPP
 #define VXIO_CONSTANTS_HPP
 
+#include "assert.hpp"
+
 #include <array>
 #include <optional>
 
@@ -32,7 +34,14 @@ enum class FileType : unsigned {
     KV6 = 22,
     KVX = 23,
     SLAB6_VOX = 24,
-    CUBEWORLD_CUB = 25
+    CUBEWORLD_CUB = 25,
+    MINECRAFT_SCHEMATIC = 26,
+    MINECRAFT_STRUCTURE = 27,
+    MINECRAFT_REGION = 28,
+    ACE_OF_SPADES_VXL = 29,
+    SLABSPRI_VOX = 30,
+    PAINT3D_3MP = 31,
+    ZOXEL = 32
 };
 
 enum class FileTypeCategory : unsigned { VOXEL, MESH, IMAGE, TEXT, ARCHIVE, POINT_CLOUD };
@@ -109,6 +118,13 @@ constexpr const char *nameOf(FileType fileType)
         VXIO_REGISTER(KVX);
         VXIO_REGISTER(SLAB6_VOX);
         VXIO_REGISTER(CUBEWORLD_CUB);
+        VXIO_REGISTER(MINECRAFT_SCHEMATIC);
+        VXIO_REGISTER(MINECRAFT_STRUCTURE);
+        VXIO_REGISTER(MINECRAFT_REGION);
+        VXIO_REGISTER(ACE_OF_SPADES_VXL);
+        VXIO_REGISTER(SLABSPRI_VOX);
+        VXIO_REGISTER(PAINT3D_3MP);
+        VXIO_REGISTER(ZOXEL);
     }
     return "";
 #undef VXIO_REGISTER
@@ -167,8 +183,15 @@ constexpr const char *extensionOf(FileType fileType)
     case FileType::KVX: return "kvx";
     case FileType::SLAB6_VOX: return "vox";
     case FileType::CUBEWORLD_CUB: return "cub";
+    case FileType::MINECRAFT_SCHEMATIC: return "schematic";
+    case FileType::MINECRAFT_STRUCTURE: return "mcstruct";
+    case FileType::MINECRAFT_REGION: return "mcr";
+    case FileType::ACE_OF_SPADES_VXL: return "vxl";
+    case FileType::SLABSPRI_VOX: return "vox";
+    case FileType::PAINT3D_3MP: return "3mp";
+    case FileType::ZOXEL: return "zox";
     }
-    return "";
+    VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
 constexpr const char *alternativeExtensionOf(FileType fileType)
@@ -208,8 +231,15 @@ constexpr const char *displayNameOf(FileType fileType)
     case FileType::KVX: return "KVX Model";
     case FileType::SLAB6_VOX: return "SLAB6 VOX Model";
     case FileType::CUBEWORLD_CUB: return "Cubeworld Model";
+    case FileType::MINECRAFT_SCHEMATIC: return "Minecraft Schematic";
+    case FileType::MINECRAFT_STRUCTURE: return "Minecraft Structure";
+    case FileType::MINECRAFT_REGION: return "Minecraft Region";
+    case FileType::ACE_OF_SPADES_VXL: return "Ace of Spades Map (Voxlap)";
+    case FileType::SLABSPRI_VOX: return "SLABSPRI VOX";
+    case FileType::PAINT3D_3MP: return "Paint3D 3MP";
+    case FileType::ZOXEL: return "Zoxel";
     }
-    return "";
+    VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
 constexpr const char *mediaTypeOf(FileType fileType)
@@ -241,8 +271,15 @@ constexpr const char *mediaTypeOf(FileType fileType)
     case FileType::KVX: return "model/x-kv";
     case FileType::SLAB6_VOX: return "model/x-slab6-vox";
     case FileType::CUBEWORLD_CUB: return "model/x-cubeworld";
+    case FileType::MINECRAFT_SCHEMATIC: return "application/x-schematic+nbt";
+    case FileType::MINECRAFT_STRUCTURE: return "application/x-minecraft-structure+nbt";
+    case FileType::MINECRAFT_REGION: return "application/x-minecraft-region";
+    case FileType::ACE_OF_SPADES_VXL: return "model/x-vxl";
+    case FileType::SLABSPRI_VOX: return "model/x-slabspri-vox";
+    case FileType::PAINT3D_3MP: return "model/x-3mp";
+    case FileType::ZOXEL: return "model/x-zoxel";
     }
-    return "";
+    VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
 constexpr const char *magicOf(FileType fileType)
@@ -295,7 +332,15 @@ constexpr FileTypeCategory categoryOf(FileType type)
     case FileType::KVX: return FileTypeCategory::VOXEL;
     case FileType::SLAB6_VOX: return FileTypeCategory::VOXEL;
     case FileType::CUBEWORLD_CUB: return FileTypeCategory::VOXEL;
+    case FileType::MINECRAFT_SCHEMATIC: return FileTypeCategory::VOXEL;
+    case FileType::MINECRAFT_STRUCTURE: return FileTypeCategory::VOXEL;
+    case FileType::MINECRAFT_REGION: return FileTypeCategory::VOXEL;
+    case FileType::ACE_OF_SPADES_VXL: return FileTypeCategory::VOXEL;
+    case FileType::SLABSPRI_VOX: return FileTypeCategory::VOXEL;
+    case FileType::PAINT3D_3MP: return FileTypeCategory::VOXEL;
+    case FileType::ZOXEL: return FileTypeCategory::VOXEL;
     }
+    VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
 constexpr FileTypeStructure structureOf(FileType type)
@@ -327,7 +372,15 @@ constexpr FileTypeStructure structureOf(FileType type)
     case FileType::KVX: return FileTypeStructure::BINARY;
     case FileType::SLAB6_VOX: return FileTypeStructure::BINARY;
     case FileType::CUBEWORLD_CUB: return FileTypeStructure::BINARY;
+    case FileType::MINECRAFT_SCHEMATIC: return FileTypeStructure::BINARY;
+    case FileType::MINECRAFT_STRUCTURE: return FileTypeStructure::BINARY;
+    case FileType::MINECRAFT_REGION: return FileTypeStructure::BINARY;
+    case FileType::ACE_OF_SPADES_VXL: return FileTypeStructure::BINARY;
+    case FileType::SLABSPRI_VOX: return FileTypeStructure::BINARY;
+    case FileType::PAINT3D_3MP: return FileTypeStructure::BINARY;
+    case FileType::ZOXEL: return FileTypeStructure::BINARY;
     }
+    VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
 /** Returns whether voxelio provides readers for the given file type by default. */
@@ -357,7 +410,13 @@ constexpr bool isWritableByDefault(FileType fileType)
     }
 }
 
-/** Returns whether a given voxel format supports the use of palettes. (also called color maps by QBT documentation) */
+/**
+ * @brief Returns whether a given voxel format supports the use of palettes.
+ * (also called color maps by QBT documentation)
+ *
+ * @param fileType the file type
+ * @return whether the type supports palettes
+ */
 constexpr bool supportsPalette(FileType fileType)
 {
     switch (fileType) {
@@ -371,7 +430,13 @@ constexpr bool supportsPalette(FileType fileType)
     }
 }
 
-/** Returns whether a given voxel format requires the use of palettes. (also called color maps by QBT documentation) */
+/**
+ * @brief Returns whether a given voxel format requires the use of palettes.
+ * (also called color maps by QBT documentation)
+ *
+ * @param fileType the file type
+ * @return whether the type requires palettes
+ */
 constexpr bool requiresPalette(FileType fileType)
 {
     switch (fileType) {
