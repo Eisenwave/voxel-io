@@ -191,7 +191,7 @@ constexpr const char *extensionOf(FileType fileType)
     case FileType::PAINT3D_3MP: return "3mp";
     case FileType::ZOXEL: return "zox";
     }
-    VXIO_DEBUG_ASSERT_UNREACHABLE();
+    return "";
 }
 
 constexpr const char *alternativeExtensionOf(FileType fileType)
