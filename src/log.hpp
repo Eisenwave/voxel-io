@@ -55,14 +55,12 @@ void log(LogLevel level, std::string msg, const char *file, const char *function
 
 extern thread_local LogLevel logLevel;
 
-#define VXIO_LOG_IMPL(level, msg, file, line, function)                                                        \
+#define VXIO_LOG(level, msg)                                                                                   \
     if constexpr (::voxelio::build::DEBUG || ::voxelio::LogLevel::level < ::voxelio::LogLevel::SPAM) {         \
         if (static_cast<unsigned>(::voxelio::LogLevel::level) <= static_cast<unsigned>(::voxelio::logLevel)) { \
-            ::voxelio::log(::voxelio::LogLevel::level, msg, file, function, line);                             \
+            ::voxelio::log(::voxelio::LogLevel::level, msg, __FILE__, __func__, __LINE__);                     \
         }                                                                                                      \
     }
-
-#define VXIO_LOG(level, msg) VXIO_LOG_IMPL(level, msg, __FILE__, __LINE__, __func__)
 
 }  // namespace voxelio
 

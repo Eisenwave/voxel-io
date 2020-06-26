@@ -1,7 +1,7 @@
 #ifndef VXIO_VOX_HPP
 #define VXIO_VOX_HPP
 
-#include "../util_public.hpp"
+#include "../ioutil.hpp"
 #include "../voxelio.hpp"
 
 #include <cstddef>

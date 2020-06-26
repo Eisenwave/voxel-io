@@ -1,9 +1,9 @@
 #ifndef VXIO_QEF_HPP
 #define VXIO_QEF_HPP
 
+#include "../ioutil.hpp"
 #include "../stream.hpp"
 #include "../types.hpp"
-#include "../util_public.hpp"
 #include "../voxelarray.hpp"
 #include "../voxelio.hpp"
 

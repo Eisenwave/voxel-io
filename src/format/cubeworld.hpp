@@ -1,8 +1,8 @@
 #ifndef VXIO_CUBEWORLD_HPP
 #define VXIO_CUBEWORLD_HPP
 
+#include "../ioutil.hpp"
 #include "../stream.hpp"
-#include "../util_public.hpp"
 #include "../voxelio.hpp"
 
 namespace voxelio::cub {

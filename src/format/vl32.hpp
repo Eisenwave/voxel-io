@@ -1,8 +1,8 @@
 #ifndef VXIO_VL32_HPP
 #define VXIO_VL32_HPP
 
+#include "../ioutil.hpp"
 #include "../types.hpp"
-#include "../util_public.hpp"
 #include "../voxelio.hpp"
 
 namespace voxelio {
