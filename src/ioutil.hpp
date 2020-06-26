@@ -1,39 +1,12 @@
-#ifndef VXIO_UTIL_PUBLIC_HPP
-#define VXIO_UTIL_PUBLIC_HPP
+#ifndef VXIO_IOUTIL_HPP
+#define VXIO_IOUTIL_HPP
 
 #include "types.hpp"
 #include "voxelio.hpp"
 
 #include <cstddef>
-#include <cstring>
-#include <type_traits>
 
 namespace voxelio {
-
-template <typename To, typename From>
-inline To memConvert(const From &from)
-{
-    static_assert(sizeof(To) == sizeof(From));
-    To result;
-    std::memcpy(&result, &from, sizeof(To));
-    return result;
-}
-
-template <typename To, typename From, std::enable_if_t<(is_voxel_v<To> && is_voxel_v<From>), int> = 0>
-constexpr To convertVoxelTo(From from)
-{
-    if constexpr (std::is_same_v<To, From>) {
-        return from;
-    }
-    else if constexpr (std::is_same_v<To, Voxel32>) {
-        return Voxel32{static_vec_cast<i32>(from.pos), {from.argb}};
-    }
-    else {
-        return Voxel64{static_vec_cast<i64>(from.pos), {from.argb}};
-    }
-}
-
-static_assert(convertVoxelTo<Voxel32>(Voxel64{{666, 0, 0}, {0xff}}) == Voxel32{{666, 0, 0}, {0xff}});
 
 /**
  * @brief Simplifies writing either 32-bit or 64-bit voxels to a buffer.

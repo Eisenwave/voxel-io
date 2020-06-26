@@ -1,4 +1,6 @@
-#include "util_public.hpp"
+#include "ioutil.hpp"
+
+#include "util.hpp"
 
 namespace voxelio {
 
@@ -50,7 +52,7 @@ void VoxelBufferWriteHelper::write(Voxel32 voxel) noexcept
 {
     VXIO_DEBUG_ASSERT_LT(index, limit);
     if (is64) {
-        buffer64[index++] = convertVoxelTo<Voxel64>(voxel);
+        buffer64[index++] = voxelCast<Voxel64>(voxel);
     }
     else {
         buffer32[index++] = voxel;
@@ -64,7 +66,7 @@ void VoxelBufferWriteHelper::write(Voxel64 voxel) noexcept
         buffer64[index++] = voxel;
     }
     else {
-        buffer32[index++] = convertVoxelTo<Voxel32>(voxel);
+        buffer32[index++] = voxelCast<Voxel32>(voxel);
     }
 }
 

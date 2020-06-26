@@ -100,7 +100,7 @@ enum class Endian : unsigned { BIG = 0, LITTLE = 1 };
 
 namespace voxelio::build {
 
-constexpr bool ENDIAN_KNOWN = true;
+constexpr bool NATIVE_ENDIAN_KNOWN = true;
 constexpr Endian NATIVE_ENDIAN = std::endian::native == std::endian::little ? Endian::LITTLE : Endian::BIG;
 
 }  // namespace voxelio::build
@@ -127,7 +127,7 @@ constexpr Endian NATIVE_ENDIAN = std::endian::native == std::endian::little ? En
 
 namespace voxelio::build {
 
-constexpr bool ENDIAN_KNOWN = true;
+constexpr bool NATIVE_ENDIAN_KNOWN = true;
 
 #if VXIO_ENDIAN == VXIO_ENDIAN_LITTLE
 constexpr Endian NATIVE_ENDIAN = Endian::LITTLE;
@@ -143,7 +143,7 @@ constexpr bool NATIVE_ENDIAN = Endian::BIG;
 // C++17 UNKNWON ENDIANNESS --------------------------------------------------------------------------------------------
 namespace voxelio::build {
 
-constexpr bool ENDIAN_KNOWN = false;
+constexpr bool NATIVE_ENDIAN_KNOWN = false;
 constexpr Endian NATIVE_ENDIAN = static_cast<Endian>(0xff);
 
 }  // namespace voxelio::build

@@ -30,7 +30,7 @@
 
 namespace voxelio::builtin {
 
-// trap():
+// void trap():
 //     Executes an abnormal instruction or otherwise exits the program immediately.
 //     This bypasses even std::terminate() and is completely unhandled.
 //     This function always exists and will call std::terminate() by default.
@@ -44,20 +44,20 @@ namespace voxelio::builtin {
 [[noreturn]] inline void trap();
 #endif
 
-// isConstantEvaluated():
+// bool isConstantEvaluated():
 //     To be used in an if-statement to verify whether the current context is constant-evaluated.
-//     This function is always defined and is equivalent to true by default.
-constexpr bool isConstantEvaluated()
-{
+//     This builtin can potentially not exist and it has no sane default.
+//     clang 9+ and gcc 9+ support this builtin, even for C++17, allowing for implementation of
+//     std::is_constant_evaluated() before C++20.
 #if VXIO_HAS_BUILTIN(__builtin_is_constant_evaluated)
 #define VXIO_HAS_BUILTIN_IS_CONSTANT_EVALUATED
+constexpr bool isConstantEvaluated()
+{
     return __builtin_is_constant_evaluated();
-#else
-    return true;
-#endif
 }
+#endif
 
-// countLeadingZeros(unsigned ...):
+// int countLeadingZeros(unsigned ...):
 //     Counts the number of leading zeros in an unsigned integer type.
 //     The result of countLeadingZeros(0) is undefined for all types.
 #if VXIO_HAS_BUILTIN(__builtin_clz) && VXIO_HAS_BUILTIN(__builtin_clzl) && VXIO_HAS_BUILTIN(__builtin_clzll)
@@ -88,7 +88,7 @@ constexpr int countLeadingZeros(unsigned long long x) noexcept
 }
 #endif
 
-// countLeadingZeros(uintXX_t ...):
+// uintXX_t byteSwap(uintXX_t ...):
 //     Swaps the bytes of any uintXX type.
 //     This reverses the byte order (little-endian/big-endian).
 //     This does nothing for byteSwap(uint8_t).

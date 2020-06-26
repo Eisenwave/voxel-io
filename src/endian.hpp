@@ -3,6 +3,7 @@
 
 #include "builtin.hpp"
 #include "types.hpp"
+#include "util.hpp"
 
 #include <cstring>
 
@@ -62,9 +63,10 @@ static_assert(reverseBytes(0x11223344) == 0x44332211);
 // IMPLEMENTATION ======================================================================================================
 
 namespace detail {
-// We can safely define both versions (builtin and naive) because reverseBytes is always defined.
 // The builtin version will only be chosen if VXIO_HAS_ACCELERATED_REVERSE_BYTES is defined.
 // Both are defined so that they can be tested individually.
+
+#ifdef VXIO_HAS_KNOWN_ENDIAN
 
 template <Endian ENDIAN, typename Int>
 void encode_builtin(Int integer, u8 out[sizeof(Int)])
@@ -85,6 +87,8 @@ Int decode_builtin(const u8 buffer[sizeof(Int)])
     }
     return result;
 }
+
+#endif  // VXIO_HAS_KNOWN_ENDIAN
 
 template <Endian ENDIAN, typename Int>
 constexpr void encode_naive(Int integer, u8 out[sizeof(Int)])
@@ -128,7 +132,7 @@ template <Endian ENDIAN, typename Int>
 constexpr Int decode(const u8 buffer[sizeof(Int)])
 {
 #ifdef VXIO_HAS_ACCELERATED_ENDIAN
-    if (builtin::isConstantEvaluated()) {
+    if (isConstantEvaluated()) {
         return detail::decode_naive<ENDIAN, Int>(buffer);
     }
     else {
@@ -143,7 +147,7 @@ template <Endian ENDIAN, typename Int>
 constexpr void encode(Int integer, u8 out[sizeof(Int)])
 {
 #ifdef VXIO_HAS_ACCELERATED_ENDIAN
-    if (builtin::isConstantEvaluated()) {
+    if (isConstantEvaluated()) {
         detail::encode_naive<ENDIAN, Int>(integer, out);
     }
     else {

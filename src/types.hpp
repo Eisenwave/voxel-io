@@ -7,13 +7,15 @@
 
 namespace voxelio {
 
+// STATIC ASSERTSIONS FOR ALL TYPES ====================================================================================
+
 static_assert(sizeof(std::uint8_t) == 1, "u8 must be one char in size");
 static_assert(sizeof(float) == 4, "float must be a 32-bit floating point number");
 static_assert(sizeof(double) == 8, "double must be a 64-bit floating point number");
 static_assert(std::numeric_limits<float>::is_iec559, "voxelio depends on IEC 559 floats");
 static_assert(std::numeric_limits<double>::is_iec559, "voxelio depends on IEC 559 doubles");
 
-// PRIMITIVE ALIASES
+// PRIMITIVE ALIASES ===================================================================================================
 
 using u8 = std::uint8_t;
 using u16 = std::uint16_t;
@@ -31,7 +33,7 @@ using f32 = float;
 using f64 = double;
 using fmax = long double;
 
-// VEC ALIASES
+// VEC ALIASES =========================================================================================================
 
 using Vec2c = Vec<char, 2>;
 using Vec2s = Vec<short, 2>;
@@ -87,9 +89,9 @@ using Vec3u64 = Vec<u64, 3>;
 using Vec3umax = Vec<umax, 3>;
 using Vec3size = Vec<std::size_t, 3>;
 
-// ALIASES
+// OTHER ALIASES =======================================================================================================
 
-/** Integer representing a 32-bit color.
+/** @brief Integer representing a 32-bit color.
  * A (alpha) is the most significant byte.
  * B (blue) is the least significant byte.
  */
@@ -97,7 +99,7 @@ using argb32 = u32;
 
 using cfile = std::FILE *;
 
-// ENUMERATIONS
+// ENUMERATIONS ========================================================================================================
 
 using build::Endian;
 
@@ -122,7 +124,7 @@ constexpr const char *nameOf(Axis endian)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-// COMMON STRUCTS
+// COMMON STRUCTS ======================================================================================================
 
 /** @brief 64-bit generic voxel representation. */
 struct Voxel64 {
@@ -152,6 +154,8 @@ struct Voxel32 {
     };
 };
 
+// VOXEL UTILITIES =====================================================================================================
+
 template <typename T>
 constexpr bool is_voxel_v = std::is_same_v<T, Voxel32> || std::is_same_v<T, Voxel64>;
 
@@ -174,6 +178,22 @@ constexpr bool operator!=(const voxelio::Voxel64 &lhs, const voxelio::Voxel64 &r
 {
     return lhs.pos != rhs.pos || lhs.argb != rhs.argb;
 }
+
+template <typename To, typename From, std::enable_if_t<(is_voxel_v<To> && is_voxel_v<From>), int> = 0>
+constexpr To voxelCast(From from)
+{
+    if constexpr (std::is_same_v<To, From>) {
+        return from;
+    }
+    else if constexpr (std::is_same_v<To, Voxel32>) {
+        return Voxel32{static_vec_cast<i32>(from.pos), {from.argb}};
+    }
+    else {
+        return Voxel64{static_vec_cast<i64>(from.pos), {from.argb}};
+    }
+}
+
+static_assert(voxelCast<Voxel32>(Voxel64{{666, 0, 0}, {0xff}}) == Voxel32{{666, 0, 0}, {0xff}});
 
 }  // namespace voxelio
 

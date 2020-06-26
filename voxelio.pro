@@ -20,6 +20,7 @@ SOURCES +=  \
     src/builtin.cpp \
     src/format/cubeworld.cpp \
     src/image.cpp \
+    src/ioutil.cpp \
     src/log.cpp \
     src/sstreamwrap.cpp \
     src/stream.cpp \
@@ -33,7 +34,6 @@ SOURCES +=  \
     src/palette.cpp \
     src/format/qb.cpp \
     src/format/qef.cpp \
-    src/util_public.cpp \
     src/format/vl32.cpp \
     src/format/vobj.cpp \
     src/format/vox.cpp
@@ -52,6 +52,7 @@ HEADERS +=  \
     src/format/cubeworld.hpp \
     src/image.hpp \
     src/intdiv.hpp \
+    src/ioutil.hpp \
     src/log.hpp \
     src/macro.hpp \
     src/parse.hpp \
@@ -59,6 +60,7 @@ HEADERS +=  \
     src/stream.hpp \
     src/format/svx.hpp \
     src/stringmanip.hpp \
+    src/util.hpp \
     src/vec.hpp \
     src/log2.hpp \
     src/stringify.hpp \
@@ -72,7 +74,6 @@ HEADERS +=  \
     src/format/qef.hpp \
     src/results.hpp \
     src/types.hpp \
-    src/util_public.hpp \
     src/format/vl32.hpp \
     src/format/vobj.hpp \
     src/format/vox.hpp
