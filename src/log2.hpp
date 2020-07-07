@@ -137,14 +137,14 @@ constexpr Int log2floor(Int v) noexcept
     return log2floor_builtin(static_cast<std::make_unsigned_t<Int>>(v));
 #else
     if constexpr (std::is_same_v<Int, uint32_t>) {
-        return log2_floor_debruijn(v);
+        return log2floor_debruijn(v);
     }
     else if constexpr (std::is_signed_v<Int>) {
         using Uint = std::make_unsigned_t<Int>;
-        return log2_floor_fast<Uint>(static_cast<Uint>(v));
+        return log2floor_fast<Uint>(static_cast<Uint>(v));
     }
     else {
-        return log2_floor_fast<Int>(v);
+        return log2floor_fast<Int>(v);
     }
 #endif
 }

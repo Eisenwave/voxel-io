@@ -41,7 +41,7 @@ namespace voxelio::builtin {
     __builtin_trap();
 }
 #else
-[[noreturn]] inline void trap();
+[[noreturn]] void trap();
 #endif
 
 // bool isConstantEvaluated():

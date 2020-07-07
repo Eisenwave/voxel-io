@@ -154,7 +154,7 @@ constexpr void encode(Int integer, u8 out[sizeof(Int)])
         detail::encode_builtin<ENDIAN, Int>(integer, out);
     }
 #else
-    detail::encode_naive<ENDIAN, Int>(buffer);
+    detail::encode_naive<ENDIAN, Int>(out);
 #endif
 }
 
