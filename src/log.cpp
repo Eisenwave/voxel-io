@@ -81,6 +81,7 @@ static std::string currentIso8601Time()
 constexpr const char *prefixOf(LogLevel level)
 {
     switch (level) {
+    case LogLevel::FAILURE:
     case LogLevel::ERROR: return ansi::FG_16C_BRI_RED;
     case LogLevel::WARNING: return ansi::FG_16C_YLW;
     case LogLevel::INFO: return ansi::FG_16C_BRI_BLU;
@@ -89,7 +90,6 @@ constexpr const char *prefixOf(LogLevel level)
     case LogLevel::SUPERSPAM: return ansi::FG_16C_BLK;
     }
     VXIO_DEBUG_ASSERT_UNREACHABLE();
-    return nullptr;
 }
 
 void log(LogLevel level, std::string msg, const char *file, const char *, size_t line)

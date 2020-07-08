@@ -2,7 +2,8 @@
 
 #ifndef VXIO_DISABLE_ASSERTS
 
-#include <iostream>
+#include "log.hpp"
+
 #include <vector>
 
 namespace voxelio {
@@ -22,7 +23,7 @@ void pushAssertHandler(AssertHandler handler) noexcept
 void popAssertHandler() noexcept
 {
     if (assertHandlerStack.size() <= 1) {
-        std::cerr << "Attempted to pop defaultAssertHandler" << '\n';
+        VXIO_LOG(FAILURE, "Attempted to pop defaultAssertHandler");
         defaultAssertHandler();
     }
     assertHandlerStack.pop_back();
@@ -33,7 +34,8 @@ void popAssertHandler() noexcept
                              const char *function,
                              const std::string_view msg) noexcept(false)
 {
-    std::cerr << file << ':' << line << ": assertion error in " << function << "(): " << msg << '\n';
+    std::string logMsg = std::string{file} + std::string{':'} + stringify(line) + std::string{": assertion error in "} + std::string{function} + std::string{"(): "} + std::string{msg};
+    VXIO_LOG(FAILURE, logMsg);
     assertHandlerStack.back()();
     VXIO_UNREACHABLE();
 }

@@ -9,6 +9,7 @@
 namespace voxelio {
 
 enum class LogLevel : unsigned {
+    FAILURE = 0,
     /** Signals that an error has occured but the program can continue (failed HTTP connection, I/O eror, etc.) */
     ERROR = 1,
     /** Warns the user about unusual behavior. (could not clear some data, had to retry some operation, etc.) */
@@ -28,6 +29,7 @@ enum class LogLevel : unsigned {
 constexpr const char *nameOf(LogLevel level)
 {
     switch (level) {
+    case LogLevel::FAILURE: return "FAILURE";
     case LogLevel::ERROR: return "ERROR";
     case LogLevel::WARNING: return "WARNING";
     case LogLevel::INFO: return "INFO";
@@ -41,6 +43,7 @@ constexpr const char *nameOf(LogLevel level)
 constexpr const char *fixedWidthNameOf(LogLevel level)
 {
     switch (level) {
+    case LogLevel::FAILURE: return "FAIL";
     case LogLevel::ERROR: return "EROR";
     case LogLevel::WARNING: return "WARN";
     case LogLevel::INFO: return "INFO";
