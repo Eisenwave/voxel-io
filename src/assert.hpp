@@ -94,6 +94,7 @@ constexpr void consumeBool(bool) {}
 #define VXIO_ASSERT(expr) VXIO_ASSERT_IMPL(expr, "\"" #expr "\" evaluated to false")
 
 #define VXIO_ASSERTM(expr, msg) VXIO_ASSERT_IMPL(expr, '"' + ::std::string{msg} + '"')
+#define VXIO_ASSERT_FAIL(msg) VXIO_ASSERTM(false, msg)
 
 #define VXIO_ASSERT_NOTNULL(expr) VXIO_ASSERT_IMPL(expr != nullptr, #expr " must never be null")
 #define VXIO_ASSERT_NULL(expr) VXIO_ASSERT_IMPL(expr == nullptr, #expr " must always be null")
@@ -106,6 +107,7 @@ constexpr void consumeBool(bool) {}
 
 #define VXIO_DEBUG_ASSERT(expr) VXIO_IF_DEBUG(VXIO_ASSERT(expr))
 #define VXIO_DEBUG_ASSERTM(expr, msg) VXIO_IF_DEBUG(VXIO_ASSERTM(expr, msg))
+#define VXIO_DEBUG_ASSERT_FAIL(msg) VXIO_IF_DEBUG(VXIO_ASSERT_FAIL(msg))
 #define VXIO_DEBUG_ASSERT_NOTNULL(expr) VXIO_IF_DEBUG(VXIO_ASSERT_NOTNULL(expr))
 #define VXIO_DEBUG_ASSERT_NULL(expr) VXIO_IF_DEBUG(VXIO_ASSERT_NULL(expr))
 #define VXIO_DEBUG_ASSERT_EQ(l, r) VXIO_IF_DEBUG(VXIO_ASSERT_CMP(l, r, ==))
