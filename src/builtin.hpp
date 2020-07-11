@@ -49,7 +49,7 @@ namespace voxelio::builtin {
 //     This builtin can potentially not exist and it has no sane default.
 //     clang 9+ and gcc 9+ support this builtin, even for C++17, allowing for implementation of
 //     std::is_constant_evaluated() before C++20.
-#if VXIO_HAS_BUILTIN(__builtin_is_constant_evaluated)
+#if defined(VXIO_CLANG) && VXIO_HAS_BUILTIN(__builtin_is_constant_evaluated) || VXIO_GNU >= 9
 #define VXIO_HAS_BUILTIN_IS_CONSTANT_EVALUATED
 constexpr bool isConstantEvaluated()
 {

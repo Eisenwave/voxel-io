@@ -11,6 +11,8 @@ CONFIG(debug, debug|release) {
     DEFINES += VXIO_DEBUG
 }
 
+LIBS += -lstdc++fs
+
 INCLUDEPATH += src
 
 SOURCES +=  \

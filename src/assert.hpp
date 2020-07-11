@@ -128,7 +128,20 @@ constexpr void consumeBool(bool) {}
 #ifndef VXIO_DISABLE_ASSERTS
 
 #define VXIO_ASSERT_UNREACHABLE() VXIO_ASSERT_IMPL(false, "This execution path must be unreachable")
+
+#if defined(VXIO_GNU) && (VXIO_GNU <= 8)
+// We need to create a separate define for g++8 and lower.
+// Otherwise, constexpr functions won't compile, even if the assert failure is in an unreachable line of code.
+// For example, a funcion like:
+//      constexpr void f() {return; call_non_constexpr_function();}
+// will not compile using g++8 because a non-constexpr function is called.
+// In g++9 and upwards, the problem is fixed.
+// The best we can do is indicate to the compiler that the code section is unreachable.
+#define VXIO_DEBUG_ASSERT_UNREACHABLE() VXIO_UNREACHABLE()
+#else
+// In all other cases, such as any clang version and g++9 we can just fail in unreachable sections.
 #define VXIO_DEBUG_ASSERT_UNREACHABLE() VXIO_IF_DEBUG_ELSE(VXIO_ASSERT_UNREACHABLE(), VXIO_UNREACHABLE())
+#endif
 
 #else
 

@@ -72,11 +72,11 @@ static_assert(DEBUG != RELEASE, "DEBUG and RELEASE must be mutually exclusive");
 #endif
 
 #ifdef __clang__
-#define VXIO_CLANG
+#define VXIO_CLANG __clang_major__
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
-#define VXIO_GNU
+#define VXIO_GNU __GNUC__
 #endif
 
 // Ensure that alternative operator keywords like not, and, etc. exist for MSVC (they don't by default).
