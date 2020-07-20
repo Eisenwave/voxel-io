@@ -112,7 +112,7 @@ constexpr const char *nameOf(Endian endian)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-enum class Axis : unsigned { X, Y, Z };
+enum class Axis : unsigned { X = 0, Y = 1, Z = 2 };
 
 constexpr const char *nameOf(Axis endian)
 {
