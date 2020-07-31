@@ -13,6 +13,9 @@ struct ArgbColor {
 };
 
 struct Color32 {
+    // This order is optimal for little-endian platforms when converting to an ARGB integer.
+    // On LE platforms, only a mov is necessary to pack these bytes into an int.
+    // On BE platforms, an additional byte swap instruction is necessary.
     u8 b, g, r, a;
 
     // CONSTRUCTORS
@@ -72,12 +75,32 @@ struct Color32 {
         return a == 0;
     }
 
+    // CONVERSIONS
+
+    constexpr Vec3u8 vec() const
+    {
+        return {r, g, b};
+    }
+
+    constexpr Vec<u8, 4> vec4() const
+    {
+        return {r, g, b, a};
+    }
+
+    constexpr Vec3f vecf() const
+    {
+        return {rf(), gf(), bf()};
+    }
+
+    constexpr Vec<float, 4> vec4f() const
+    {
+        return {rf(), gf(), bf(), af()};
+    }
+
     constexpr argb32 argb() const
     {
         return (argb32{a} << 24) | (argb32{r} << 16) | (argb32{g} << 8) | (argb32{b} << 0);
     }
-
-    // OPERATORS
 
     constexpr operator argb32() const
     {
