@@ -201,7 +201,7 @@ ReadResult Reader::deserializeMatrixHeaderName() noexcept
 {
     const size_t nameLength = stream.readU8();
     VXIO_NO_EOF();
-    stream.readStringToUntil(matrixName, nameLength);
+    stream.readStringTo(matrixName, nameLength);
     VXIO_NO_EOF();
 
     return ReadResult::ok();
