@@ -21,6 +21,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 
 #pragma once
+#ifndef VXIO_MINIZ_HPP
+#define VXIO_MINIZ_HPP
 
 #include <cstdint>
 #include <fstream>
@@ -4933,6 +4935,7 @@ void *mz_zip_extract_archive_file_to_heap(const char *pZip_filename, const char 
 #endif
 #endif // MINIZ_HEADER_FILE_ONLY
 
+#endif // VXIO_MINIZ_HPP
 /*
   This is free and unencumbered software released into the public domain.
 

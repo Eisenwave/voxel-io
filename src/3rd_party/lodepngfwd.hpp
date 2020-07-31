@@ -1,5 +1,5 @@
-#ifndef LODEPNGFWD_HPP
-#define LODEPNGFWD_HPP
+#ifndef VXIO_LODEPNGFWD_HPP
+#define VXIO_LODEPNGFWD_HPP
 
 #include <vector>
 
@@ -40,4 +40,4 @@ unsigned encode(std::vector<unsigned char>& out,
 
 }
 
-#endif // LODEPNGFWD_HPP
+#endif // VXIO_LODEPNGFWD_HPP

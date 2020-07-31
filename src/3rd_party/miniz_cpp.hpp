@@ -1,5 +1,5 @@
-#ifndef MINIZ_CPP_HPP
-#define MINIZ_CPP_HPP
+#ifndef VXIO_MINIZ_CPP_HPP
+#define VXIO_MINIZ_CPP_HPP
 
 #include "miniz_cppfwd.hpp"
 
@@ -127,4 +127,4 @@ private:
 
 } // namespace miniz_cpp
 
-#endif // MINIZ_CPP_HPP
+#endif // VXIO_MINIZ_CPP_HPP

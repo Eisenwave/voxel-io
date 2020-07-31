@@ -1,5 +1,5 @@
-#ifndef THIRD_MINIZFWD_HPP
-#define THIRD_MINIZFWD_HPP
+#ifndef VXIO_MINIZFWD_HPP
+#define VXIO_MINIZFWD_HPP
 
 struct mz_zip_archive_tag;
 
@@ -8,4 +8,4 @@ class zip_file;
 struct zip_info;
 }
 
-#endif // 3RD_MINIZFWD_HPP
+#endif // VXIO_MINIZFWD_HPP

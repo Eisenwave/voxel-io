@@ -23,8 +23,8 @@ freely, subject to the following restrictions:
     distribution.
 */
 
-#ifndef LODEPNG_H
-#define LODEPNG_H
+#ifndef VXIO_LODEPNG_HPP
+#define VXIO_LODEPNG_HPP
 
 #include <cstddef>
 #include "lodepngfwd.hpp"
@@ -1049,7 +1049,7 @@ TODO:
 [X] provide alternatives for C library functions not present on some platforms (memcpy, ...)
 */
 
-#endif /*LODEPNG_H inclusion guard*/
+#endif // VXIO_LODEPNG_HPP
 
 /*
 LodePNG Documentation
