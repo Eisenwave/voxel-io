@@ -199,10 +199,10 @@ constexpr ChannelOffsets operator*(ChannelOffsets offsets, unsigned scalar)
  * I.e. RGBA means that the least significant octet becomes the alpha component and the most significant octet becomes
  * the red component.
  */
-template <ArgbOrder format>
+template <ArgbOrder format = ArgbOrder::ARGB>
 void encodeArgb(argb32 argb, u8 out[4])
 {
-    constexpr auto shifts = detail::byteShiftAmountsOf(format) * 8;
+    constexpr detail::ChannelOffsets shifts = detail::byteShiftAmountsOf(format) * 8;
     out[0] = static_cast<u8>(argb >> shifts.a);
     out[1] = static_cast<u8>(argb >> shifts.r);
     out[2] = static_cast<u8>(argb >> shifts.g);
@@ -212,10 +212,10 @@ void encodeArgb(argb32 argb, u8 out[4])
 /**
  * Converts an array of {alpha, red, green, blue} channels to an integer in the given format.
  */
-template <ArgbOrder format>
+template <ArgbOrder format = ArgbOrder::ARGB>
 argb32 decodeArgb(u8 argb[4])
 {
-    constexpr auto shifts = detail::byteShiftAmountsOf(format) * 8;
+    constexpr detail::ChannelOffsets shifts = detail::byteShiftAmountsOf(format) * 8;
     argb32 result = 0;
     result |= static_cast<argb32>(argb[0]) << shifts.a;
     result |= static_cast<argb32>(argb[1]) << shifts.r;

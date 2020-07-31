@@ -7,7 +7,11 @@ namespace voxelio {
 template <bool RPAD>
 static std::string fraction_to_string_impl(unsigned num, const unsigned den, const unsigned precision)
 {
-    VXIO_DEBUG_ASSERT_NE(den, 0);
+    constexpr unsigned base = 10;
+
+    if (den == 0) {
+        return "inf";
+    }
     std::string result = stringify(num / den);
 
     // integral part
@@ -24,14 +28,14 @@ static std::string fraction_to_string_impl(unsigned num, const unsigned den, con
     result += '.';
     if constexpr (RPAD) {
         for (size_t i = 0; i < precision; ++i) {
-            num *= 10;
+            num *= base;
             result += stringify(num / den);
             num %= den;
         }
     }
     else {
         for (size_t i = 0; i < precision && num != 0; ++i) {
-            num *= 10;
+            num *= base;
             result += stringify(num / den);
             num %= den;
         }
