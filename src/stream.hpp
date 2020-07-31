@@ -649,6 +649,99 @@ struct OpenMode {
     };
 };
 
+// NULL STREAMS ========================================================================================================
+
+/**
+ * @brief A special input stream that simulates an infinite file filled with zero-bytes.
+ * It only keeps track of the position so that relative and absolute seeking is consistent.
+ */
+class NullInputStream : public InputStream {
+private:
+    u64 pos = 0;
+
+    NullInputStream() noexcept;
+
+public:
+    NullInputStream(NullInputStream &&) = default;
+    ~NullInputStream() final = default;
+
+    int read() final
+    {
+        pos++;
+        return 0;
+    }
+    size_t read(u8 buffer[], size_t size) final
+    {
+        std::fill_n(buffer, size, 0);
+        pos += size;
+        return size;
+    }
+
+    void seekRelative(i64 offset) final
+    {
+        pos += static_cast<u64>(offset);
+    }
+
+    void seekAbsolute(u64 offset) final
+    {
+        pos = offset;
+    }
+
+    u64 position() final
+    {
+        return pos;
+    }
+    void clearErrors() final {}
+};
+
+/**
+ * @brief A special output stream that simulates an infinite sink for bytes.
+ * It only keeps track of the position so that relative and absolute seeking is consistent.
+ */
+class NullOutputStream : public OutputStream {
+private:
+    u64 pos = 0;
+
+    NullOutputStream() noexcept;
+
+public:
+    NullOutputStream(NullOutputStream &&) = default;
+    ~NullOutputStream() final = default;
+
+    void write(u8) final
+    {
+        pos++;
+    }
+
+    void write(const u8 *, size_t size) final
+    {
+        pos += size;
+    }
+
+    void write(const char *string) final
+    {
+        pos += std::strlen(string);
+    }
+
+    void seekRelative(i64 offset) final
+    {
+        pos += static_cast<u64>(offset);
+    }
+
+    void seekAbsolute(u64 offset) final
+    {
+        pos = offset;
+    }
+
+    u64 position() final
+    {
+        return pos;
+    }
+    void flush() final {}
+};
+
+// FILE STREAMS ========================================================================================================
+
 /**
  * @brief Implementation of InputStream using the C-File-API.
  */
@@ -720,6 +813,28 @@ private:
     void updateErrorFlags();
 };
 
+inline std::optional<FileInputStream> openForRead(const char *path, unsigned mode = OpenMode::READ)
+{
+    return FileInputStream::open(path, mode);
+}
+
+inline std::optional<FileInputStream> openForRead(const std::string &path, unsigned mode = OpenMode::READ)
+{
+    return FileInputStream::open(path, mode);
+}
+
+inline std::optional<FileOutputStream> openForWrite(const char *path, unsigned mode = OpenMode::WRITE)
+{
+    return FileOutputStream::open(path, mode);
+}
+
+inline std::optional<FileOutputStream> openForWrite(const std::string &path, unsigned mode = OpenMode::WRITE)
+{
+    return FileOutputStream::open(path, mode);
+}
+
+// STANDARD STREAM WRAPPERS ============================================================================================
+
 /**
  * @brief Adapter which allows using std::istream as a voxelio::InputStream.
  */
@@ -763,26 +878,6 @@ public:
 private:
     void updateErrorFlags();
 };
-
-inline std::optional<FileInputStream> openForRead(const char *path, unsigned mode = OpenMode::READ)
-{
-    return FileInputStream::open(path, mode);
-}
-
-inline std::optional<FileInputStream> openForRead(const std::string &path, unsigned mode = OpenMode::READ)
-{
-    return FileInputStream::open(path, mode);
-}
-
-inline std::optional<FileOutputStream> openForWrite(const char *path, unsigned mode = OpenMode::WRITE)
-{
-    return FileOutputStream::open(path, mode);
-}
-
-inline std::optional<FileOutputStream> openForWrite(const std::string &path, unsigned mode = OpenMode::WRITE)
-{
-    return FileOutputStream::open(path, mode);
-}
 
 }  // namespace voxelio
 

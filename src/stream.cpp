@@ -36,6 +36,20 @@ static std::string openModeStringForWriteOf(unsigned mode, bool &outBinary)
 
 // =====================================================================================================================
 
+NullInputStream::NullInputStream() noexcept
+{
+    this->flags.eof = false;
+    this->flags.err = false;
+}
+
+NullOutputStream::NullOutputStream() noexcept
+{
+    this->flags.bin = false;
+    this->flags.err = false;
+}
+
+// =====================================================================================================================
+
 std::optional<FileInputStream> FileInputStream::open(const char *path, unsigned mode)
 {
     bool bin;
