@@ -1,6 +1,8 @@
 #ifndef VXIO_STREAM_HPP
 #define VXIO_STREAM_HPP
 
+#include "streamfwd.hpp"
+
 #include "assert.hpp"
 #include "endian.hpp"
 #include "types.hpp"
@@ -31,8 +33,7 @@ protected:
     Flags flags;
 
 public:
-    // VIRTUAL ----
-    // --------------------------------------------------------------------------------------------------------
+    // VIRTUAL ---------------------------------------------------------------------------------------------------------
 
     InputStream() = default;
     InputStream(const InputStream &) = default;
@@ -75,8 +76,7 @@ public:
      */
     virtual void clearErrors() = 0;
 
-    // DEFAULTS
-    // ------------------------------------------------------------------------------------------------------------
+    // DEFAULTS --------------------------------------------------------------------------------------------------------
 
     /**
      * @brief Reads bytes with a given maximum length until a delimiter.
@@ -158,8 +158,7 @@ public:
         }
     }
 
-    // FLAG HANDLING
-    // -------------------------------------------------------------------------------------------------------
+    // FLAG HANDLING ---------------------------------------------------------------------------------------------------
 
     /**
      * @brief Returns true if the EOF (end of file) has been reached.
@@ -190,8 +189,7 @@ public:
         return !eof() && !err();
     }
 
-    // UTILITY
-    // -------------------------------------------------------------------------------------------------------------
+    // UTILITY ---------------------------------------------------------------------------------------------------------
 
     /**
      * @brief Reads a number of characters into a string.
@@ -390,8 +388,7 @@ protected:
     Flags flags;
 
 public:
-    // ABSTRACT
-    // ------------------------------------------------------------------------------------------------------------
+    // ABSTRACT --------------------------------------------------------------------------------------------------------
 
     OutputStream() = default;
     OutputStream(const OutputStream &) = default;
@@ -414,13 +411,6 @@ public:
     virtual void write(const u8 buffer[], size_t size) = 0;
 
     /**
-     * @brief Writes a C-string to the stream.
-     * May set err.
-     * @param string the string
-     */
-    virtual void write(const char *string) = 0;
-
-    /**
      * @brief Moves the write position to a given absolute position.
      * May set err.
      * @param position the position to move to
@@ -441,8 +431,17 @@ public:
      */
     virtual void flush() = 0;
 
-    // DEFAULTS
-    // ------------------------------------------------------------------------------------------------------------
+    // DEFAULTS --------------------------------------------------------------------------------------------------------
+
+    /**
+     * @brief Writes a C-string to the stream.
+     * May set err.
+     * @param string the string
+     */
+    virtual void write(const char *string)
+    {
+        write(reinterpret_cast<const u8 *>(string), std::strlen(string));
+    }
 
     /**
      * @brief Moves the write position relatively by a given offset.
@@ -457,8 +456,7 @@ public:
         }
     }
 
-    // FLAG HANDLING
-    // -------------------------------------------------------------------------------------------------------
+    // FLAG HANDLING ---------------------------------------------------------------------------------------------------
 
     /**
      * @brief Returns true if a write operation failed.
@@ -487,8 +485,7 @@ public:
         return flags.bin;
     }
 
-    // UTILITY
-    // -------------------------------------------------------------------------------------------------------------
+    // UTILITY ---------------------------------------------------------------------------------------------------------
 
     /**
      * @brief Writes a string to the stream.
@@ -659,9 +656,8 @@ class NullInputStream : public InputStream {
 private:
     u64 pos = 0;
 
-    NullInputStream() noexcept;
-
 public:
+    NullInputStream() noexcept;
     NullInputStream(NullInputStream &&) = default;
     ~NullInputStream() final = default;
 
@@ -702,9 +698,8 @@ class NullOutputStream : public OutputStream {
 private:
     u64 pos = 0;
 
-    NullOutputStream() noexcept;
-
 public:
+    NullOutputStream() noexcept;
     NullOutputStream(NullOutputStream &&) = default;
     ~NullOutputStream() final = default;
 
@@ -716,11 +711,6 @@ public:
     void write(const u8 *, size_t size) final
     {
         pos += size;
-    }
-
-    void write(const char *string) final
-    {
-        pos += std::strlen(string);
     }
 
     void seekRelative(i64 offset) final
@@ -738,6 +728,99 @@ public:
         return pos;
     }
     void flush() final {}
+};
+
+// BYTE STREAMS ========================================================================================================
+
+class ByteArrayInputStream : public InputStream {
+private:
+    u8 *data;
+    size_t size;
+    size_t pos = 0;
+
+public:
+    ByteArrayInputStream(u8 data[], size_t size) noexcept;
+    ByteArrayInputStream(ByteArrayInputStream &&) = default;
+    ~ByteArrayInputStream() final = default;
+
+    int read() final;
+
+    size_t read(u8 buffer[], size_t size) final;
+
+    void seekRelative(i64 offset) final
+    {
+        seekAbsolute(pos + static_cast<u64>(offset));
+    }
+
+    void seekAbsolute(u64 offset) final
+    {
+        pos = offset;
+        if (pos >= size) {
+            this->flags.eof = true;
+        }
+    }
+
+    u64 position() final
+    {
+        return pos;
+    }
+
+    void clearErrors() final
+    {
+        this->flags.eof = false;
+        this->flags.err = false;
+    }
+};
+
+class ByteArrayOutputStream : public OutputStream {
+private:
+    u64 pos = 0;
+    void *sink;  // actually a std::vector<u8>, but not explicitly typed to avoid a <vector> include
+
+public:
+    ByteArrayOutputStream(size_t initialSize) noexcept;
+    ByteArrayOutputStream() noexcept : ByteArrayOutputStream{8192} {}
+
+    ByteArrayOutputStream(ByteArrayOutputStream &&) = default;
+    ~ByteArrayOutputStream() final;
+
+    void write(u8) final;
+    void write(const u8 *, size_t size) final;
+
+    void seekRelative(i64 offset) final
+    {
+        pos += static_cast<u64>(offset);
+    }
+
+    void seekAbsolute(u64 offset) final
+    {
+        pos = offset;
+        if (pastEnd()) {
+            this->flags.err = true;
+        }
+    }
+
+    u64 position() final
+    {
+        return pos;
+    }
+
+    void flush() final {}
+
+    void clear();
+    void reserve(size_t size);
+    u8 *data();
+    size_t size();
+
+private:
+    bool atEnd()
+    {
+        return pos == size();
+    }
+    bool pastEnd()
+    {
+        return pos > size();
+    }
 };
 
 // FILE STREAMS ========================================================================================================

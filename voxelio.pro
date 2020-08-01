@@ -61,6 +61,7 @@ HEADERS +=  \
     src/sstreamwrap.hpp \
     src/stream.hpp \
     src/format/svx.hpp \
+    src/streamfwd.hpp \
     src/stringmanip.hpp \
     src/util.hpp \
     src/vec.hpp \

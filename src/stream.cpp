@@ -2,7 +2,9 @@
 
 #include "log.hpp"
 
-#include <iostream>
+#include <istream>
+#include <ostream>
+#include <vector>
 
 namespace voxelio {
 
@@ -46,6 +48,108 @@ NullOutputStream::NullOutputStream() noexcept
 {
     this->flags.bin = false;
     this->flags.err = false;
+}
+
+// =====================================================================================================================
+
+ByteArrayInputStream::ByteArrayInputStream(u8 data[], size_t size) noexcept : data{data}, size{size}
+{
+    this->flags.eof = false;
+    this->flags.err = false;
+}
+
+int ByteArrayInputStream::read()
+{
+    if (pos >= size) {
+        this->flags.eof = true;
+        return -1;
+    }
+    return data[pos++];
+}
+
+size_t ByteArrayInputStream::read(u8 buffer[], size_t size)
+{
+    if (this->pos >= this->size) {
+        this->flags.eof = true;
+        return 0;
+    }
+    size_t readCount = std::min(this->size - this->pos, size);
+    if (readCount != size) {
+        this->flags.eof = true;
+    }
+    std::copy(data + pos, data + pos + readCount, buffer);
+    pos += readCount;
+    return readCount;
+}
+
+// =====================================================================================================================
+
+ByteArrayOutputStream::ByteArrayOutputStream(size_t initialSize) noexcept : sink{new std::vector<u8>}
+{
+    static_cast<std::vector<u8> *>(sink)->reserve(initialSize);
+    this->flags.bin = false;
+    this->flags.err = false;
+}
+
+ByteArrayOutputStream::~ByteArrayOutputStream()
+{
+    delete static_cast<std::vector<u8> *>(sink);
+}
+
+void ByteArrayOutputStream::write(u8 byte)
+{
+    if (pastEnd()) {
+        this->flags.err = true;
+    }
+    else if (atEnd()) {
+        static_cast<std::vector<u8> *>(sink)->push_back(byte);
+        pos++;
+    }
+    else {
+        static_cast<std::vector<u8> *>(sink)->operator[](pos++) = byte;
+    }
+}
+
+void ByteArrayOutputStream::write(const u8 data[], size_t length)
+{
+    if (pastEnd()) {
+        this->flags.err = true;
+        return;
+    }
+
+    size_t overwriteLength = std::min(size() - pos, length);
+    size_t pushLength = length - overwriteLength;
+
+    auto overwriteTarget = static_cast<std::vector<u8> *>(sink)->begin() + static_cast<ptrdiff_t>(pos);
+    std::copy(data, data + overwriteLength, overwriteTarget);
+
+    for (size_t i = 0; i < pushLength; ++i) {
+        static_cast<std::vector<u8> *>(sink)->push_back(data[overwriteLength + i]);
+    }
+
+    pos += length;
+}
+
+void ByteArrayOutputStream::clear()
+{
+    static_cast<std::vector<u8> *>(sink)->clear();
+    this->pos = 0;
+    this->flags.err = false;
+}
+
+void ByteArrayOutputStream::reserve(size_t size)
+{
+    static_cast<std::vector<u8> *>(sink)->reserve(size);
+}
+
+u8 *ByteArrayOutputStream::data()
+{
+    return static_cast<std::vector<u8> *>(sink)->data();
+}
+
+size_t ByteArrayOutputStream::size()
+{
+    return static_cast<std::vector<u8> *>(sink)->size();
 }
 
 // =====================================================================================================================
