@@ -1,7 +1,8 @@
 #ifndef VXIO_LODEPNGFWD_HPP
 #define VXIO_LODEPNGFWD_HPP
 
-#include <vector>
+#include "../streamfwd.hpp"
+#include "../types.hpp"
 
 typedef enum LodePNGColorType {
   LCT_GREY = 0, /*grayscale: 1,2,4,8,16 bit*/
@@ -23,19 +24,11 @@ namespace lodepng {
 
 class State;
 
-unsigned encode(std::vector<unsigned char>& out, const unsigned char* in, unsigned w, unsigned h,
+unsigned encode(voxelio::OutputStream& out, const voxelio::u8 in[], unsigned w, unsigned h,
                 LodePNGColorType colortype, unsigned bitdepth);
 
-unsigned encode(std::vector<unsigned char>& out,
-                const std::vector<unsigned char>& in, unsigned w, unsigned h,
-                LodePNGColorType colortype, unsigned bitdepth);
-
-unsigned encode(std::vector<unsigned char>& out,
-                const unsigned char* in, unsigned w, unsigned h,
-                State& state);
-
-unsigned encode(std::vector<unsigned char>& out,
-                const std::vector<unsigned char>& in, unsigned w, unsigned h,
+unsigned encode(voxelio::OutputStream& out,
+                const voxelio::u8 in[], unsigned w, unsigned h,
                 State& state);
 
 }

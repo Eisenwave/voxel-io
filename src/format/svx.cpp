@@ -177,7 +177,7 @@ static void writeSvxLayerToImage(Image &image, const VoxelArray &voxels, size_t 
     }
 }
 
-static ResultCode encodeAsPng(const Image &image, std::vector<u8> &out)
+static ResultCode encodeAsPng(const Image &image, OutputStream &out)
 {
     const auto width = static_cast<unsigned>(image.width());
     const auto height = static_cast<unsigned>(image.height());
@@ -213,7 +213,7 @@ ResultCode Serializer::writeChannel(miniz_cpp::zip_file &archive, const SimpleVo
     }*/
 
     Image image{lims.u, lims.v, format};
-    std::vector<u8> png;
+    ByteArrayOutputStream png;
     png.reserve(lims.u * lims.v * bitSizeOf(format) / 8);
 
     for (size_t slice = 0; slice < lims.slice; ++slice) {
