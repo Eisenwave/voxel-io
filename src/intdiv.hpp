@@ -78,55 +78,6 @@ constexpr auto divFloor(Dividend x, Divisor y)
     }
 }
 
-// uint / uint
-static_assert(divCeil(0u, 2u) == 0);
-static_assert(divCeil(2u, 1u) == 2);
-static_assert(divCeil(3u, 2u) == 2);
-
-// int / uint
-static_assert(divCeil(0, 2u) == 0);
-static_assert(divCeil(2, 1u) == 2);
-static_assert(divCeil(-3, 2u) == -1);
-static_assert(divCeil(3, 2u) == 2);
-
-// uint / int
-static_assert(divCeil(0u, 2) == 0);
-static_assert(divCeil(2u, 1) == 2);
-static_assert(divCeil(3u, -2) == -1);
-static_assert(divCeil(3u, 2) == 2);
-
-// int / int
-static_assert(divCeil(0, 2) == 0);
-static_assert(divCeil(2, 1) == 2);
-static_assert(divCeil(-3, -2) == 2);
-static_assert(divCeil(3, 2) == 2);
-static_assert(divCeil(-3, 2) == -1);
-static_assert(divCeil(3, -2) == -1);
-
-// uint / uint
-static_assert(divFloor(0u, 2u) == 0);
-static_assert(divFloor(3u, 2u) == 1);
-
-// int / uint
-static_assert(divFloor(0, 2u) == 0);
-static_assert(divFloor(-2, 1u) == -2);
-static_assert(divFloor(-3, 2u) == -2);
-static_assert(divFloor(3, 2u) == 1);
-
-// uint / int
-static_assert(divFloor(0u, 2) == 0);
-static_assert(divFloor(2u, 1) == 2);
-static_assert(divFloor(3u, -2) == -2);
-static_assert(divFloor(3u, 2) == 1);
-
-// int / int
-static_assert(divFloor(0, 2) == 0);
-static_assert(divFloor(-2, 1) == -2);
-static_assert(divFloor(-3, -2) == 1);
-static_assert(divFloor(3, 2) == 1);
-static_assert(divFloor(-3, 2) == -2);
-static_assert(divFloor(3, -2) == -2);
-
 }  // namespace voxelio
 
 #endif  // INTDIV_HPP

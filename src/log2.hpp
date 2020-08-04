@@ -17,6 +17,30 @@ template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
 constexpr size_t bits_v = sizeof(Int) * 8;
 
 /**
+ * @brief Returns whether an unsigned integer is a power of 2 or zero.
+ * Note that this test is faster than having to test if val is a power of 2.
+ * @param val the parameter to test
+ * @return true if val is a power of 2 or if val is zero
+ */
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr bool isPow2or0(Uint val)
+{
+    return (val & (val - 1)) == 0;
+}
+
+/**
+ * @brief Returns whether an unsigned integer is a power of 2.
+ * @param val the parameter to test
+ * @return true if val is a power of 2
+ * @see is_pow2_or_zero
+ */
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr bool isPow2(Uint val)
+{
+    return val != 0 && isPow2or0(val);
+}
+
+/**
  * @brief Naive implementation of log2 using repeated single-bit rightshifting.
  */
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
@@ -27,6 +51,49 @@ constexpr Uint log2floor_naive(Uint val) noexcept
         ++result;
     }
     return result;
+}
+
+/**
+ * @brief Rounds up an unsigned integer to the next power of 2, minus 1.
+ * 0 underflows to ~0.
+ * Examples: 100 -> 127, 1 -> 1, 3 -> 3, 3000 -> 4095, 64 -> 127
+ * @param v the value to round up
+ */
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint ceilPow2m1(Uint v)
+{
+    constexpr size_t iterations = log2floor_naive(bits_v<Uint>);
+    for (size_t i = 0; i < iterations; ++i) {
+        // after all iterations, all bits right to the msb will be filled with 1
+        v |= v >> (1 << i);
+    }
+    return v;
+}
+
+/**
+ * @brief Rounds up an unsigned integer to the next power of 2.
+ * Powers of two are not affected.
+ * 0 is not a power of 2 but treated as such and not rounded up.
+ * Examples: 100 -> 128, 1 -> 1, 3 -> 4, 3000 -> 4096
+ * @param v the value to round up
+ */
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint ceilPow2(Uint v)
+{
+    return ceilPow2m1(v - 1) + 1;
+}
+
+/**
+ * @brief Rounds down an unsigned integer to the next power of 2.
+ * Powers of 2 are not affected.
+ * 0 can't be rounded down and is not a power of 2, so it is rounded up to 1 instead.
+ * Examples: 100 -> 64, 1 -> 1, 3 -> 2, 3000 -> 2048
+ * @param v the value to round down
+ */
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint floorPow2(Uint v)
+{
+    return ceilPow2m1(v >> 1) + 1;
 }
 
 /**
@@ -78,19 +145,15 @@ constexpr Uint log2floor_fast(Uint v) noexcept
  */
 constexpr uint32_t log2floor_debruijn(uint32_t val) noexcept
 {
+    constexpr uint32_t magic = 0x07C4ACDD;
     constexpr uint32_t MultiplyDeBruijnBitPosition[32] = {0, 9,  1,  10, 13, 21, 2,  29, 11, 14, 16, 18, 22, 25, 3, 30,
                                                           8, 12, 20, 28, 15, 17, 24, 7,  19, 27, 23, 6,  26, 5,  4, 31};
 
-    // first round up to one less than a power of 2
-    // this step is not necessary if val is a power of 2
-    // Note: the link in @see says that this is rounding down, but it is actually rounding up
-    val |= val >> 1;
-    val |= val >> 2;
-    val |= val >> 4;
-    val |= val >> 8;
-    val |= val >> 16;
+    val = ceilPow2m1(val);
+    val *= magic;
+    val >>= 27;
 
-    return MultiplyDeBruijnBitPosition[(val * uint32_t{0x07C4ACDD}) >> 27];
+    return MultiplyDeBruijnBitPosition[val];
 }
 
 #ifdef VXIO_HAS_BUILTIN_CLZ
@@ -100,24 +163,6 @@ constexpr Uint log2floor_builtin(Uint v) noexcept
     constexpr int maxIndex = bits_v<Uint> - 1;
     return static_cast<Uint>(v == 0 ? 0 : maxIndex - builtin::countLeadingZeros(v));
 }
-
-static_assert(log2floor_builtin(static_cast<unsigned char>(0)) == 0);
-static_assert(log2floor_builtin(static_cast<unsigned short>(0)) == 0);
-static_assert(log2floor_builtin(static_cast<unsigned int>(0)) == 0);
-static_assert(log2floor_builtin(static_cast<unsigned long>(0)) == 0);
-static_assert(log2floor_builtin(static_cast<unsigned long long>(0)) == 0);
-
-static_assert(log2floor_builtin(static_cast<unsigned char>(128)) == 7);
-static_assert(log2floor_builtin(static_cast<unsigned short>(128)) == 7);
-static_assert(log2floor_builtin(static_cast<unsigned int>(128)) == 7);
-static_assert(log2floor_builtin(static_cast<unsigned long>(128)) == 7);
-static_assert(log2floor_builtin(static_cast<unsigned long long>(128)) == 7);
-
-static_assert(log2floor_builtin(1u) == 0);
-static_assert(log2floor_builtin(2ul) == 1);
-static_assert(log2floor_builtin(2ull) == 1);
-static_assert(log2floor_builtin(3ull) == 1);
-static_assert(log2floor_builtin(4ul) == 2);
 #endif
 
 /**
