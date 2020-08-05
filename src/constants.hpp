@@ -1,6 +1,8 @@
 ﻿#ifndef VXIO_CONSTANTS_HPP
 #define VXIO_CONSTANTS_HPP
 
+#include "constantsfwd.hpp"
+
 #include "assert.hpp"
 
 #include <array>

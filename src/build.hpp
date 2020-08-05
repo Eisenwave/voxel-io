@@ -85,6 +85,12 @@ static_assert(DEBUG != RELEASE, "DEBUG and RELEASE must be mutually exclusive");
 #include <ciso646>
 #endif
 
+#ifdef VXIO_GNU_OR_CLANG
+#define VXIO_FWDHEADER(header) <bits/header##fwd.h>
+#else
+#define VXIO_FWDHEADER(header) <header>
+#endif
+
 // ENDIANNES DETECTION =================================================================================================
 
 namespace voxelio::build {

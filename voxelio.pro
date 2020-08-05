@@ -50,6 +50,7 @@ HEADERS +=  \
     src/build.hpp \
     src/builtin.hpp \
     src/color.hpp \
+    src/constantsfwd.hpp \
     src/endian.hpp \
     src/format/cubeworld.hpp \
     src/image.hpp \

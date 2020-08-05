@@ -1,6 +1,5 @@
 #include "qb.hpp"
 
-#include "constants.hpp"
 #include "log.hpp"
 #include "macro.hpp"
 #include "stringify.hpp"

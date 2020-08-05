@@ -37,6 +37,7 @@ std::string dir(const std::string &str, char delimiter = '/');
 std::string basename(const std::string &str, char delimiter = '/');
 std::string noext(const std::string &str, char delimiter = '.');
 std::string basenameNoext(const std::string &str);
+std::string ext(const std::string &str, char delimiter = '.');
 
 // SPLITTING ===========================================================================================================
 

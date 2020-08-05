@@ -39,10 +39,10 @@ void trim(std::string &s)
     rtrim(s);
 }
 
-std::string lpad(const std::string &str, int length, char c)
+std::string lpad(const std::string &str, size_t length, char c)
 {
     std::stringstream stream;
-    stream << std::setw(length) << std::setfill(c) << str;
+    stream << std::setw(static_cast<int>(length)) << std::setfill(c) << str;
     return stream.str();
 }
 
@@ -83,6 +83,11 @@ std::string basename(const std::string &str, char delimiter)
 std::string noext(const std::string &str, char delimiter)
 {
     return substrBeforeLast(str, delimiter);
+}
+
+std::string ext(const std::string &str, char delimiter)
+{
+    return substrAfterLast(str, delimiter);
 }
 
 std::string basenameNoext(const std::string &str)

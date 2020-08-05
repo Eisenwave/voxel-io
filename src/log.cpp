@@ -92,7 +92,7 @@ constexpr const char *prefixOf(LogLevel level)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-void log(LogLevel level, std::string msg, const char *file, const char *, size_t line)
+void log(LogLevel level, const std::string &msg, const char *file, const char *, size_t line)
 {
     std::cout << "[" << currentIso8601Time() << "] [";
 #ifdef __unix__
@@ -106,7 +106,12 @@ void log(LogLevel level, std::string msg, const char *file, const char *, size_t
 #else
     std::cout << str::basename<char>(file) << '@' << line << ": ";
 #endif
-    std::cout << msg << std::endl;
+    std::cout << msg << '\n';
+}
+
+void log(LogLevel level, const char * msg, const char *file, const char *function, size_t line)
+{
+    log(level, std::string{msg}, file, function, line);
 }
 
 thread_local LogLevel logLevel = LogLevel::INFO;
