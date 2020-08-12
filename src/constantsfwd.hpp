@@ -7,6 +7,6 @@ enum class FileType : unsigned;
 enum class FileTypeCategory : unsigned;
 enum class FileTypeStructure : unsigned;
 
-}
+}  // namespace voxelio
 
-#endif // VXIO_CONSTANTSFWD_HPP
+#endif  // VXIO_CONSTANTSFWD_HPP
