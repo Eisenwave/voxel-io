@@ -167,10 +167,12 @@ constexpr Uint log2floor_builtin(Uint v) noexcept
 
 /**
  * @brief Computes the floored binary logarithm of a given integer.
- * Example: log2_floor(100) = 6
+ * Example: log2floor(123) = 6
  *
  * This templated function will choose the best available method depending on the type of the integer.
- * It may fail if a negative signed integer is given.
+ * It is undefined for negative values.
+ *
+ * Unlike a traditional log function, it is defined for 0: log2floor(0) = 0
  *
  * @param v the value
  * @return the floored binary logarithm
@@ -178,14 +180,14 @@ constexpr Uint log2floor_builtin(Uint v) noexcept
 template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
 constexpr Int log2floor(Int v) noexcept
 {
+    using Uint = std::make_unsigned_t<Int>;
 #ifdef VXIO_HAS_BUILTIN_CLZ
-    return log2floor_builtin(static_cast<std::make_unsigned_t<Int>>(v));
+    return static_cast<Int>(log2floor_builtin(static_cast<Uint>(v)));
 #else
     if constexpr (std::is_same_v<Int, uint32_t>) {
         return log2floor_debruijn(v);
     }
     else if constexpr (std::is_signed_v<Int>) {
-        using Uint = std::make_unsigned_t<Int>;
         return log2floor_fast<Uint>(static_cast<Uint>(v));
     }
     else {
@@ -196,10 +198,12 @@ constexpr Int log2floor(Int v) noexcept
 
 /**
  * @brief Computes the ceiled binary logarithm of a given integer.
- * Example: log2_ceil(100) = 7
+ * Example: log2ceil(123) = 7
  *
  * This templated function will choose the best available method depending on the type of the integer.
- * It may fail if a negative signed integer is given.
+ * It is undefined for negative values.
+ *
+ * Unlike a traditional log function, it is defined for 0: log2ceil(0) = 1.
  *
  * @param v the value
  * @return the floored binary logarithm
@@ -210,6 +214,16 @@ constexpr Int log2ceil(Int val) noexcept
     const Int result = log2floor(val);
     const bool inputIsntPow2 = val != (static_cast<Int>(1) << result);
     return result + inputIsntPow2;
+}
+
+/**
+ * @brief Computes the number of bits required to represent a given number.
+ * Examples: bitLength(0) = 1, bitLength(3) = 2, bitLength(123) = 7, bitLength(4) = 3
+ */
+template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
+constexpr Int bitLength(Int val) noexcept
+{
+    return log2floor(val) + 1;
 }
 
 }  // namespace voxelio
