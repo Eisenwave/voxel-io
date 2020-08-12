@@ -809,8 +809,16 @@ public:
 
     void clear();
     void reserve(size_t size);
-    u8 *data();
-    size_t size();
+
+    u8 *data()
+    {
+        const u8 *result = const_cast<const ByteArrayOutputStream *>(this)->data();
+        return const_cast<u8 *>(result);
+    }
+
+    const u8 *data() const;
+
+    size_t size() const;
 
 private:
     bool atEnd()

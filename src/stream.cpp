@@ -142,14 +142,14 @@ void ByteArrayOutputStream::reserve(size_t size)
     static_cast<std::vector<u8> *>(sink)->reserve(size);
 }
 
-u8 *ByteArrayOutputStream::data()
+const u8 *ByteArrayOutputStream::data() const
 {
-    return static_cast<std::vector<u8> *>(sink)->data();
+    return static_cast<const std::vector<u8> *>(sink)->data();
 }
 
-size_t ByteArrayOutputStream::size()
+size_t ByteArrayOutputStream::size() const
 {
-    return static_cast<std::vector<u8> *>(sink)->size();
+    return static_cast<const std::vector<u8> *>(sink)->size();
 }
 
 // =====================================================================================================================
