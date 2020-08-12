@@ -6,6 +6,21 @@
 namespace voxelio {
 
 /**
+ * @brief Similar to std::common_type_t<A, B>, but if A or B are signed, the result will also be signed.
+ *
+ * This differs from the regular type promotion rules, where signed types are promoted to unsigned types.
+ */
+template <typename A, typename B, std::enable_if_t<std::is_integral_v<A> && std::is_integral_v<B>, int> = 0>
+using commonSignedType = std::conditional_t<std::is_unsigned_v<A> && std::is_unsigned_v<B>,
+                                            std::common_type_t<A, B>,
+                                            std::common_type_t<std::make_signed_t<A>, std::make_signed_t<B>>>;
+
+static_assert(std::is_same_v<unsigned, commonSignedType<unsigned, unsigned>>);
+static_assert(std::is_same_v<int, commonSignedType<unsigned, int>>);
+static_assert(std::is_same_v<int, commonSignedType<int, unsigned>>);
+static_assert(std::is_same_v<int, commonSignedType<int, int>>);
+
+/**
  * Performs a division but rounds towards positive infinity.
  *
  * @param x the dividend
@@ -14,8 +29,8 @@ namespace voxelio {
  */
 template <typename Dividend,
           typename Divisor,
-          std::enable_if_t<(std::is_integral_v<Dividend> && std::is_integral_v<Divisor>), int> = 0>
-constexpr auto divCeil(Dividend x, Divisor y)
+          std::enable_if_t<std::is_integral_v<Dividend> && std::is_integral_v<Divisor>, int> = 0>
+constexpr commonSignedType<Dividend, Divisor> divCeil(Dividend x, Divisor y)
 {
     if constexpr (std::is_unsigned_v<Dividend> && std::is_unsigned_v<Divisor>) {
         // quotient is always positive
@@ -55,8 +70,8 @@ constexpr auto divCeil(Dividend x, Divisor y)
  */
 template <typename Dividend,
           typename Divisor,
-          std::enable_if_t<(std::is_integral_v<Dividend> && std::is_integral_v<Divisor>), int> = 0>
-constexpr auto divFloor(Dividend x, Divisor y)
+          std::enable_if_t<std::is_integral_v<Dividend> && std::is_integral_v<Divisor>, int> = 0>
+constexpr commonSignedType<Dividend, Divisor> divFloor(Dividend x, Divisor y)
 {
     if constexpr (std::is_unsigned_v<Dividend> && std::is_unsigned_v<Divisor>) {
         // quotient is never negative
