@@ -274,7 +274,7 @@ ResultCode Writer::writeColorLine(Color32 color) noexcept
     stream.writeString(stringifyChannel(color.r) + ' ');
     stream.writeString(stringifyChannel(color.g) + ' ');
     stream.writeString(stringifyChannel(color.b) + '\n');
-    return ResultCode::WRITE_OK;
+    return stream.good() ? ResultCode::WRITE_OK : ResultCode::WRITE_ERROR_IO_FAIL;
 }
 
 ResultCode Writer::writeVoxelLine(Voxel32 v) noexcept
@@ -283,7 +283,7 @@ ResultCode Writer::writeVoxelLine(Voxel32 v) noexcept
 
     stream.writeString(stringify(v.pos[0]) + ' ' + stringify(v.pos[1]) + ' ' + stringify(v.pos[2]) + ' ' +
                        stringify(v.index) + '\n');
-    return ResultCode::WRITE_OK;
+    return stream.good() ? ResultCode::WRITE_OK : ResultCode::WRITE_ERROR_IO_FAIL;
 }
 
 ResultCode Writer::verifyVoxel(Voxel32 voxel) noexcept
