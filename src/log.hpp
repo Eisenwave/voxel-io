@@ -54,7 +54,7 @@ constexpr const char *fixedWidthNameOf(LogLevel level)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-void log(LogLevel level, const char* msg, const char *file, const char *function, size_t line);
+void log(LogLevel level, const char *msg, const char *file, const char *function, size_t line);
 void log(LogLevel level, const std::string &msg, const char *file, const char *function, size_t line);
 
 extern thread_local LogLevel logLevel;

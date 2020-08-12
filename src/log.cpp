@@ -107,9 +107,10 @@ void log(LogLevel level, const std::string &msg, const char *file, const char *,
     std::cout << str::basename<char>(file) << '@' << line << ": ";
 #endif
     std::cout << msg << '\n';
+    std::cout.flush();
 }
 
-void log(LogLevel level, const char * msg, const char *file, const char *function, size_t line)
+void log(LogLevel level, const char *msg, const char *file, const char *function, size_t line)
 {
     log(level, std::string{msg}, file, function, line);
 }
