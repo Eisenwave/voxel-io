@@ -2,9 +2,10 @@
 #define VXIO_STRINGIFY_HPP
 
 #include "build.hpp"
-#include "log2.hpp"
+#include "intlog.hpp"
 #include "sstreamwrap.hpp"
 
+#include <cmath>
 #include <iosfwd>
 #include <string>
 
@@ -14,6 +15,21 @@
 namespace voxelio {
 
 namespace detail {
+
+// simplified divCeil to avoid intdiv.hpp include
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint divCeil(Uint x, Uint y)
+{
+    return x / y + (x % y != 0);
+}
+
+inline void reverseString(std::string &str)
+{
+    size_t length = str.size();
+    for (size_t i = 0; i < length / 2; i++) {
+        std::swap(str[i], str[length - i - 1]);
+    }
+}
 
 /**
  * @brief Stringifies a type using a stringstream.
@@ -34,29 +50,50 @@ std::string stringifyUsingStream(const T &t) noexcept
     return result;
 }
 
-template <size_t RADIX, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-std::string stringifyUIntBasePow2(const Uint n) noexcept
+template <size_t BASE, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+std::string stringifyUInt(const Uint n) noexcept
 {
-    static_assert(RADIX <= 16);
+    static_assert(BASE <= 16);
 
-    static constexpr size_t bitsPerDigit = log2floor(RADIX);
-    static constexpr Uint radixMask = RADIX - 1;
-    static constexpr const char *hexDigits = "0123456789abcdef";
+    constexpr const char *hexDigits = "0123456789abcdef";
 
-    if (n < RADIX) {
+    if (n < BASE) {
         return std::string{hexDigits[n]};
     }
 
-    const auto bitCount = log2floor(n) + 1;
-    const auto digitCount = 1 + ((bitCount - 1) / bitsPerDigit);  // integer division with ceil rounding
+    const size_t digitCount = voxelio::digitCount<BASE>(n);
 
-    std::string result(digitCount, '0');
+    if constexpr (isPow2(BASE)) {
+        constexpr size_t bitsPerDigit = log2floor(BASE);
+        constexpr Uint digitMask = BASE - 1;
 
-    for (size_t i = 0, shift = (digitCount - 1) * bitsPerDigit; i < digitCount; ++i, shift -= bitsPerDigit) {
-        result[i] = hexDigits[(n >> shift) & radixMask];
+        std::string result(digitCount, 0);
+
+        for (size_t i = 0, shift = (digitCount - 1) * bitsPerDigit; i < digitCount; ++i, shift -= bitsPerDigit) {
+            Uint digit = (n >> shift) & digitMask;
+            if constexpr (BASE == 2) {
+                result[i] = '0' + digit;
+            }
+            else {
+                result[i] = hexDigits[digit];
+            }
+        }
+
+        return result;
     }
+    else {
+        std::string result;
+        result.reserve(digitCount);
 
-    return result;
+        // TODO consider assigning the characters directly instead of reversing the string
+
+        for (Uint x = n; x != 0; x /= BASE) {
+            result.push_back(hexDigits[x % BASE]);
+        }
+
+        reverseString(result);
+        return result;
+    }
 }
 
 }  // namespace detail
@@ -99,9 +136,6 @@ std::string stringifyFloat(Float f, size_t precision) noexcept
     return result;
 }
 
-template <typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
-std::string stringifyBin(T num) noexcept;
-
 /**
  * @brief Converts a floating point number to a string with precision of choice.
  * The resuling number will have at most <precision> fractional digits.
@@ -110,78 +144,17 @@ std::string stringifyBin(T num) noexcept;
  * @param precision the precision
  * @return the stringified number
  */
-template <size_t RADIX, typename Int, std::enable_if_t<(std::is_integral_v<Int> && RADIX > 1), int> = 0>
+template <size_t RADIX, typename Int, std::enable_if_t<(std::is_integral_v<Int> && RADIX > 1 && RADIX <= 16), int> = 0>
 std::string stringifyInt(Int n) noexcept
 {
-    if constexpr (RADIX == 2) {
-        return stringifyBin(n);
-    }
-    else if constexpr (RADIX == 10) {
-        return std::to_string(n);
-    }
-    else if constexpr (const bool is_pow_2 = (RADIX & (RADIX - 1)) == 0; is_pow_2) {
-        if constexpr (std::is_signed_v<Int>) {
-            using Uint = std::make_unsigned_t<Int>;
-            return n < 0 ? '-' + stringifyInt<RADIX, Uint>(static_cast<Uint>(-n))
-                         : stringifyInt<RADIX, Uint>(static_cast<Uint>(n));
-        }
-        else {
-            return detail::stringifyUIntBasePow2<RADIX, Int>(n);
-        }
+    if constexpr (std::is_signed_v<Int>) {
+        using Uint = std::make_unsigned_t<Int>;
+        return n < 0 ? '-' + stringifyInt<RADIX, Uint>(static_cast<Uint>(-n))
+                     : stringifyInt<RADIX, Uint>(static_cast<Uint>(n));
     }
     else {
-        return nullptr;
+        return detail::stringifyUInt<RADIX, Int>(n);
     }
-}
-
-/**
- * @brief Stringifies a number in base 2 (binary).
- * @param num the number
- * @return the stringified number
- */
-template <typename T, std::enable_if_t<std::is_integral_v<T>, int>>
-std::string stringifyBin(T num) noexcept
-{
-    constexpr size_t bufferSize = std::numeric_limits<T>::digits;
-    constexpr size_t maxIndex = bufferSize - 1 - std::is_signed_v<T>;
-
-    if (num < 2) {
-        return std::string{static_cast<char>('0' + num)};
-    }
-
-    char result[bufferSize];
-    size_t maxBit VXIO_IF_DEBUG(= SIZE_MAX);
-    bool negative = false;
-
-    if constexpr (std::is_signed_v<T>) {
-        negative = num < 0;
-        if (negative) {
-            result[0] = '-';
-            num = -num;
-        }
-    }
-
-    for (size_t bit = 0; num != 0; num >>= 1, bit++) {
-        size_t index = maxIndex - bit;
-        result[index] = '0' + (num & 1);
-        if (num & 1) {
-            maxBit = bit;
-        }
-    }
-
-    char *ptr = result + maxIndex - maxBit - negative;
-    return {ptr, maxBit + 1};
-}
-
-/**
- * @brief Stringifies a number in base 10 (decimal).
- * @param num the number
- * @return the stringified number
- */
-template <typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
-std::string stringifyDec(T num) noexcept
-{
-    return stringifyInt<10>(num);
 }
 
 /**
@@ -196,6 +169,17 @@ std::string stringifyHex(T num) noexcept
 }
 
 /**
+ * @brief Stringifies a number in base 10 (decimal).
+ * @param num the number
+ * @return the stringified number
+ */
+template <typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+std::string stringifyDec(T num) noexcept
+{
+    return stringifyInt<10>(num);
+}
+
+/**
  * @brief Stringifies a number in base 8 (octal).
  * @param num the number
  * @return the stringified number
@@ -206,13 +190,27 @@ std::string stringifyOct(T num) noexcept
     return stringifyInt<8>(num);
 }
 
+/**
+ * @brief Stringifies a number in base 2 (binary).
+ * @param num the number
+ * @return the stringified number
+ */
+template <typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+std::string stringifyBin(T num) noexcept
+{
+    return stringifyInt<2>(num);
+}
+
 template <typename T>
 std::string stringify(const T &t) noexcept
 {
     if constexpr (std::is_same_v<bool, T>) {
         return t ? "true" : "false";
     }
-    else if constexpr (std::is_arithmetic_v<T>) {
+    else if constexpr (std::is_integral_v<T>) {
+        return stringifyDec(t);
+    }
+    else if constexpr (std::is_floating_point_v<T>) {
         return std::to_string(t);
     }
     else if constexpr (std::is_enum_v<T>) {
@@ -221,7 +219,10 @@ std::string stringify(const T &t) noexcept
     else if constexpr (std::is_same_v<std::string, T>) {
         return t;
     }
-    else if constexpr (std::is_same_v<const char *, T>) {
+    else if constexpr (std::is_same_v<std::string_view, T>) {
+        return std::string{t};
+    }
+    else if constexpr (std::is_same_v<const char *, const T>) {
         return std::string{t};
     }
     else if constexpr (std::is_pointer_v<T>) {
