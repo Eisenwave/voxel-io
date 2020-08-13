@@ -55,44 +55,34 @@ std::string stringifyUInt(const Uint n) noexcept
 {
     static_assert(BASE <= 16);
 
+    constexpr size_t maxDigits = voxelio::digitCount<BASE>(std::numeric_limits<Uint>::max());
     constexpr const char *hexDigits = "0123456789abcdef";
 
-    if (n < BASE) {
-        return std::string{hexDigits[n]};
-    }
-
-    const size_t digitCount = voxelio::digitCount<BASE>(n);
+    char result[maxDigits];
+    Uint x = n;
 
     if constexpr (isPow2(BASE)) {
         constexpr size_t bitsPerDigit = log2floor(BASE);
         constexpr Uint digitMask = BASE - 1;
 
-        std::string result(digitCount, 0);
+        const size_t digitCount = voxelio::digitCount<BASE>(n);
 
-        for (size_t i = 0, shift = (digitCount - 1) * bitsPerDigit; i < digitCount; ++i, shift -= bitsPerDigit) {
-            Uint digit = (n >> shift) & digitMask;
-            if constexpr (BASE == 2) {
-                result[i] = '0' + digit;
-            }
-            else {
-                result[i] = hexDigits[digit];
-            }
-        }
+        size_t i = digitCount;
+        do {
+            result[--i] = hexDigits[x & digitMask];
+            x >>= bitsPerDigit;
+        } while (x != 0);
 
-        return result;
+        return std::string(result, digitCount);
     }
     else {
-        std::string result;
-        result.reserve(digitCount);
+        size_t i = maxDigits;
+        do {
+            result[--i] = hexDigits[x % BASE];
+            x /= BASE;
+        } while (x != 0);
 
-        // TODO consider assigning the characters directly instead of reversing the string
-
-        for (Uint x = n; x != 0; x /= BASE) {
-            result.push_back(hexDigits[x % BASE]);
-        }
-
-        reverseString(result);
-        return result;
+        return std::string(result + i, maxDigits - i);
     }
 }
 
@@ -208,7 +198,7 @@ std::string stringify(const T &t) noexcept
         return t ? "true" : "false";
     }
     else if constexpr (std::is_integral_v<T>) {
-        return stringifyDec(t);
+        return std::to_string(t);
     }
     else if constexpr (std::is_floating_point_v<T>) {
         return std::to_string(t);
