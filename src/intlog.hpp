@@ -11,12 +11,38 @@ namespace voxelio {
 
 // TRAITS ==============================================================================================================
 
+namespace detail {
+
+template <typename Int>
+auto nextLargerUint_impl()
+{
+    // Size comparisons are better than std::is_same_v because they account for equivalent but distinct types.
+    // For example, unsigned long and unsigned long long might both be 64 bits but are not the same type.
+    if constexpr (sizeof(Int) == sizeof(uint8_t)) {
+        return uint16_t{0};
+    }
+    else if constexpr (sizeof(Int) == sizeof(uint16_t)) {
+        return uint32_t{0};
+    }
+    else if constexpr (sizeof(Int) == sizeof(uint32_t)) {
+        return uint64_t{0};
+    }
+    else {
+        return uintmax_t{0};
+    }
+}
+
+}  // namespace detail
+
 /**
  * @brief templated variable which contains the number of bits for any given integer type.
  * Example: bits_v<uint32_t> = 32
  */
 template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
 constexpr size_t bits_v = sizeof(Int) * 8;
+
+template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
+using nextLargerUintType = decltype(detail::nextLargerUint_impl<Int>());
 
 // POWER OF 2 TESTING ==================================================================================================
 
@@ -150,7 +176,7 @@ constexpr Uint log2floor_fast(Uint v) noexcept
 }
 
 /**
- * @brief log2_floor implementation using De Bruijn multiplication.
+ * @brief log2floor implementation using De Bruijn multiplication.
  * See https://graphics.stanford.edu/~seander/bithacks.html#IntegerLogDeBruijn.
  * @param val the value
  */
@@ -168,6 +194,13 @@ constexpr uint32_t log2floor_debruijn(uint32_t val) noexcept
 }
 
 #ifdef VXIO_HAS_BUILTIN_CLZ
+/**
+ * @brief log2floor implementation using the builtin::countLeadingZeros intrinsic.
+ * When available, this is by far the fastest implementation as it only requires the use of a clz instruction plus
+ * some surrounding code.
+ *
+ * countLeadingZeros(0) is undefined and must be handled specially.
+ */
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 constexpr Uint log2floor_builtin(Uint v) noexcept
 {
@@ -188,18 +221,14 @@ constexpr Uint log2floor_builtin(Uint v) noexcept
  * @param v the value
  * @return the floored binary logarithm
  */
-template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
+template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
 constexpr Int log2floor(Int v) noexcept
 {
-    using Uint = std::make_unsigned_t<Int>;
 #ifdef VXIO_HAS_BUILTIN_CLZ
-    return static_cast<Int>(log2floor_builtin(static_cast<Uint>(v)));
+    return static_cast<Int>(log2floor_builtin(v));
 #else
     if constexpr (std::is_same_v<Int, uint32_t>) {
         return log2floor_debruijn(v);
-    }
-    else if constexpr (std::is_signed_v<Int>) {
-        return log2floor_fast<Uint>(static_cast<Uint>(v));
     }
     else {
         return log2floor_fast<Int>(v);
@@ -214,24 +243,23 @@ constexpr Int log2floor(Int v) noexcept
  * This templated function will choose the best available method depending on the type of the integer.
  * It is undefined for negative values.
  *
- * Unlike a traditional log function, it is defined for 0: log2ceil(0) = 1.
+ * Unlike a traditional log function, it is defined for 0: log2ceil(0) = 0
  *
  * @param v the value
  * @return the floored binary logarithm
  */
-template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
+template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
 constexpr Int log2ceil(Int val) noexcept
 {
     const Int result = log2floor(val);
-    const bool inputIsntPow2 = val != (static_cast<Int>(1) << result);
-    return result + inputIsntPow2;
+    return result + not isPow2or0(val);
 }
 
 /**
  * @brief Computes the number of bits required to represent a given number.
  * Examples: bitLength(0) = 1, bitLength(3) = 2, bitLength(123) = 7, bitLength(4) = 3
  */
-template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
+template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
 constexpr Int bitCount(Int val) noexcept
 {
     return log2floor(val) + 1;
@@ -261,6 +289,9 @@ static_assert(maxPow<uint8_t, 10> == 2);
 static_assert(maxPow<uint16_t, 10> == 4);
 static_assert(maxPow<uint32_t, 10> == 9);
 
+/**
+ * @brief Tiny array implementation to avoid including <array>.
+ */
 template <typename T, size_t N>
 struct Table {
     static constexpr size_t size = N;
@@ -268,7 +299,7 @@ struct Table {
 };
 
 template <typename Uint, size_t BASE>
-constexpr Table<Uint, bits_v<Uint>> makeGuessTable()
+constexpr Table<uint8_t, bits_v<Uint>> makeGuessTable()
 {
     using resultType = decltype(makeGuessTable<Uint, BASE>());
 
@@ -281,13 +312,18 @@ constexpr Table<Uint, bits_v<Uint>> makeGuessTable()
 }
 
 template <typename Uint, size_t BASE>
-constexpr Table<uintmax_t, maxPow<Uint, BASE> + 2> makePowerTable()
+constexpr Table<nextLargerUintType<Uint>, maxPow<Uint, BASE> + 2> makePowerTable()
 {
+    // the size of the table is maxPow<Uint, BASE> + 2 because we need to store the maximum power
+    // +1 because we need to contain it, we are dealing with a size, not an index
+    // +1 again because for narrow integers, we access one beyond the "end" of the table
+    //
+    // as a result, the last multiplication with BASE might overflow, but this is perfectly normal
     using resultType = decltype(makePowerTable<Uint, BASE>());
 
     resultType result{};
     uintmax_t x = 1;
-    for (size_t i = 0; i < resultType::size; ++i, x *= 10) {
+    for (size_t i = 0; i < resultType::size; ++i, x *= BASE) {
         result.data[i] = x;
     }
     return result;
@@ -347,7 +383,7 @@ constexpr Uint logFloor(Uint val) noexcept
 
         Uint guess = guesses.data[log2floor(val)];
 
-        if constexpr (std::is_same_v<uintmax_t, Uint>) {
+        if constexpr (sizeof(Uint) == sizeof(uintmax_t)) {
             return guess + (val / BASE >= powers.data[guess]);
         }
         else {
