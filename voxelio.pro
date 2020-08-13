@@ -55,6 +55,7 @@ HEADERS +=  \
     src/format/cubeworld.hpp \
     src/image.hpp \
     src/intdiv.hpp \
+    src/intlog.hpp \
     src/ioutil.hpp \
     src/log.hpp \
     src/macro.hpp \
@@ -66,7 +67,6 @@ HEADERS +=  \
     src/stringmanip.hpp \
     src/util.hpp \
     src/vec.hpp \
-    src/log2.hpp \
     src/stringify.hpp \
     src/voxelarray.hpp \
     src/voxelio.hpp \
