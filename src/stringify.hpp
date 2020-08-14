@@ -16,21 +16,6 @@ namespace voxelio {
 
 namespace detail {
 
-// simplified divCeil to avoid intdiv.hpp include
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint divCeil(Uint x, Uint y)
-{
-    return x / y + (x % y != 0);
-}
-
-inline void reverseString(std::string &str)
-{
-    size_t length = str.size();
-    for (size_t i = 0; i < length / 2; i++) {
-        std::swap(str[i], str[length - i - 1]);
-    }
-}
-
 /**
  * @brief Stringifies a type using a stringstream.
  */
