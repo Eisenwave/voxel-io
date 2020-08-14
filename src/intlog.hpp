@@ -319,6 +319,11 @@ template <typename T, size_t N>
 struct Table {
     static constexpr size_t size = N;
     T data[N];
+
+    constexpr T back() const
+    {
+        return data[N - 1];
+    }
 };
 
 template <typename Uint, size_t BASE>
@@ -382,13 +387,13 @@ constexpr Uint logFloor(Uint val) noexcept
         // table that maps from log_N(val) -> pow(N, val + 1)
         constexpr auto powers = detail::makePowerTable<Uint, BASE>();
 
-        Uint guess = guesses.data[log2floor(val)];
+        uint8_t guess = guesses.data[log2floor(val)];
 
-        if constexpr (sizeof(Uint) > sizeof(uint64_t)) {
-            return guess + (val / BASE >= powers.data[guess]);
+        if constexpr (sizeof(Uint) < sizeof(uint64_t) || guesses.back() + 2 < powers.size) {
+            return guess + (val >= powers.data[guess + 1]);
         }
         else {
-            return guess + (val >= powers.data[guess + 1]);
+            return guess + (val / BASE >= powers.data[guess]);
         }
     }
 }
