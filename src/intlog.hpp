@@ -280,14 +280,37 @@ constexpr Uint logFloor_naive(Uint val, unsigned base) noexcept
     return result;
 }
 
+/**
+ * @brief The maximum possible exponent for a given base that can still be represented by a given integer type.
+ * Example: maxExp<uint8_t, 10> = 2, because 10^2 is representable by an 8-bit unsigned integer but 10^3 isn't.
+ */
+template <typename Uint, unsigned BASE, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint maxExp = logFloor_naive<Uint>(static_cast<Uint>(~Uint{0u}), BASE);
+
+static_assert(maxExp<uint8_t, 10> == 2);
+static_assert(maxExp<uint16_t, 10> == 4);
+static_assert(maxExp<uint32_t, 10> == 9);
+
+/**
+ * @brief Simple implementation of log base N using repeated multiplication.
+ * This method is slightly more sophisticated than logFloor_naive because it avoids division.
+ */
+template <unsigned BASE, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint logFloor_simple(Uint val) noexcept
+{
+    constexpr Uint limit = maxExp<Uint, BASE>;
+
+    Uint i = 0;
+    Uint pow = BASE;
+    for (; i <= limit; ++i, pow *= BASE) {
+        if (val < pow) {
+            return i;
+        }
+    }
+    return i;
+}
+
 namespace detail {
-
-template <typename Uint, unsigned BASE>
-constexpr Uint maxPow = logFloor_naive<Uint>(static_cast<Uint>(~Uint{0u}), BASE);
-
-static_assert(maxPow<uint8_t, 10> == 2);
-static_assert(maxPow<uint16_t, 10> == 4);
-static_assert(maxPow<uint32_t, 10> == 9);
 
 /**
  * @brief Tiny array implementation to avoid including <array>.
@@ -312,7 +335,7 @@ constexpr Table<uint8_t, bits_v<Uint>> makeGuessTable()
 }
 
 template <typename Uint, size_t BASE>
-constexpr Table<nextLargerUintType<Uint>, maxPow<Uint, BASE> + 2> makePowerTable()
+constexpr Table<nextLargerUintType<Uint>, maxExp<Uint, BASE> + 2> makePowerTable()
 {
     // the size of the table is maxPow<Uint, BASE> + 2 because we need to store the maximum power
     // +1 because we need to contain it, we are dealing with a size, not an index
@@ -342,6 +365,7 @@ constexpr Table<nextLargerUintType<Uint>, maxPow<Uint, BASE> + 2> makePowerTable
  *
  * Note that unlike a traditional logarithm function, it is defined for 0 and is equal to 0.
  *
+ * @see https://stackoverflow.com/q/63411054
  * @tparam BASE the base (e.g. 10)
  * @param val the input value
  * @return floor(log(val, BASE))
@@ -357,33 +381,10 @@ constexpr Uint logFloor(Uint val) noexcept
         constexpr auto guesses = detail::makeGuessTable<Uint, BASE>();
         // table that maps from log_N(val) -> pow(N, val + 1)
         constexpr auto powers = detail::makePowerTable<Uint, BASE>();
-        static_assert(guesses.data[0] == 0);
-        static_assert(guesses.data[1] == 0);
-
-        // The strategy in the following lines is to make an initial guess based on the binary logarithm.
-        // For instance, the guess for 10 base 10 would be:
-        //     log_10(2^log_2(10))
-        //   = log_10(8^3)
-        //   = 0
-        // Due to floored rounding, this is just a lower bound and might need to be incremented once.
-        //
-        // If our input value is >= pow(base, guess + 1), we have to increment it.
-        // For example, in the case of 10 base 10 with a guess of 0:
-        //     pow(base = 10, guess + 1)
-        //   = pow(10, 0 + 1)
-        //  <= (val = 10)
-        //
-        // Instead of computing pow(BASE, guess), we can construct a table for all possible guesses.
-        // However, we must compare with guess + 1 and pow(10, guess + 1) might not always be representable.
-        // For example pow(10, 3) = 10000 is not representible as an 8-bit integer but would be necessary to test if
-        // e.g. 200 should be incremented.
-        // This is why we construct a table of type uintmax_t to make sure that we can always represent integers.
-        // We can't use this tactic for uintmax_t though, so in that case we need to perform a division by the base
-        // instead of looking up the next value, which is equivalent but more expensive.
 
         Uint guess = guesses.data[log2floor(val)];
 
-        if constexpr (sizeof(Uint) == sizeof(uintmax_t)) {
+        if constexpr (sizeof(Uint) > sizeof(uint64_t)) {
             return guess + (val / BASE >= powers.data[guess]);
         }
         else {
