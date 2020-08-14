@@ -17,51 +17,44 @@ namespace voxelio::vl32 {
 
 [[nodiscard]] ReadResult Reader::read(Voxel64 buffer[], size_t bufferLength) noexcept
 {
-    if (not initialized) {
-        VXIO_LOG(DEBUG, "calling voxelio::vl32::Reader::init()");
-        return init();
-    }
-
-    writeHelper.reset(buffer, bufferLength);
-
-    return doRead();
+    return read_impl(buffer, bufferLength);
 }
 
 [[nodiscard]] ReadResult Reader::read(Voxel32 buffer[], size_t bufferLength) noexcept
 {
+    return read_impl(buffer, bufferLength);
+}
+
+template <typename Voxel>
+ReadResult Reader::read_impl(Voxel buffer[], size_t bufferLength) noexcept
+{
     if (not initialized) {
         VXIO_LOG(DEBUG, "calling voxelio::vl32::Reader::init()");
         return init();
     }
 
-    writeHelper.reset(buffer, bufferLength);
-
-    return doRead();
-}
-
-[[nodiscard]] ReadResult Reader::doRead() noexcept
-{
     Voxel32 voxel;
-    while (not writeHelper.isFull()) {
+    size_t voxelsWritten = 0;
+
+    for (; voxelsWritten < bufferLength; ++voxelsWritten) {
         VXIO_FORWARD_ERROR(readVoxel(voxel));
         if (stream.eof()) {
-            return ReadResult::end(writeHelper.voxelsWritten());
+            return ReadResult::end(voxelsWritten);
         }
-        writeHelper.write(voxel);
+        buffer[voxelsWritten] = voxelCast<Voxel>(voxel);
     }
-    return ReadResult::ok(writeHelper.voxelsWritten());
+
+    return ReadResult::ok(voxelsWritten);
 }
 
 [[nodiscard]] ReadResult Reader::readVoxel(Voxel32 &out)
 {
-    stream.readBig<3, i32>(out.pos.data());
-    out.argb = stream.readBig<u32>();
+    i32 data[4];
+    stream.readBig<4, i32>(data);
+    out.pos = {data[0], data[1], data[2]};
+    out.argb = static_cast<u32>(data[3]);
 
-    if (stream.err()) {
-        return ReadResult::ioError(stream.position(), "IO error when reading voxel");
-    }
-
-    return ReadResult::ok();
+    return stream.err() ? ReadResult::ioError(stream.position(), "IO error when reading voxel") : ReadResult::ok();
 }
 
 ResultCode Writer::init() noexcept

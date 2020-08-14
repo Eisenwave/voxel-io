@@ -10,7 +10,6 @@ namespace vl32 {
 
 class Reader : public AbstractReader {
 private:
-    VoxelBufferWriteHelper writeHelper;
     bool initialized = false;
 
 public:
@@ -21,7 +20,9 @@ public:
     [[nodiscard]] ReadResult read(Voxel32 buffer[], size_t bufferLength) noexcept;
 
 private:
-    [[nodiscard]] ReadResult doRead() noexcept;
+    template <typename Voxel>
+    ReadResult read_impl(Voxel buffer[], size_t bufferLength) noexcept;
+
     [[nodiscard]] ReadResult readVoxel(Voxel32 &out);
 };
 
