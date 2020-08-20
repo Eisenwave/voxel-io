@@ -339,25 +339,40 @@ constexpr Table<uint8_t, bits_v<Uint>> makeGuessTable()
     return result;
 }
 
-template <typename Uint, size_t BASE>
-constexpr Table<nextLargerUintType<Uint>, maxExp<Uint, BASE> + 2> makePowerTable()
+template <typename Uint, size_t BASE, typename TableUint = nextLargerUintType<Uint>>
+constexpr Table<TableUint, maxExp<Uint, BASE> + 2> makePowerTable()
 {
     // the size of the table is maxPow<Uint, BASE> + 2 because we need to store the maximum power
     // +1 because we need to contain it, we are dealing with a size, not an index
     // +1 again because for narrow integers, we access one beyond the "end" of the table
     //
     // as a result, the last multiplication with BASE might overflow, but this is perfectly normal
-    using resultType = decltype(makePowerTable<Uint, BASE>());
+    using resultType = decltype(makePowerTable<Uint, BASE, TableUint>());
 
     resultType result{};
     uintmax_t x = 1;
     for (size_t i = 0; i < resultType::size; ++i, x *= BASE) {
-        result.data[i] = x;
+        result.data[i] = static_cast<TableUint>(x);
     }
     return result;
 }
 
 }  // namespace detail
+
+/**
+ * @brief Computes pow(BASE, exponent) where BASE is known at compile-time.
+ */
+template <size_t BASE, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint powConst(Uint exponent)
+{
+    if constexpr (isPow2(BASE)) {
+        return 1 << (exponent * log2floor(BASE));
+    }
+    else {
+        constexpr auto powers = detail::makePowerTable<Uint, BASE, Uint>();
+        return static_cast<Uint>(powers.data[exponent]);
+    }
+}
 
 /**
  * @brief Computes the floored logarithm of a number with a given base.
