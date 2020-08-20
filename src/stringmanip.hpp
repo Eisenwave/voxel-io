@@ -26,7 +26,8 @@ void trim(std::string &s);
 
 // COPYING CONVERSIONS =================================================================================================
 
-std::string lpad(const std::string &str, size_t length, char c);
+std::string lpad(const std::string &str, size_t length, char c = ' ');
+std::string rpad(const std::string &str, size_t length, char c = ' ');
 
 std::string substrBeforeFirst(const std::string &str, char delimiter);
 std::string substrBeforeLast(const std::string &str, char delimiter);

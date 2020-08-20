@@ -46,6 +46,15 @@ std::string lpad(const std::string &str, size_t length, char c)
     return stream.str();
 }
 
+std::string rpad(const std::string &str, size_t length, char c)
+{
+    std::string result = str;
+    if (str.size() < length) {
+        result.resize(length, c);
+    }
+    return result;
+}
+
 std::string substrBeforeFirst(const std::string &str, char delimiter)
 {
     const auto pos = str.find_first_of(delimiter);
