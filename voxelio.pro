@@ -47,12 +47,14 @@ HEADERS +=  \
     src/3rd_party/miniz_cpp.hpp \
     src/3rd_party/miniz_cppfwd.hpp \
     src/assert.hpp \
+    src/bits.hpp \
     src/build.hpp \
     src/builtin.hpp \
     src/color.hpp \
     src/constantsfwd.hpp \
     src/endian.hpp \
     src/format/cubeworld.hpp \
+    src/ileave.hpp \
     src/image.hpp \
     src/intdiv.hpp \
     src/intlog.hpp \

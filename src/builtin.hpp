@@ -5,6 +5,8 @@
 
 #include <cstdint>
 
+// GCC / CLANG BUILTINS ================================================================================================
+
 #ifdef VXIO_GNU_OR_CLANG
 
 // VXIO_HAS_BUILTIN(builtin):
@@ -26,6 +28,21 @@
 #define VXIO_UNREACHABLE() __builtin_unreachable()
 #else
 #define VXIO_UNREACHABLE()
+#endif
+
+// VXIO_ASSUME():
+//     Signals to the compiler that a given expression always evaluates to true.
+//     This macro is always defined, but does nothing if no builtin is available.
+//     Note that the expression inside of VXIO_ASSUME() is evaluated, although the result is unused.
+//     This makes it unsafe to use when the expression has side effects.
+#if VXIO_CLANG && VXIO_HAS_BUILTIN(__builtin_unreachable)
+#define VXIO_HAS_BUILTIN_ASSUME
+#define VXIO_ASSUME(condition) __builtin_assume(condition)
+#elif defined(VXIO_GNU)
+#define VXIO_HAS_BUILTIN_ASSUME
+#define VXIO_ASSUME(condition) static_cast<bool>(condition) ? void(0) : VXIO_UNREACHABLE()
+#else
+#define VXIO_ASSUME(condition)
 #endif
 
 namespace voxelio::builtin {
@@ -88,6 +105,37 @@ constexpr int countLeadingZeros(unsigned long long x) noexcept
 }
 #endif
 
+// int popCount(unsigned ...):
+//     Counts the number of one-bits in an unsigned integer type.
+#if VXIO_HAS_BUILTIN(__builtin_popcount) && VXIO_HAS_BUILTIN(__builtin_popcountl) && \
+    VXIO_HAS_BUILTIN(__builtin_popcountll)
+#define VXIO_HAS_BUILTIN_POPCOUNT
+constexpr int popCount(unsigned char x) noexcept
+{
+    return __builtin_popcount(x);
+}
+
+constexpr int popCount(unsigned short x) noexcept
+{
+    return __builtin_popcount(x);
+}
+
+constexpr int popCount(unsigned int x) noexcept
+{
+    return __builtin_popcount(x);
+}
+
+constexpr int popCount(unsigned long x) noexcept
+{
+    return __builtin_popcountl(x);
+}
+
+constexpr int popCount(unsigned long long x) noexcept
+{
+    return __builtin_popcountll(x);
+}
+#endif
+
 // uintXX_t byteSwap(uintXX_t ...):
 //     Swaps the bytes of any uintXX type.
 //     This reverses the byte order (little-endian/big-endian).
@@ -115,13 +163,18 @@ constexpr uint64_t byteSwap(uint64_t x) noexcept
 }
 #endif
 
-#else
+}  // namespace voxelio::builtin
+
+#else  // ifdef VXIO_GNU_OR_CLANG
+
+namespace voxelio::builtin {
 
 #define VXIO_UNREACHABLE()
 #define VXIO_TRAP()
-
-#endif
+#define VXIO_ASSUME(condition)
 
 }  // namespace voxelio::builtin
+
+#endif  // ifdef VXIO_GNU_OR_CLANG
 
 #endif  // BUILTIN_HPP
