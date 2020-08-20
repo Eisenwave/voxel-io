@@ -9,15 +9,14 @@ namespace voxelio {
 namespace vl32 {
 
 class Reader : public AbstractReader {
-private:
-    bool initialized = false;
-
 public:
     Reader(InputStream &istream, u64 dataLen = DATA_LENGTH_UNKNOWN) : AbstractReader{istream, dataLen} {}
 
     [[nodiscard]] ReadResult init() noexcept final;
     [[nodiscard]] ReadResult read(Voxel64 buffer[], size_t bufferLength) noexcept final;
     [[nodiscard]] ReadResult read(Voxel32 buffer[], size_t bufferLength) noexcept;
+
+    [[nodiscard]] ReadResult reset() noexcept;
 
 private:
     template <typename Voxel>

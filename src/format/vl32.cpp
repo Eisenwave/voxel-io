@@ -7,11 +7,6 @@ namespace voxelio::vl32 {
 
 [[nodiscard]] ReadResult Reader::init() noexcept
 {
-    if (initialized) {
-        return {0, ResultCode::WARNING_DOUBLE_INIT};
-    }
-    initialized = true;
-
     return ReadResult::ok();
 }
 
@@ -28,11 +23,6 @@ namespace voxelio::vl32 {
 template <typename Voxel>
 ReadResult Reader::read_impl(Voxel buffer[], size_t bufferLength) noexcept
 {
-    if (not initialized) {
-        VXIO_LOG(DEBUG, "calling voxelio::vl32::Reader::init()");
-        return init();
-    }
-
     Voxel32 voxel;
     size_t voxelsWritten = 0;
 
@@ -45,6 +35,13 @@ ReadResult Reader::read_impl(Voxel buffer[], size_t bufferLength) noexcept
     }
 
     return ReadResult::ok(voxelsWritten);
+}
+
+[[nodiscard]] ReadResult Reader::reset() noexcept
+{
+    stream.clearErrors();
+    stream.seekAbsolute(0);
+    return stream.err() ? ReadResult::ioError(0, "Failed to seek 0") : ReadResult::ok();
 }
 
 [[nodiscard]] ReadResult Reader::readVoxel(Voxel32 &out)
