@@ -268,7 +268,7 @@ ResultCode Writer::writeColorLine(Color32 color) noexcept
     // We use a precision of 4 in case other software uses improper rounding, such as floor.
     constexpr unsigned precision = 4;
     constexpr auto stringifyChannel = [](u8 channel) -> std::string {
-        return stringifyFractionRpad(channel, 255, precision);
+        return stringifyFractionRpad(channel, 255u, precision);
     };
 
     stream.writeString(stringifyChannel(color.r) + ' ');
