@@ -75,21 +75,50 @@ constexpr commonSignedType<Dividend, Divisor> divFloor(Dividend x, Divisor y)
 {
     if constexpr (std::is_unsigned_v<Dividend> && std::is_unsigned_v<Divisor>) {
         // quotient is never negative
-        return x / y;
+        return x / y;  // uint / uint
     }
     else if constexpr (std::is_signed_v<Dividend> && std::is_unsigned_v<Divisor>) {
         auto sy = static_cast<std::make_signed_t<Divisor>>(y);
         bool quotientNegative = x < 0;
-        return x / sy - (x % sy != 0 && quotientNegative);
+        return x / sy - (x % sy != 0 && quotientNegative);  // int / uint
     }
     else if constexpr (std::is_unsigned_v<Dividend> && std::is_signed_v<Divisor>) {
         auto sx = static_cast<std::make_signed_t<Dividend>>(x);
         bool quotientNegative = y < 0;
-        return sx / y - (sx % y != 0 && quotientNegative);
+        return sx / y - (sx % y != 0 && quotientNegative);  // uint / int
     }
     else {
         bool quotientNegative = (y < 0) != (x < 0);
-        return x / y - (x % y != 0 && quotientNegative);
+        return x / y - (x % y != 0 && quotientNegative);  // int / int
+    }
+}
+
+template <typename Dividend,
+          typename Divisor,
+          std::enable_if_t<std::is_integral_v<Dividend> && std::is_integral_v<Divisor>, int> = 0>
+constexpr commonSignedType<Dividend, Divisor> divUp(Dividend x, Divisor y)
+{
+    constexpr auto sgn = [](commonSignedType<Dividend, Divisor> n) -> signed char {
+        return (n > 0) - (n < 0);
+    };
+
+    if constexpr (std::is_unsigned_v<Dividend> && std::is_unsigned_v<Divisor>) {
+        // sgn is always 1
+        return x / y + (x % y != 0);  // uint / uint
+    }
+    else if constexpr (std::is_signed_v<Dividend> && std::is_unsigned_v<Divisor>) {
+        auto sy = static_cast<std::make_signed_t<Divisor>>(y);
+        signed char quotientSgn = sgn(x);
+        return x / sy + (x % sy != 0) * quotientSgn;  // int / uint
+    }
+    else if constexpr (std::is_unsigned_v<Dividend> && std::is_signed_v<Divisor>) {
+        auto sx = static_cast<std::make_signed_t<Dividend>>(x);
+        signed char quotientSgn = sgn(y);
+        return sx / y + (sx % y != 0) * quotientSgn;  // uint / int
+    }
+    else {
+        signed char quotientSgn = sgn(x) * sgn(y);
+        return x / y + (x % y != 0) * quotientSgn;  // int / int
     }
 }
 
