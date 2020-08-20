@@ -18,7 +18,7 @@ constexpr const char *FG_16C_BLK = ASCII_ESC "[38;5;0m";
 // constexpr const char *FG_16C_GRN = ASCII_ESC "[38;5;2m";
 // constexpr const char *FG_16C_ORG = ASCII_ESC "[38;5;3m";
 // constexpr const char *FG_16C_BLU = ASCII_ESC "[38;5;4m";
-// constexpr const char *FG_16C_MAG = ASCII_ESC "[38;5;5m";
+constexpr const char *FG_16C_MAG = ASCII_ESC "[38;5;5m";
 // constexpr const char *FG_16C_CYA = ASCII_ESC "[38;5;6m";
 constexpr const char *FG_16C_BRI_GRA = ASCII_ESC "[38;5;7m";
 // constexpr const char *FG_16C_GRA = ASCII_ESC "[38;5;8m";
@@ -86,33 +86,60 @@ constexpr const char *prefixOf(LogLevel level)
     case LogLevel::WARNING: return ansi::FG_16C_YLW;
     case LogLevel::INFO: return ansi::FG_16C_BRI_BLU;
     case LogLevel::DEBUG: return ansi::FG_16C_BRI_MAG;
+    case LogLevel::DETAIL: return ansi::FG_16C_MAG;
     case LogLevel::SPAM: return ansi::FG_16C_BRI_GRA;
     case LogLevel::SUPERSPAM: return ansi::FG_16C_BLK;
     }
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-void log(LogLevel level, const std::string &msg, const char *file, const char *, size_t line)
+void logRaw(const char *msg)
 {
-    std::cout << "[" << currentIso8601Time() << "] [";
-#ifdef __unix__
-    std::cout << prefixOf(level) << fixedWidthNameOf(level) << ansi::RESET;
-#else
-    std::cout << fixedWidthNameOf(level);
-#endif
-    std::cout << "] ";
-#ifdef __unix__
-    std::cout << ansi::FG_16C_BRI_GRA << basename(file) << '@' << line << ": " << ansi::RESET;
-#else
-    std::cout << str::basename<char>(file) << '@' << line << ": ";
-#endif
-    std::cout << msg << '\n';
+    std::cout << msg;
     std::cout.flush();
 }
 
-void log(LogLevel level, const char *msg, const char *file, const char *function, size_t line)
+void logRaw(const std::string &msg)
 {
-    log(level, std::string{msg}, file, function, line);
+    std::cout << msg;
+    std::cout.flush();
+}
+
+void log(const std::string &msg, LogLevel level, const char *file, const char *, size_t line)
+{
+    std::string output;
+    output.reserve(msg.size() + 64);
+
+    output += "[";
+    output += currentIso8601Time();
+    output += "] [";
+#ifdef __unix__
+    output += prefixOf(level);
+    output += fixedWidthNameOf(level);
+    output += ansi::RESET;
+#else
+    std::cout << fixedWidthNameOf(level);
+#endif
+    output += "] ";
+#ifdef __unix__
+    output += ansi::FG_16C_BRI_GRA;
+    output += basename(file);
+    output += '@';
+    output += voxelio::stringify(line);
+    output += ": ";
+    output += ansi::RESET;
+#else
+    std::cout << str::basename<char>(file) << '@' << line << ": ";
+#endif
+    output += msg;
+    output += '\n';
+
+    logRaw(output);
+}
+
+void log(const char *msg, LogLevel level, const char *file, const char *function, size_t line)
+{
+    log(std::string{msg}, level, file, function, line);
 }
 
 thread_local LogLevel logLevel = LogLevel::INFO;

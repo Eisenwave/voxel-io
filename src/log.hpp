@@ -18,6 +18,8 @@ enum class LogLevel : unsigned {
     INFO = 3,
     /** Default level on debug builds. Used for messages that are only relevant to the developer. */
     DEBUG = 4,
+    /** Like debug, but meant for messages which are irrelevant most of the time. */
+    DETAIL = 5,
     /** Logging at this level does not even compile on release builds. Used for otherwise irrelevant messages when
        bug-fixing. */
     SPAM = 6,
@@ -34,6 +36,7 @@ constexpr const char *nameOf(LogLevel level)
     case LogLevel::WARNING: return "WARNING";
     case LogLevel::INFO: return "INFO";
     case LogLevel::DEBUG: return "DEBUG";
+    case LogLevel::DETAIL: return "DETAIL";
     case LogLevel::SPAM: return "SPAM";
     case LogLevel::SUPERSPAM: return "SUPERSPAM";
     }
@@ -48,23 +51,41 @@ constexpr const char *fixedWidthNameOf(LogLevel level)
     case LogLevel::WARNING: return "WARN";
     case LogLevel::INFO: return "INFO";
     case LogLevel::DEBUG: return "DBUG";
+    case LogLevel::DETAIL: return "DTAL";
     case LogLevel::SPAM: return "SPAM";
     case LogLevel::SUPERSPAM: return "SSPM";
     }
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-void log(LogLevel level, const char *msg, const char *file, const char *function, size_t line);
-void log(LogLevel level, const std::string &msg, const char *file, const char *function, size_t line);
+constexpr bool operator<=(LogLevel x, LogLevel y)
+{
+    return static_cast<unsigned>(x) <= static_cast<unsigned>(y);
+}
+
+void logRaw(const char *msg);
+void logRaw(const std::string &msg);
+
+void log(const char *msg, LogLevel level, const char *file, const char *function, size_t line);
+void log(const std::string &msg, LogLevel level, const char *file, const char *function, size_t line);
 
 extern thread_local LogLevel logLevel;
 
-#define VXIO_LOG(level, msg)                                                                                   \
-    if constexpr (::voxelio::build::DEBUG || ::voxelio::LogLevel::level < ::voxelio::LogLevel::SPAM) {         \
-        if (static_cast<unsigned>(::voxelio::LogLevel::level) <= static_cast<unsigned>(::voxelio::logLevel)) { \
-            ::voxelio::log(::voxelio::LogLevel::level, msg, __FILE__, __func__, __LINE__);                     \
-        }                                                                                                      \
+#ifdef VXIO_DEBUG
+#define VXIO_LOG_IMPL(level, msg, file, function, line)                                \
+    if (::voxelio::LogLevel::level <= ::voxelio::logLevel) {                           \
+        ::voxelio::log((msg), ::voxelio::LogLevel::level, (file), (function), (line)); \
     }
+#else
+#define VXIO_LOG_IMPL(level, msg, file, function, line)                                    \
+    if constexpr (::voxelio::LogLevel::level < ::voxelio::LogLevel::SPAM) {                \
+        if (::voxelio::LogLevel::level <= ::voxelio::logLevel) {                           \
+            ::voxelio::log((msg), ::voxelio::LogLevel::level, (file), (function), (line)); \
+        }                                                                                  \
+    }
+#endif
+
+#define VXIO_LOG(level, msg) VXIO_LOG_IMPL(level, msg, __FILE__, __func__, __LINE__)
 
 }  // namespace voxelio
 
