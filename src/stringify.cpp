@@ -4,8 +4,8 @@
 
 namespace voxelio {
 
-template <bool RPAD>
-static std::string fraction_to_string_impl(unsigned num, const unsigned den, const unsigned precision)
+template <bool RPAD, typename Int>
+static std::string fraction_to_string_impl(Int num, const Int den, const unsigned precision)
 {
     constexpr unsigned base = 10;
 
@@ -44,12 +44,22 @@ static std::string fraction_to_string_impl(unsigned num, const unsigned den, con
     return result;
 }
 
-std::string stringifyFraction(unsigned num, unsigned den, unsigned precision) noexcept
+std::string stringifyFraction(uint32_t num, uint32_t den, unsigned precision) noexcept
 {
     return fraction_to_string_impl<false>(num, den, precision);
 }
 
-std::string stringifyFractionRpad(unsigned num, unsigned den, unsigned precision) noexcept
+std::string stringifyFraction(uint64_t num, uint64_t den, unsigned precision) noexcept
+{
+    return fraction_to_string_impl<false>(num, den, precision);
+}
+
+std::string stringifyFractionRpad(uint32_t num, uint32_t den, unsigned precision) noexcept
+{
+    return fraction_to_string_impl<true>(num, den, precision);
+}
+
+std::string stringifyFractionRpad(uint64_t num, uint64_t den, unsigned precision) noexcept
 {
     return fraction_to_string_impl<true>(num, den, precision);
 }

@@ -73,24 +73,7 @@ std::string stringifyUInt(const Uint n) noexcept
 
 }  // namespace detail
 
-/**
- * @brief Stringifies a fraction.
- * This function terminates once a division is possible without remainder or once the precision is reached.
- * @param num the numerator
- * @param den the denominator
- * @param precision the maximum fractional part precision
- * @return the stringified fraction
- */
-std::string stringifyFraction(unsigned num, unsigned den, unsigned precision = 4) noexcept;
-
-/**
- * @brief Identical to fraction_to_string, but will right-pad the string with 0 until precision is reached.
- * @param num the numerator
- * @param den the denominator
- * @param precision the exact fractional part precision
- * @return the stringified fraction
- */
-std::string stringifyFractionRpad(unsigned num, unsigned den, unsigned precision = 4) noexcept;
+// NUMERIC TYPE STRINGIFICATION ========================================================================================
 
 /**
  * @brief Converts a floating point number to a string with precision of choice.
@@ -176,6 +159,8 @@ std::string stringifyBin(T num) noexcept
     return stringifyInt<2>(num);
 }
 
+// UNIVERSAL STRINGIFICATION ===========================================================================================
+
 template <typename T>
 std::string stringify(const T &t) noexcept
 {
@@ -206,6 +191,105 @@ std::string stringify(const T &t) noexcept
     else {
         return detail::stringifyUsingStream<T>(t);
     }
+}
+
+// RATIONAL STRINGIFICATION ============================================================================================
+
+/**
+ * @brief Stringifies a fraction.
+ * This function terminates once a division is possible without remainder or once the precision is reached.
+ * @param num the numerator
+ * @param den the denominator
+ * @param precision the maximum fractional part precision
+ * @return the stringified fraction
+ */
+std::string stringifyFraction(uint32_t num, uint32_t den, unsigned precision = 4) noexcept;
+
+std::string stringifyFraction(uint64_t num, uint64_t den, unsigned precision = 4) noexcept;
+
+/**
+ * @brief Identical to fraction_to_string, but will right-pad the string with 0 until precision is reached.
+ * @param num the numerator
+ * @param den the denominator
+ * @param precision the exact fractional part precision
+ * @return the stringified fraction
+ */
+std::string stringifyFractionRpad(uint32_t num, uint32_t den, unsigned precision = 4) noexcept;
+
+std::string stringifyFractionRpad(uint64_t num, uint64_t den, unsigned precision = 4) noexcept;
+
+// SPECIAL PURPOSE STRINGIFICATION =====================================================================================
+
+/**
+ * @brief Creates a human-readable string from a file size given in bytes.
+ * @param size the number of bytes
+ * @param precision the maximum number of decimals to print
+ * @tparam BASE either 1000 or 1024 depending on whether decimal units (KB) or digital units (KiB) should be used
+ * @tparam SPACE true if a space should be inserted between the number and unit (true by default)
+ * @return a human-readable string representing the given file size
+ */
+template <size_t BASE = 1024, bool SPACE = true, std::enable_if_t<BASE == 1000 || BASE == 1024, size_t> = BASE>
+std::string stringifyFileSize(uint64_t size, unsigned precision = 0) noexcept
+{
+    constexpr const char FILE_SIZE_UNITS[8][3]{"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB"};
+
+    uint64_t unit = logFloor<BASE>(size);
+
+    std::string result = voxelio::stringifyFraction(size, powConst<BASE>(unit), precision);
+    result.reserve(result.size() + 5);
+
+    if constexpr (SPACE) {
+        result.push_back(' ');
+    }
+    result.push_back(FILE_SIZE_UNITS[unit][0]);
+
+    if (unit != 0) {
+        if constexpr (BASE == 1024) {
+            result.push_back('i');
+        }
+        result.push_back(FILE_SIZE_UNITS[unit][1]);
+    }
+
+    return result;
+}
+
+/**
+ * @brief Creates a human-readable string from a time given in nanoseconds. Example:
+ * stringifyTime(10'500, 1) =  10.5 us
+ * @param nanos the nanoseconds to stringify
+ * @param precision the maximum number of decimals to print
+ * @tparam SPACE true if a space should be inserted between the number and unit (true by default)
+ * @return a human-readable string representing the given number of nanoseconds
+ */
+template <bool SPACE = true>
+std::string stringifyTime(uint64_t nanos, unsigned precision = 0) noexcept
+{
+    // clang-format off
+    // TIME_FACTORS represents the factor to get to the next unit
+    // the last factor is 10 (century -> millenium)
+    constexpr const char TIME_UNITS[10][4]    {"ns", "us", "ms", "s", "min", "h", "d", "y", "dec", "cen"};
+    constexpr const unsigned TIME_FACTORS[10] {1000, 1000, 1000,  60,   60,  24,  365,  10,    10,    10};
+    // clang-format on
+
+    size_t unit = 0;
+    uint64_t divisor = 1;
+    for (; unit < 8; ++unit) {
+        uint64_t nextDivisor = divisor * TIME_FACTORS[unit];
+        if (nextDivisor >= nanos) {
+            break;
+        }
+        divisor = nextDivisor;
+    }
+
+    std::string result = voxelio::stringifyFraction(nanos, divisor, precision);
+    result.reserve(result.size() + 5);
+
+    if constexpr (SPACE) {
+        result.push_back(' ');
+    }
+    result += TIME_UNITS[unit];
+
+    return result;
 }
 
 }  // namespace voxelio
