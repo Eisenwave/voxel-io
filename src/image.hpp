@@ -1,5 +1,10 @@
 #ifndef VXIO_IMAGE_HPP
 #define VXIO_IMAGE_HPP
+/*
+ * image.hpp
+ * -----------
+ * Provides a minimalistic image implementation.
+ */
 
 #include "color.hpp"
 #include "types.hpp"

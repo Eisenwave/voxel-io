@@ -1,5 +1,12 @@
 #ifndef VXIO_BUILD_HPP
 #define VXIO_BUILD_HPP
+/*
+ * build.hpp
+ * -----------
+ * Captures information about the build, such as the C++ standard, compiler, debug/release build, etc.
+ *
+ * This header does not and should never have additional includes.
+ */
 
 // BUILD TYPE DETECTION ================================================================================================
 

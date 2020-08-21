@@ -1,5 +1,15 @@
 #ifndef VXIO_ENDIAN_HPP
 #define VXIO_ENDIAN_HPP
+/*
+ * endian.hpp
+ * -----------
+ * Provides portable conversions between integers and byte arrays.
+ * The encode() and decode() methods are the most notable functions in this header.
+ * There are also convenience functions encodeBig(), decodeLittle(), ...
+ *
+ * Whenever possible, the conversion doesn't take place using bitwise operations but by using std::memcpy and reversing
+ * the byte order using builtin::byteSwap.
+ */
 
 #include "builtin.hpp"
 #include "types.hpp"

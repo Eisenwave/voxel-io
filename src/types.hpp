@@ -1,5 +1,11 @@
 #ifndef VXIO_TYPES_HPP
 #define VXIO_TYPES_HPP
+/*
+ * types.hpp
+ * -----------
+ * Defines various voxelio types and statically asserts certain properties, such as iec559 floats, uint8_t being one
+ * byte, etc.
+ */
 
 #include "vec.hpp"
 
@@ -12,6 +18,9 @@ namespace voxelio {
 static_assert(sizeof(std::uint8_t) == 1, "u8 must be one char in size");
 static_assert(sizeof(float) == 4, "float must be a 32-bit floating point number");
 static_assert(sizeof(double) == 8, "double must be a 64-bit floating point number");
+
+static_assert(static_cast<signed char>(128) == -128, "expected two's complement platform");
+
 static_assert(std::numeric_limits<float>::is_iec559, "voxelio depends on IEC 559 floats");
 static_assert(std::numeric_limits<double>::is_iec559, "voxelio depends on IEC 559 doubles");
 

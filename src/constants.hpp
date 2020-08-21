@@ -1,5 +1,10 @@
 ﻿#ifndef VXIO_CONSTANTS_HPP
 #define VXIO_CONSTANTS_HPP
+/*
+ * constants.hpp
+ * -----------
+ * Provides various file-type related constants such as format category, magic bytes, etc.
+ */
 
 #include "constantsfwd.hpp"
 

@@ -1,5 +1,10 @@
 #ifndef VXIO_INTLOG_HPP
 #define VXIO_INTLOG_HPP
+/*
+ * intlog.hpp
+ * -----------
+ * Implements arithmetic related to integer logarithms or exponentiation.
+ */
 
 #include "builtin.hpp"
 

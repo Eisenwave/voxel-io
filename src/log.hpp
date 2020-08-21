@@ -1,5 +1,11 @@
 #ifndef VXIO_LOG_HPP
 #define VXIO_LOG_HPP
+/*
+ * log.hpp
+ * -----------
+ * Provides basic logging functionality.
+ * The current log level can be set thread-locally using voxelio::logLevel
+ */
 
 #include "assert.hpp"
 #include "build.hpp"

@@ -1,5 +1,12 @@
 #ifndef VXIO_INTDIV_HPP
 #define VXIO_INTDIV_HPP
+/*
+ * intdiv.hpp
+ * -----------
+ * Implements ceil, floor, outwards rounding modes for integer division.
+ * - cloor is often necessary to get a consistent space downscaling.
+ * - ceil is often necessary to get the size of a containing array of data which is not aligned to the container size
+ */
 
 #include <type_traits>
 

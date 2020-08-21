@@ -1,5 +1,19 @@
 #ifndef VXIO_STREAM_HPP
 #define VXIO_STREAM_HPP
+/*
+ * stream.hpp
+ * -----------
+ * Provides Java-style input/output streams.
+ *
+ * The <iostream> library has many issues which made the creation of this header necessary:
+ * 1. <iostream> is an extremely heavyweight include and bloats compile times
+ * 2. there is no portable way of obtaining and manipulating file positions (tellg() only does this on Linux and only
+ *    for files opened in binary mode)
+ * 3. implementing new stream types such as a NullOutputStream is extremely cumbersome due to implementation details
+ *    like stream buffers, etc. which all have to be kept in mind
+ * 4. having a dedicated stream allows for implementing endian encoding/decoding directly in the stream which is much
+ *    more convenient than having to use wrapper functions
+ */
 
 #include "streamfwd.hpp"
 

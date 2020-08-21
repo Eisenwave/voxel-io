@@ -1,5 +1,12 @@
 #ifndef VXIO_STRINGIFY_HPP
 #define VXIO_STRINGIFY_HPP
+/*
+ * stringify.hpp
+ * -----------
+ * Provides various stringification functions. Most notably, there is a universal stringify() which can accept enums,
+ * integers, floats, anything with a stream operator, pointers, c-strings, std::string, etc.
+ * This is crucial for implementing stringification inside the ASSERT macros.
+ */
 
 #include "build.hpp"
 #include "intlog.hpp"
@@ -8,9 +15,6 @@
 #include <cmath>
 #include <iosfwd>
 #include <string>
-
-// This dedicated header is necessary to avoid a circular dependency between util_string.hpp and assert.hpp.
-// Assertions require this universal stringification to print compared values.
 
 namespace voxelio {
 
@@ -267,13 +271,14 @@ std::string stringifyTime(uint64_t nanos, unsigned precision = 0) noexcept
     // clang-format off
     // TIME_FACTORS represents the factor to get to the next unit
     // the last factor is 10 (century -> millenium)
-    constexpr const char TIME_UNITS[10][4]    {"ns", "us", "ms", "s", "min", "h", "d", "y", "dec", "cen"};
-    constexpr const unsigned TIME_FACTORS[10] {1000, 1000, 1000,  60,   60,  24,  365,  10,    10,    10};
+    constexpr size_t UNITS = 10;
+    constexpr const char TIME_UNITS[UNITS][4]    {"ns", "us", "ms", "s", "min", "h", "d", "y", "dec", "cen"};
+    constexpr const unsigned TIME_FACTORS[UNITS] {1000, 1000, 1000,  60,   60,  24,  365,  10,    10,    10};
     // clang-format on
 
     size_t unit = 0;
     uint64_t divisor = 1;
-    for (; unit < 8; ++unit) {
+    for (; unit < 10; ++unit) {
         uint64_t nextDivisor = divisor * TIME_FACTORS[unit];
         if (nextDivisor >= nanos) {
             break;
@@ -287,7 +292,7 @@ std::string stringifyTime(uint64_t nanos, unsigned precision = 0) noexcept
     if constexpr (SPACE) {
         result.push_back(' ');
     }
-    result += TIME_UNITS[unit];
+    result.append(TIME_UNITS[unit]);
 
     return result;
 }

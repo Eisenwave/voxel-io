@@ -1,5 +1,10 @@
 #ifndef VXIO_STRINGMANIP_HPP
 #define VXIO_STRINGMANIP_HPP
+/*
+ * stringmanip.hpp
+ * -----------
+ * Provides lightweight string manipulation functions.
+ */
 
 #include <string>
 #include <vector>

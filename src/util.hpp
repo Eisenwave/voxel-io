@@ -1,6 +1,8 @@
 #ifndef VXIO_UTIL_HPP
 #define VXIO_UTIL_HPP
 
+#include "builtin.hpp"
+
 #include <cstring>
 #include <type_traits>
 
