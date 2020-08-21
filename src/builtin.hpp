@@ -1,13 +1,16 @@
 #ifndef VXIO_BUILTIN_HPP
 #define VXIO_BUILTIN_HPP
+/*
+ * builtin.hpp
+ * -----------
+ * Forwards to builtin functions in a compiler-independent way.
+ */
 
 #include "build.hpp"
 
 #include <cstdint>
 
-// GCC / CLANG BUILTINS ================================================================================================
-
-#ifdef VXIO_GNU_OR_CLANG
+// COMPILER AGNOSTIC ===================================================================================================
 
 // VXIO_HAS_BUILTIN(builtin):
 //     Checks whether a builtin exists.
@@ -19,6 +22,10 @@
 #else
 #define VXIO_HAS_BUILTIN(builtin) 1
 #endif
+
+// GCC / CLANG BUILTINS ================================================================================================
+
+#ifdef VXIO_GNU_OR_CLANG
 
 // VXIO_UNREACHABLE():
 //     Signals to the compiler that a given code point is unreachable.
@@ -35,7 +42,7 @@
 //     This macro is always defined, but does nothing if no builtin is available.
 //     Note that the expression inside of VXIO_ASSUME() is evaluated, although the result is unused.
 //     This makes it unsafe to use when the expression has side effects.
-#if VXIO_CLANG && VXIO_HAS_BUILTIN(__builtin_unreachable)
+#if VXIO_CLANG && VXIO_HAS_BUILTIN(__builtin_assume)
 #define VXIO_HAS_BUILTIN_ASSUME
 #define VXIO_ASSUME(condition) __builtin_assume(condition)
 #elif defined(VXIO_GNU)
@@ -136,6 +143,56 @@ constexpr int popCount(unsigned long long x) noexcept
 }
 #endif
 
+// unsigned rotr(unsigned ...):
+//     Right-rotates the bits of a number.
+#if VXIO_HAS_BUILTIN(__builtin_rotateright8) && VXIO_HAS_BUILTIN(__builtin_rotateright64)
+#define VXIO_HAS_BUILTIN_ROTR
+inline uint8_t rotr(uint8_t x, unsigned char rot) noexcept
+{
+    return __builtin_rotateright8(x, rot);
+}
+
+inline uint16_t rotr(uint16_t x, unsigned char rot) noexcept
+{
+    return __builtin_rotateright16(x, rot);
+}
+
+inline uint32_t rotr(uint32_t x, unsigned char rot) noexcept
+{
+    return __builtin_rotateright32(x, rot);
+}
+
+inline uint64_t rotr(uint64_t x, unsigned char rot) noexcept
+{
+    return __builtin_rotateright64(x, rot);
+}
+#endif
+
+// unsigned rotl(unsigned ...):
+//     Left-rotates the bits of a number.
+#if VXIO_HAS_BUILTIN(__builtin_rotateleft8) && VXIO_HAS_BUILTIN(__builtin_rotateleft64)
+#define VXIO_HAS_BUILTIN_ROTL
+inline uint8_t rotl(uint8_t x, unsigned char rot) noexcept
+{
+    return __builtin_rotateleft8(x, rot);
+}
+
+inline uint16_t rotl(uint16_t x, unsigned char rot) noexcept
+{
+    return __builtin_rotateleft16(x, rot);
+}
+
+inline uint32_t rotl(uint32_t x, unsigned char rot) noexcept
+{
+    return __builtin_rotateleft32(x, rot);
+}
+
+inline uint64_t rotl(uint64_t x, unsigned char rot) noexcept
+{
+    return __builtin_rotateleft64(x, rot);
+}
+#endif
+
 // uintXX_t byteSwap(uintXX_t ...):
 //     Swaps the bytes of any uintXX type.
 //     This reverses the byte order (little-endian/big-endian).
@@ -162,16 +219,6 @@ constexpr uint64_t byteSwap(uint64_t x) noexcept
     return __builtin_bswap64(x);
 }
 #endif
-
-}  // namespace voxelio::builtin
-
-#else  // ifdef VXIO_GNU_OR_CLANG
-
-namespace voxelio::builtin {
-
-#define VXIO_UNREACHABLE()
-#define VXIO_TRAP()
-#define VXIO_ASSUME(condition)
 
 }  // namespace voxelio::builtin
 
