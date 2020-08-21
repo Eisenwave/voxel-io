@@ -82,4 +82,6 @@ HEADERS +=  \
     src/types.hpp \
     src/format/vl32.hpp \
     src/format/vobj.hpp \
-    src/format/vox.hpp
+    src/format/vox.hpp \
+    src/wbits.hpp \
+    src/wileave.hpp
