@@ -37,12 +37,16 @@ using build::Endian;
  */
 class InputStream {
 protected:
+    /// Stores basic error flags for fast error checking.
     struct Flags {
+        /// true if the end of file (EOF) was reached
         bool eof : 1;
+        /// true if a read operation failed
         bool err : 1;
     };
 
-    u8 readBuffer[sizeof(uintmax_t) * 4 - sizeof(Flags)];
+    /// Small buffer used for decoding (groups of) integers in the writeU16, writeI32, etc. convenience functions
+    u8 readBuffer[sizeof(umax) * 4 - sizeof(Flags)];
     Flags flags;
 
 public:
@@ -56,9 +60,9 @@ public:
     /**
      * @brief Reads a single byte from the stream.
      * May set eof and err.
-     * @return the byte or EOF if extraction failed
+     * @return the byte or an undefined result if extraction failed
      */
-    virtual int read() = 0;
+    virtual u8 read() = 0;
 
     /**
      * @brief Reads at most maxSize characters into the buffer and returns the actual number of characters read.
@@ -397,12 +401,16 @@ private:
  */
 class OutputStream {
 protected:
+    /// Stores basic flags for fast error checking.
     struct Flags {
+        /// true if a write-operation failed
         bool err : 1;
+        /// true if the underlying resource was opened in binary mode
         bool bin : 1;
     };
 
-    u8 writeBuffer[sizeof(uintmax_t) * 4 - sizeof(Flags)];
+    /// Small write buffer for writing (multiple) integers, used in the writeU16(), writeI32(), ... functions.
+    u8 writeBuffer[sizeof(umax) * 4 - sizeof(Flags)];
     Flags flags;
 
 public:
@@ -679,11 +687,12 @@ public:
     NullInputStream(NullInputStream &&) = default;
     ~NullInputStream() final = default;
 
-    int read() final
+    u8 read() final
     {
         pos++;
         return 0;
     }
+
     usize read(u8 buffer[], usize size) final
     {
         std::fill_n(buffer, size, 0);
@@ -752,7 +761,7 @@ public:
 
 class ByteArrayInputStream : public InputStream {
 private:
-    const u8 *data;
+    const u8 *data_;
     usize size_;
     usize pos = 0;
 
@@ -763,7 +772,7 @@ public:
 
     explicit ByteArrayInputStream(const ByteArrayOutputStream &outputStream);
 
-    int read() final;
+    u8 read() final;
 
     usize read(u8 buffer[], usize size) final;
 
@@ -794,6 +803,11 @@ public:
     size_t size() const
     {
         return size_;
+    }
+
+    const u8 *data() const
+    {
+        return data_;
     }
 };
 
@@ -896,7 +910,7 @@ public:
     FileInputStream(FileInputStream &&);
     ~FileInputStream() final;
 
-    int read() final;
+    u8 read() final;
     usize read(u8 buffer[], usize size) final;
     void seekRelative(i64 offset) final;
     void seekAbsolute(u64 offset) final;
@@ -975,7 +989,7 @@ private:
 public:
     explicit StdInputStream(std::istream &stream);
 
-    int read() final;
+    u8 read() final;
     usize read(u8 *buffer, usize size) final;
     void readStringToUntil(std::string &out, char delimiter) final;
     void seekRelative(i64 offset) final;

@@ -52,19 +52,19 @@ NullOutputStream::NullOutputStream() noexcept
 
 // =====================================================================================================================
 
-ByteArrayInputStream::ByteArrayInputStream(const u8 data[], size_t size) noexcept : data{data}, size_{size}
+ByteArrayInputStream::ByteArrayInputStream(const u8 data[], size_t size) noexcept : data_{data}, size_{size}
 {
     this->flags.eof = false;
     this->flags.err = false;
 }
 
-int ByteArrayInputStream::read()
+u8 ByteArrayInputStream::read()
 {
     if (pos >= size()) {
         this->flags.eof = true;
-        return -1;
+        return 0;
     }
-    return data[pos++];
+    return data_[pos++];
 }
 
 size_t ByteArrayInputStream::read(u8 buffer[], size_t size)
@@ -77,7 +77,7 @@ size_t ByteArrayInputStream::read(u8 buffer[], size_t size)
     if (readCount != size) {
         this->flags.eof = true;
     }
-    std::copy(data + pos, data + pos + readCount, buffer);
+    std::copy(data_ + pos, data_ + pos + readCount, buffer);
     pos += readCount;
     return readCount;
 }
@@ -184,13 +184,14 @@ FileInputStream::~FileInputStream()
     }
 }
 
-int FileInputStream::read()
+u8 FileInputStream::read()
 {
     int rawResult = std::fgetc(file);
     if (rawResult == EOF) {
         updateErrorFlags();
+        return 0;
     }
-    return rawResult;
+    return static_cast<u8>(rawResult);
 }
 
 size_t FileInputStream::read(u8 buffer[], size_t size)
@@ -334,12 +335,11 @@ StdInputStream::StdInputStream(std::istream &stream) : stream{&stream}
     flags.eof = false;
 }
 
-int StdInputStream::read()
+u8 StdInputStream::read()
 {
     std::istream::int_type rawResult = stream->get();
-    int result = rawResult == std::istream::traits_type::eof() ? EOF : static_cast<int>(rawResult);
     updateErrorFlags();
-    return result;
+    return static_cast<u8>(rawResult);
 }
 
 size_t StdInputStream::read(u8 buffer[], size_t size)
