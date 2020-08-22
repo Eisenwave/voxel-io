@@ -32,7 +32,7 @@ inline void popAssertHandler() noexcept {}
 #endif
 
 /**
- * @brief Guard object which allows managing assert handles RAII-style.
+ * @brief Guard object which allows managing assert handlers RAII-style.
  */
 struct AssertHandlerGuard {
     AssertHandlerGuard(AssertHandler handler) noexcept

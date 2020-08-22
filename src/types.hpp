@@ -7,40 +7,12 @@
  * byte, etc.
  */
 
+#include "primitives.hpp"
 #include "vec.hpp"
 
 #include <cstdint>
 
 namespace voxelio {
-
-// STATIC ASSERTSIONS FOR ALL TYPES ====================================================================================
-
-static_assert(sizeof(std::uint8_t) == 1, "u8 must be one char in size");
-static_assert(sizeof(float) == 4, "float must be a 32-bit floating point number");
-static_assert(sizeof(double) == 8, "double must be a 64-bit floating point number");
-
-static_assert(static_cast<signed char>(128) == -128, "expected two's complement platform");
-
-static_assert(std::numeric_limits<float>::is_iec559, "voxelio depends on IEC 559 floats");
-static_assert(std::numeric_limits<double>::is_iec559, "voxelio depends on IEC 559 doubles");
-
-// PRIMITIVE ALIASES ===================================================================================================
-
-using u8 = std::uint8_t;
-using u16 = std::uint16_t;
-using u32 = std::uint32_t;
-using u64 = std::uint64_t;
-using umax = std::uintmax_t;
-
-using i8 = std::int8_t;
-using i16 = std::int16_t;
-using i32 = std::int32_t;
-using i64 = std::int64_t;
-using imax = std::intmax_t;
-
-using f32 = float;
-using f64 = double;
-using fmax = long double;
 
 // VEC ALIASES =========================================================================================================
 
@@ -59,6 +31,7 @@ using Vec2b = Vec<bool, 2>;
 using Vec2f = Vec<float, 2>;
 using Vec2d = Vec<double, 2>;
 using Vec2ld = Vec<long double, 2>;
+
 using Vec2i8 = Vec<i8, 2>;
 using Vec2i16 = Vec<i16, 2>;
 using Vec2i32 = Vec<i32, 2>;
@@ -69,7 +42,7 @@ using Vec2u16 = Vec<u16, 2>;
 using Vec2u32 = Vec<u32, 2>;
 using Vec2u64 = Vec<u64, 2>;
 using Vec2umax = Vec<umax, 2>;
-using Vec2size = Vec<std::size_t, 2>;
+using Vec2size = Vec<usize, 2>;
 
 using Vec3c = Vec<char, 3>;
 using Vec3s = Vec<short, 3>;
@@ -86,6 +59,7 @@ using Vec3b = Vec<bool, 3>;
 using Vec3f = Vec<float, 3>;
 using Vec3d = Vec<double, 3>;
 using Vec3ld = Vec<long double, 3>;
+
 using Vec3i8 = Vec<i8, 3>;
 using Vec3i16 = Vec<i16, 3>;
 using Vec3i32 = Vec<i32, 3>;
@@ -96,17 +70,7 @@ using Vec3u16 = Vec<u16, 3>;
 using Vec3u32 = Vec<u32, 3>;
 using Vec3u64 = Vec<u64, 3>;
 using Vec3umax = Vec<umax, 3>;
-using Vec3size = Vec<std::size_t, 3>;
-
-// OTHER ALIASES =======================================================================================================
-
-/** @brief Integer representing a 32-bit color.
- * A (alpha) is the most significant byte.
- * B (blue) is the least significant byte.
- */
-using argb32 = u32;
-
-using cfile = std::FILE *;
+using Vec3size = Vec<usize, 3>;
 
 // ENUMERATIONS ========================================================================================================
 

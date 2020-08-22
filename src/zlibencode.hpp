@@ -1,0 +1,4 @@
+#ifndef ZLIBENCODE_HPP
+#define ZLIBENCODE_HPP
+
+#endif // ZLIBENCODE_HPP

@@ -9,13 +9,13 @@
 
 namespace voxelio {
 
-template <typename T, size_t N>
+template <typename T, usize N>
 class Vec {
 public:
     using value_t = T;
     using magnitude_t = std::conditional_t<std::is_floating_point_v<T>, T, double>;
 
-    constexpr static size_t size = N;
+    constexpr static usize size = N;
 
     constexpr static Vec filledWith(const T &t);
 
@@ -90,7 +90,7 @@ public:
         return content;
     }
 
-    template <size_t i>
+    template <usize i>
     constexpr T get()
     {
         return this->operator[](i);
@@ -132,29 +132,29 @@ public:
     constexpr Vec &operator*=(T scalar);
     constexpr Vec &operator/=(T scalar);
 
-    constexpr T &operator[](size_t index)
+    constexpr T &operator[](usize index)
     {
         VXIO_DEBUG_ASSERT_LE(index, N);
         return content[index];
     }
 
-    constexpr const T &operator[](size_t index) const
+    constexpr const T &operator[](usize index) const
     {
         VXIO_DEBUG_ASSERT_LE(index, N);
         return content[index];
     }
 };
 
-template <typename T, size_t N>
+template <typename T, usize N>
 constexpr Vec<T, N> Vec<T, N>::filledWith(const T &t)
 {
     Vec<T, N> result{};
-    for (size_t i = 0; i < N; i++)
+    for (usize i = 0; i < N; i++)
         result[i] = t;
     return result;
 }
 
-template <typename T, size_t N>
+template <typename T, usize N>
 std::string Vec<T, N>::toString() const
 {
     // We could also use stringstream here, but that would require an iostream include EVERYWHERE
@@ -181,14 +181,14 @@ template <typename T>
 struct is_vec : std::false_type {
 };
 
-template <typename T, size_t N>
+template <typename T, usize N>
 struct is_vec<Vec<T, N>> : std::true_type {
 };
 
 template <typename T>
 constexpr bool is_vec_v = is_vec<T>::value;
 
-template <typename To, typename Source, size_t N>
+template <typename To, typename Source, usize N>
 constexpr auto static_vec_cast(const Vec<Source, N> &source)
 {
     if constexpr (std::is_same_v<To, Source>) {
@@ -199,7 +199,7 @@ constexpr auto static_vec_cast(const Vec<Source, N> &source)
     }
     else {
         Vec<To, N> result{};
-        for (size_t i = 0; i < N; ++i)
+        for (usize i = 0; i < N; ++i)
             result[i] = static_cast<To>(source[i]);
         return result;
     }
@@ -207,18 +207,18 @@ constexpr auto static_vec_cast(const Vec<Source, N> &source)
 
 // COMPARISON
 
-template <typename L, typename R, size_t N>
+template <typename L, typename R, usize N>
 constexpr bool operator==(const Vec<L, N> &a, const Vec<R, N> &b)
 {
-    for (size_t i = 0; i < N; i++)
+    for (usize i = 0; i < N; i++)
         if (a[i] != b[i]) return false;
     return true;
 }
 
-template <typename L, typename R, size_t N>
+template <typename L, typename R, usize N>
 constexpr bool operator!=(const Vec<L, N> &a, const Vec<R, N> &b)
 {
-    for (size_t i = 0; i < N; i++)
+    for (usize i = 0; i < N; i++)
         if (a[i] != b[i]) return true;
     return false;
 }
@@ -226,106 +226,106 @@ constexpr bool operator!=(const Vec<L, N> &a, const Vec<R, N> &b)
 // ARITHMETIC
 
 // addition
-template <typename L, typename R, size_t N>
+template <typename L, typename R, usize N>
 constexpr Vec<std::common_type_t<L, R>, N> operator+(const Vec<L, N> &a, const Vec<R, N> &b)
 {
     Vec<std::common_type_t<L, R>, N> result{};
-    for (size_t i = 0; i < N; i++) {
+    for (usize i = 0; i < N; i++) {
         result[i] = a[i] + b[i];
     }
     return result;
 }
 
 // subtraction
-template <typename L, typename R, size_t N>
+template <typename L, typename R, usize N>
 constexpr Vec<std::common_type_t<L, R>, N> operator-(const Vec<L, N> &a, const Vec<R, N> &b)
 {
     Vec<std::common_type_t<L, R>, N> result{};
-    for (size_t i = 0; i < N; i++) {
+    for (usize i = 0; i < N; i++) {
         result[i] = a[i] - b[i];
     }
     return result;
 }
 
 // scalar product
-template <typename T, typename S, size_t N>
+template <typename T, typename S, usize N>
 constexpr Vec<std::common_type_t<T, S>, N> operator*(const Vec<T, N> &a, const S &t)
 {
     Vec<std::common_type_t<T, S>, N> result{};
-    for (size_t i = 0; i < N; i++) {
+    for (usize i = 0; i < N; i++) {
         result[i] = a[i] * t;
     }
     return result;
 }
 
 // inverse scalar product
-template <typename T, typename S, size_t N>
+template <typename T, typename S, usize N>
 constexpr Vec<std::common_type_t<T, S>, N> operator/(const Vec<T, N> &a, const S &t)
 {
     Vec<std::common_type_t<T, S>, N> result{};
-    for (size_t i = 0; i < N; i++) {
+    for (usize i = 0; i < N; i++) {
         result[i] = a[i] / t;
     }
     return result;
 }
 
 // dot product
-template <typename L, typename R, size_t N>
+template <typename L, typename R, usize N>
 constexpr std::common_type_t<L, R> dot(const Vec<L, N> &a, const Vec<R, N> &b)
 {
     std::common_type_t<L, R> result = 0;
-    for (size_t i = 0; i < N; i++) {
+    for (usize i = 0; i < N; i++) {
         result += a[i] * b[i];
     }
     return result;
 }
 
 // dot product
-template <typename L, typename R, size_t N>
+template <typename L, typename R, usize N>
 constexpr Vec<std::common_type_t<L, R>, N> mul(const Vec<L, N> &a, const Vec<R, N> &b)
 {
     Vec<std::common_type_t<L, R>, N> result;
-    for (size_t i = 0; i < N; i++) {
+    for (usize i = 0; i < N; i++) {
         result[i] = a[i] * b[i];
     }
     return result;
 }
 
 // addition
-template <typename T, size_t N>
+template <typename T, usize N>
 constexpr Vec<T, N> &Vec<T, N>::operator+=(const Vec<T, N> &a)
 {
-    for (size_t i = 0; i < N; i++) {
+    for (usize i = 0; i < N; i++) {
         (*this)[i] += a[i];
     }
     return *this;
 }
 
 // subtraction
-template <typename T, size_t N>
+template <typename T, usize N>
 constexpr Vec<T, N> &Vec<T, N>::operator-=(const Vec<T, N> &a)
 {
-    for (size_t i = 0; i < N; i++) {
+    for (usize i = 0; i < N; i++) {
         (*this)[i] += a[i];
     }
     return *this;
 }
 
 // subtraction
-template <typename T, size_t N>
+template <typename T, usize N>
 constexpr Vec<T, N> &Vec<T, N>::operator*=(T s)
 {
-    for (size_t i = 0; i < N; i++) {
+    for (usize i = 0; i < N; i++) {
         (*this)[i] *= s;
     }
     return *this;
 }
 
 // division
-template <typename T, size_t N>
+template <typename T, usize N>
 constexpr Vec<T, N> &Vec<T, N>::operator/=(T s)
 {
-    for (size_t i = 0; i < N; i++) {
+    for (usize i = 0; i < N; i++) {
         (*this)[i] /= s;
     }
     return *this;
@@ -334,12 +334,12 @@ constexpr Vec<T, N> &Vec<T, N>::operator/=(T s)
 }  // namespace voxelio
 
 namespace std {
-template <typename T, size_t N>
+template <typename T, std::size_t N>
 struct hash<voxelio::Vec<T, N>> {
     constexpr std::size_t operator()(const voxelio::Vec<T, N> &s) const noexcept
     {
         std::size_t result = 1;
-        for (size_t i = 0; i < N; ++i) {
+        for (std::size_t i = 0; i < N; ++i) {
             std::size_t h = std::hash<T>{}(s[i]);
             h ^= h >> 32;
             result = 31 * result + h;
@@ -347,6 +347,7 @@ struct hash<voxelio::Vec<T, N>> {
         return result;
     }
 };
+
 }  // namespace std
 
 #endif  // VXIO_VEC_HPP
