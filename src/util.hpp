@@ -2,6 +2,7 @@
 #define VXIO_UTIL_HPP
 
 #include "builtin.hpp"
+#include "primitives.hpp"
 
 #include <cstring>
 #include <type_traits>
@@ -35,6 +36,22 @@ inline To memCast(const From &from)
     To result;
     std::memcpy(&result, &from, sizeof(To));
     return result;
+}
+
+/**
+ * @brief Finds the first mismatch between two arrays.
+ * If no mismatch was found, size is returned.
+ * @return the index of the first mismatch
+ */
+template <typename T>
+constexpr usize compareArrays(const T arr0[], const T arr1[], usize size)
+{
+    for (usize i = 0; i < size; ++i) {
+        if (arr0[i] != arr1[i]) {
+            return i;
+        }
+    }
+    return size;
 }
 
 }  // namespace voxelio
