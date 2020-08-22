@@ -1,10 +1,11 @@
 #ifndef VXIO_SVX_HPP
 #define VXIO_SVX_HPP
 
-#include "../3rd_party/miniz_cppfwd.hpp"
 #include "../types.hpp"
 #include "../voxelarray.hpp"
 #include "../voxelio.hpp"
+
+#include "../3rd_party/miniz_cpp/miniz_cppfwd.hpp"
 
 #include <vector>
 

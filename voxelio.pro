@@ -16,9 +16,9 @@ LIBS += -lstdc++fs
 INCLUDEPATH += src
 
 SOURCES +=  \
-    src/3rd_party/lodepng.cpp \
-    src/3rd_party/miniz.cpp \
-    src/3rd_party/miniz_cpp.cpp \
+    src/3rd_party/lodepng/lodepng.cpp \
+    src/3rd_party/miniz_cpp/miniz_cpp.cpp \
+    src/3rd_party/miniz/miniz.c \
     src/assert.cpp \
     src/builtin.cpp \
     src/filetype.cpp \
@@ -42,11 +42,11 @@ SOURCES +=  \
     src/format/vox.cpp
 
 HEADERS +=  \
-    src/3rd_party/lodepng.hpp \
-    src/3rd_party/lodepngfwd.hpp \
-    src/3rd_party/miniz.hpp \
-    src/3rd_party/miniz_cpp.hpp \
-    src/3rd_party/miniz_cppfwd.hpp \
+    src/3rd_party/lodepng/lodepng.hpp \
+    src/3rd_party/lodepng/lodepngfwd.hpp \
+    src/3rd_party/miniz_cpp/miniz_cpp.hpp \
+    src/3rd_party/miniz_cpp/miniz_cppfwd.hpp \
+    src/3rd_party/miniz/miniz.h \
     src/assert.hpp \
     src/bits.hpp \
     src/build.hpp \

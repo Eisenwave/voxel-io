@@ -5,8 +5,8 @@
 #include "log.hpp"
 #include "stringmanip.hpp"
 
-#include "3rd_party/lodepngfwd.hpp"
-#include "3rd_party/miniz_cpp.hpp"
+#include "3rd_party/lodepng/lodepngfwd.hpp"
+#include "3rd_party/miniz_cpp/miniz_cpp.hpp"
 
 namespace voxelio::svx {
 

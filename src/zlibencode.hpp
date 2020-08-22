@@ -5,7 +5,7 @@
 #include "primitives.hpp"
 #include "stream.hpp"
 
-#include "3rd_party/miniz.hpp"
+#include "3rd_party/miniz/miniz.h"
 
 namespace voxelio::zlib {
 

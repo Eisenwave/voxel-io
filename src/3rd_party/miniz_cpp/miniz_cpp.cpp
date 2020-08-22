@@ -1,6 +1,6 @@
 #include "miniz_cpp.hpp"
 
-#include "miniz.hpp"
+#include "../miniz/miniz.h"
 
 #include <assert.h>
 #include <iostream>
