@@ -1,7 +1,7 @@
 #include "vox.hpp"
 
 #include "color.hpp"
-#include "constants.hpp"
+#include "filetype.hpp"
 #include "intdiv.hpp"
 #include "log.hpp"
 #include "macro.hpp"

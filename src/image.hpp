@@ -27,7 +27,7 @@ enum class ColorFormat { V1, V8, RGB24, ARGB32, RGBA32 };
  * @param format the color format.
  * @return the number of channels
  */
-constexpr size_t channelCountOf(ColorFormat format)
+constexpr usize channelCountOf(ColorFormat format)
 {
     switch (format) {
     case ColorFormat::V1: return 1;
@@ -45,7 +45,7 @@ constexpr size_t channelCountOf(ColorFormat format)
  * @param format the format
  * @return the bit-depth of a color format
  */
-constexpr size_t bitDepthOf(ColorFormat format)
+constexpr usize bitDepthOf(ColorFormat format)
 {
     switch (format) {
     case ColorFormat::V1: return 1;
@@ -62,7 +62,7 @@ constexpr size_t bitDepthOf(ColorFormat format)
  * @param format the format
  * @return the size in bits
  */
-constexpr size_t bitSizeOf(ColorFormat format)
+constexpr usize bitSizeOf(ColorFormat format)
 {
     switch (format) {
     case ColorFormat::V1: return 1;
@@ -75,7 +75,7 @@ constexpr size_t bitSizeOf(ColorFormat format)
 }
 
 namespace detail {
-using RgbEncoder = void (*)(Color32 rgb, u8 *out, size_t bitOffset);
+using RgbEncoder = void (*)(Color32 rgb, u8 *out, usize bitOffset);
 }
 
 /**
@@ -83,20 +83,20 @@ using RgbEncoder = void (*)(Color32 rgb, u8 *out, size_t bitOffset);
  */
 class Image {
 private:
-    size_t contentSize;
+    usize contentSize;
     std::unique_ptr<u8[]> content;
-    size_t w;
-    size_t h;
-    size_t bitsPerPixel;
+    usize w;
+    usize h;
+    usize bitsPerPixel;
     ColorFormat f;
     detail::RgbEncoder encoder;
 
 public:
-    Image(size_t w, size_t h, ColorFormat format);
+    Image(usize w, usize h, ColorFormat format);
     Image(Image &&) = default;
     Image &operator=(Image &&) = default;
 
-    size_t bitIndexOf(size_t x, size_t y) const
+    usize bitIndexOf(usize x, usize y) const
     {
         return pixelIndexOf(x, y) * bitsPerPixel;
     }
@@ -111,7 +111,7 @@ public:
         return content.get();
     }
 
-    size_t dataSize() const
+    usize dataSize() const
     {
         return contentSize;
     }
@@ -121,17 +121,17 @@ public:
         return f;
     }
 
-    size_t width() const
+    usize width() const
     {
         return w;
     }
 
-    size_t height() const
+    usize height() const
     {
         return h;
     }
 
-    size_t pixelIndexOf(size_t x, size_t y) const
+    usize pixelIndexOf(usize x, usize y) const
     {
         return y * w + x;
     }
@@ -142,7 +142,7 @@ public:
      * @param y the y-coordinate
      * @param color the color
      */
-    void setPixel(size_t x, size_t y, Color32 color)
+    void setPixel(usize x, usize y, Color32 color)
     {
         VXIO_DEBUG_ASSERT_LT(x, w);
         VXIO_DEBUG_ASSERT_LT(y, h);
@@ -154,7 +154,7 @@ public:
      * @param pixelIndex the index of the pixel
      * @param color the color
      */
-    void setPixel(size_t pixelIndex, Color32 color)
+    void setPixel(usize pixelIndex, Color32 color)
     {
         VXIO_DEBUG_ASSERT_LT(pixelIndex, w * h);
         setData(pixelIndex * bitsPerPixel, color);
@@ -165,10 +165,10 @@ public:
      * @param bitIndex the index of the bit in the image
      * @param color the color
      */
-    void setData(size_t bitIndex, Color32 color)
+    void setData(usize bitIndex, Color32 color)
     {
-        const size_t byteIndex = bitIndex / 8;
-        const size_t bitOffset = bitIndex % 8;
+        const usize byteIndex = bitIndex / 8;
+        const usize bitOffset = bitIndex % 8;
         VXIO_DEBUG_ASSERT_LT(byteIndex, contentSize);
         encoder(color, &content[byteIndex], bitOffset);
     }

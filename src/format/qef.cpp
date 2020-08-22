@@ -1,6 +1,6 @@
 #include "qef.hpp"
 
-#include "constants.hpp"
+#include "filetype.hpp"
 #include "log.hpp"
 #include "macro.hpp"
 #include "parse.hpp"

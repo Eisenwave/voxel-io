@@ -39,24 +39,24 @@ std::string stringifyUsingStream(const T &t) noexcept
     return result;
 }
 
-template <size_t BASE, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <usize BASE, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 std::string stringifyUInt(const Uint n) noexcept
 {
     static_assert(BASE <= 16);
 
-    constexpr size_t maxDigits = voxelio::digitCount<BASE>(std::numeric_limits<Uint>::max());
+    constexpr usize maxDigits = voxelio::digitCount<BASE>(std::numeric_limits<Uint>::max());
     constexpr const char *hexDigits = "0123456789abcdef";
 
     char result[maxDigits];
     Uint x = n;
 
     if constexpr (isPow2(BASE)) {
-        constexpr size_t bitsPerDigit = log2floor(BASE);
+        constexpr usize bitsPerDigit = log2floor(BASE);
         constexpr Uint digitMask = BASE - 1;
 
-        const size_t digitCount = voxelio::digitCount<BASE>(n);
+        const usize digitCount = voxelio::digitCount<BASE>(n);
 
-        size_t i = digitCount;
+        usize i = digitCount;
         do {
             result[--i] = hexDigits[x & digitMask];
             x >>= bitsPerDigit;
@@ -65,7 +65,7 @@ std::string stringifyUInt(const Uint n) noexcept
         return std::string(result, digitCount);
     }
     else {
-        size_t i = maxDigits;
+        usize i = maxDigits;
         do {
             result[--i] = hexDigits[x % BASE];
             x /= BASE;
@@ -88,7 +88,7 @@ std::string stringifyUInt(const Uint n) noexcept
  * @return the stringified number
  */
 template <typename Float, std::enable_if_t<std::is_floating_point_v<Float>, int> = 0>
-std::string stringifyFloat(Float f, size_t precision) noexcept
+std::string stringifyFloat(Float f, usize precision) noexcept
 {
     std::stringstream *stream = detail::stringstream_make();
     detail::stringstream_precision(stream, static_cast<std::streamsize>(precision));
@@ -106,7 +106,7 @@ std::string stringifyFloat(Float f, size_t precision) noexcept
  * @param precision the precision
  * @return the stringified number
  */
-template <size_t RADIX, typename Int, std::enable_if_t<(std::is_integral_v<Int> && RADIX > 1 && RADIX <= 16), int> = 0>
+template <usize RADIX, typename Int, std::enable_if_t<(std::is_integral_v<Int> && RADIX > 1 && RADIX <= 16), int> = 0>
 std::string stringifyInt(Int n) noexcept
 {
     if constexpr (std::is_signed_v<Int>) {
@@ -232,7 +232,7 @@ std::string stringifyFractionRpad(uint64_t num, uint64_t den, unsigned precision
  * @tparam SPACE true if a space should be inserted between the number and unit (true by default)
  * @return a human-readable string representing the given file size
  */
-template <size_t BASE = 1024, bool SPACE = true, std::enable_if_t<BASE == 1000 || BASE == 1024, size_t> = BASE>
+template <usize BASE = 1024, bool SPACE = true, std::enable_if_t<BASE == 1000 || BASE == 1024, usize> = BASE>
 std::string stringifyFileSize(uint64_t size, unsigned precision = 0) noexcept
 {
     constexpr const char FILE_SIZE_UNITS[8][3]{"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB"};
@@ -271,12 +271,12 @@ std::string stringifyTime(uint64_t nanos, unsigned precision = 0) noexcept
     // clang-format off
     // TIME_FACTORS represents the factor to get to the next unit
     // the last factor is 10 (century -> millenium)
-    constexpr size_t UNITS = 10;
+    constexpr usize UNITS = 10;
     constexpr const char TIME_UNITS[UNITS][4]    {"ns", "us", "ms", "s", "min", "h", "d", "y", "dec", "cen"};
     constexpr const unsigned TIME_FACTORS[UNITS] {1000, 1000, 1000,  60,   60,  24,  365,  10,    10,    10};
     // clang-format on
 
-    size_t unit = 0;
+    usize unit = 0;
     uint64_t divisor = 1;
     for (; unit < 10; ++unit) {
         uint64_t nextDivisor = divisor * TIME_FACTORS[unit];

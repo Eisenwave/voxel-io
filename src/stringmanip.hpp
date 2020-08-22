@@ -6,6 +6,8 @@
  * Provides lightweight string manipulation functions.
  */
 
+#include "primitives.hpp"
+
 #include <string>
 #include <vector>
 
@@ -31,8 +33,8 @@ void trim(std::string &s);
 
 // COPYING CONVERSIONS =================================================================================================
 
-std::string lpad(const std::string &str, size_t length, char c = ' ');
-std::string rpad(const std::string &str, size_t length, char c = ' ');
+std::string lpad(const std::string &str, usize length, char c = ' ');
+std::string rpad(const std::string &str, usize length, char c = ' ');
 
 std::string substrBeforeFirst(const std::string &str, char delimiter);
 std::string substrBeforeLast(const std::string &str, char delimiter);
@@ -47,7 +49,7 @@ std::string ext(const std::string &str, char delimiter = '.');
 
 // SPLITTING ===========================================================================================================
 
-std::vector<std::string> splitAtDelimiter(const std::string &str, char delimiter, size_t maxParts = 0);
+std::vector<std::string> splitAtDelimiter(const std::string &str, char delimiter, usize maxParts = 0);
 
 // FORMATING ===========================================================================================================
 

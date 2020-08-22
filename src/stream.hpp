@@ -19,7 +19,7 @@
 
 #include "assert.hpp"
 #include "endian.hpp"
-#include "types.hpp"
+#include "primitives.hpp"
 
 #include <cstddef>
 #include <iosfwd>
@@ -27,8 +27,7 @@
 
 namespace voxelio {
 
-static_assert(sizeof(u8) == 1);
-static_assert(sizeof(i8) == 1);
+using build::Endian;
 
 /**
  * @brief Java-style implementation of an input stream.
@@ -67,7 +66,7 @@ public:
      * @param buffer the buffer
      * @param maxSize the maximum number of characters to read
      */
-    virtual size_t read(u8 buffer[], size_t maxSize) = 0;
+    virtual usize read(u8 buffer[], usize maxSize) = 0;
 
     /**
      * @brief Moves the read position to a given absolute position.
@@ -112,16 +111,16 @@ public:
      * @param delimiter the delimiter
      * @return the number of bytes read
      */
-    virtual size_t read(u8 buffer[], size_t size, u8 delimiter)
+    virtual usize read(u8 buffer[], usize size, u8 delimiter)
     {
-        size_t readCount = read(buffer, size);
+        usize readCount = read(buffer, size);
         if (err()) {
             return 0;
         }
 
         // At this point we either reached the EOF or read all characters.
         // It doesn't really matter, we need to find the delimiter in the stream either way.
-        for (size_t i = 0; i < readCount; ++i) {
+        for (usize i = 0; i < readCount; ++i) {
             if (buffer[i] == delimiter) {
                 auto seekDistance = -static_cast<i64>(readCount - i - 1);
                 if (seekDistance != 0 && eof()) {
@@ -143,14 +142,14 @@ public:
      */
     virtual void readStringToUntil(std::string &out, char delimiter)
     {
-        constexpr size_t chunkSize = 128;
+        constexpr usize chunkSize = 128;
         const u8 delimiterByte = static_cast<u8>(delimiter);
-        size_t totalSize = 0;
+        usize totalSize = 0;
 
         do {
             out.resize(totalSize + chunkSize);
             u8 *stringData = reinterpret_cast<u8 *>(out.data());
-            size_t readSize = read(stringData + totalSize, chunkSize, delimiterByte);
+            usize readSize = read(stringData + totalSize, chunkSize, delimiterByte);
             totalSize += readSize;
             if (readSize != chunkSize) {
                 out.resize(totalSize);
@@ -211,7 +210,7 @@ public:
      * @param out the string
      * @param length the number of characters to read
      */
-    void readStringTo(std::string &out, size_t length)
+    void readStringTo(std::string &out, usize length)
     {
         out.resize(length);
         read(reinterpret_cast<u8 *>(out.data()), length);
@@ -265,7 +264,7 @@ public:
      * May set eof and err.
      * @return the read line
      */
-    std::string readString(size_t length)
+    std::string readString(usize length)
     {
         std::string result;
         readStringTo(result, length);
@@ -319,7 +318,7 @@ public:
      * May set eof and err.
      * @param t the buffer for read data
      */
-    template <size_t COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    template <usize COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     void readBig(T t[COUNT])
     {
         return readData<T, Endian::BIG, COUNT>(t);
@@ -330,7 +329,7 @@ public:
      * May set eof and err.
      * @param t the buffer for read data
      */
-    template <size_t COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    template <usize COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     void readLittle(T t[COUNT])
     {
         return readData<T, Endian::LITTLE, COUNT>(t);
@@ -355,25 +354,25 @@ private:
         }
     }
 
-    template <typename T, Endian ENDIAN, size_t COUNT>
+    template <typename T, Endian ENDIAN, usize COUNT>
     void readDataToBuffer(T t[COUNT], u8 buffer[sizeof(T) * COUNT])
     {
         read(buffer, sizeof(T) * COUNT);
 
-        for (size_t i = 0; i < COUNT; ++i) {
+        for (usize i = 0; i < COUNT; ++i) {
             u8 *insertionPos = buffer + sizeof(T) * i;
             t[i] = detail::decode_builtin<ENDIAN, T>(insertionPos);
         }
     }
 
-    template <typename T, Endian ENDIAN, size_t COUNT>
+    template <typename T, Endian ENDIAN, usize COUNT>
     void readData(T t[COUNT])
     {
         if constexpr (sizeof(T) == 1) {
             read(reinterpret_cast<u8 *>(t), COUNT);
         }
         else {
-            constexpr size_t bufferSize = sizeof(T) * COUNT;
+            constexpr usize bufferSize = sizeof(T) * COUNT;
             if constexpr (bufferSize <= sizeof(this->readBuffer)) {
                 readDataToBuffer<T, ENDIAN, COUNT>(t, this->readBuffer);
             }
@@ -422,7 +421,7 @@ public:
      * @param buffer the bytes to write
      * @param size the number of bytes to write
      */
-    virtual void write(const u8 buffer[], size_t size) = 0;
+    virtual void write(const u8 buffer[], usize size) = 0;
 
     /**
      * @brief Moves the write position to a given absolute position.
@@ -574,7 +573,7 @@ public:
      * May set err.
      * @param t the buffer for read data
      */
-    template <size_t COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    template <usize COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     void writeBig(const T t[COUNT])
     {
         return writeData<T, Endian::BIG, COUNT>(t);
@@ -585,7 +584,7 @@ public:
      * May set err.
      * @param t the buffer for read data
      */
-    template <size_t COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    template <usize COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     void writeLittle(const T t[COUNT])
     {
         return writeData<T, Endian::LITTLE, COUNT>(t);
@@ -611,10 +610,10 @@ private:
         }
     }
 
-    template <typename T, Endian ENDIAN, size_t COUNT>
+    template <typename T, Endian ENDIAN, usize COUNT>
     void writeDataToBuffer(const T t[COUNT], u8 buffer[sizeof(T) * COUNT])
     {
-        for (size_t i = 0; i < COUNT; ++i) {
+        for (usize i = 0; i < COUNT; ++i) {
             u8 *insertionPos = buffer + sizeof(T) * i;
             detail::encode_builtin<ENDIAN, T>(t[i], insertionPos);
         }
@@ -622,14 +621,14 @@ private:
         write(buffer, sizeof(T) * COUNT);
     }
 
-    template <typename T, Endian ENDIAN, size_t COUNT>
+    template <typename T, Endian ENDIAN, usize COUNT>
     void writeData(const T data[COUNT])
     {
         if constexpr (sizeof(T) == 1) {
             write(reinterpret_cast<const u8 *>(data), COUNT);
         }
         else {
-            constexpr size_t bufferSize = sizeof(T) * COUNT;
+            constexpr usize bufferSize = sizeof(T) * COUNT;
             if constexpr (bufferSize <= sizeof(this->writeBuffer)) {
                 writeDataToBuffer<T, ENDIAN, COUNT>(data, this->writeBuffer);
             }
@@ -680,7 +679,7 @@ public:
         pos++;
         return 0;
     }
-    size_t read(u8 buffer[], size_t size) final
+    usize read(u8 buffer[], usize size) final
     {
         std::fill_n(buffer, size, 0);
         pos += size;
@@ -722,7 +721,7 @@ public:
         pos++;
     }
 
-    void write(const u8 *, size_t size) final
+    void write(const u8 *, usize size) final
     {
         pos += size;
     }
@@ -749,17 +748,17 @@ public:
 class ByteArrayInputStream : public InputStream {
 private:
     u8 *data;
-    size_t size;
-    size_t pos = 0;
+    usize size;
+    usize pos = 0;
 
 public:
-    ByteArrayInputStream(u8 data[], size_t size) noexcept;
+    ByteArrayInputStream(u8 data[], usize size) noexcept;
     ByteArrayInputStream(ByteArrayInputStream &&) = default;
     ~ByteArrayInputStream() final = default;
 
     int read() final;
 
-    size_t read(u8 buffer[], size_t size) final;
+    usize read(u8 buffer[], usize size) final;
 
     void seekRelative(i64 offset) final
     {
@@ -792,14 +791,14 @@ private:
     void *sink;  // actually a std::vector<u8>, but not explicitly typed to avoid a <vector> include
 
 public:
-    ByteArrayOutputStream(size_t initialSize) noexcept;
+    ByteArrayOutputStream(usize initialSize) noexcept;
     ByteArrayOutputStream() noexcept : ByteArrayOutputStream{8192} {}
 
     ByteArrayOutputStream(ByteArrayOutputStream &&) = default;
     ~ByteArrayOutputStream() final;
 
     void write(u8) final;
-    void write(const u8 *, size_t size) final;
+    void write(const u8 *, usize size) final;
 
     void seekRelative(i64 offset) final
     {
@@ -822,7 +821,7 @@ public:
     void flush() final {}
 
     void clear();
-    void reserve(size_t size);
+    void reserve(usize size);
 
     u8 *data()
     {
@@ -832,7 +831,7 @@ public:
 
     const u8 *data() const;
 
-    size_t size() const;
+    usize size() const;
 
 private:
     bool atEnd()
@@ -872,7 +871,7 @@ public:
     ~FileInputStream() final;
 
     int read() final;
-    size_t read(u8 buffer[], size_t size) final;
+    usize read(u8 buffer[], usize size) final;
     void seekRelative(i64 offset) final;
     void seekAbsolute(u64 offset) final;
     u64 position() final;
@@ -907,7 +906,7 @@ public:
     ~FileOutputStream() final;
 
     void write(u8 byte) final;
-    void write(const u8 *buffer, size_t size) final;
+    void write(const u8 *buffer, usize size) final;
     void write(const char *string) final;
     void seekRelative(i64 offset) final;
     void seekAbsolute(u64 offset) final;
@@ -951,7 +950,7 @@ public:
     explicit StdInputStream(std::istream &stream);
 
     int read() final;
-    size_t read(u8 *buffer, size_t size) final;
+    usize read(u8 *buffer, usize size) final;
     void readStringToUntil(std::string &out, char delimiter) final;
     void seekRelative(i64 offset) final;
     void seekAbsolute(u64 offset) final;
@@ -973,7 +972,7 @@ public:
     explicit StdOutputStream(std::ostream &stream);
 
     void write(u8 byte) final;
-    void write(const u8 *buffer, size_t size) final;
+    void write(const u8 *buffer, usize size) final;
     void write(const char *string) final;
     void seekRelative(i64 offset) final;
     void seekAbsolute(u64 offset) final;

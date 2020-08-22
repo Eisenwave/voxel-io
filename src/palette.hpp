@@ -1,7 +1,7 @@
 #ifndef VXIO_PALETTE_HPP
 #define VXIO_PALETTE_HPP
 
-#include "types.hpp"
+#include "primitives.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -55,12 +55,12 @@ public:
      */
     u32 insertUnsafe(argb32 color);
 
-    void reserve(size_t capacity)
+    void reserve(usize capacity)
     {
         colorToIndexMap.reserve(capacity);
     }
 
-    size_t size() const
+    usize size() const
     {
         return colorToIndexMap.size();
     }

@@ -85,7 +85,7 @@ constexpr Uint rotr_impl(Uint n, unsigned char rot)
 }  // namespace detail
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint rotl(Uint n, unsigned char rot = 1)
+constexpr Uint leftRot(Uint n, unsigned char rot = 1)
 {
 #ifdef VXIO_HAS_BUILTIN_ROTL
     return voxelio::isConstantEvaluated() ? detail::rotl_impl(n, rot) : voxelio::builtin::rotl(n, rot);
@@ -95,7 +95,7 @@ constexpr Uint rotl(Uint n, unsigned char rot = 1)
 }
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint rotr(Uint n, unsigned char rot = 1)
+constexpr Uint rightRot(Uint n, unsigned char rot = 1)
 {
 #ifdef VXIO_HAS_BUILTIN_ROTL
     return voxelio::isConstantEvaluated() ? detail::rotr_impl(n, rot) : voxelio::builtin::rotr(n, rot);

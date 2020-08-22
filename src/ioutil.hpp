@@ -23,13 +23,13 @@ private:
         Voxel32 *buffer32;
         Voxel64 *buffer64;
     };
-    size_t index = 0;
-    size_t limit = 0;
+    usize index = 0;
+    usize limit = 0;
     bool is64;
 
 public:
-    void reset(Voxel32 buffer[], size_t size) noexcept;
-    void reset(Voxel64 buffer[], size_t size) noexcept;
+    void reset(Voxel32 buffer[], usize size) noexcept;
+    void reset(Voxel64 buffer[], usize size) noexcept;
 
     void emplace(Vec3i32 pos, u32 color) noexcept;
     void emplace(Vec3i64 pos, u32 color) noexcept;
@@ -47,12 +47,12 @@ public:
         return index == limit;
     }
 
-    size_t voxelsWritten() noexcept
+    usize voxelsWritten() noexcept
     {
         return index;
     }
 
-    size_t capacity() noexcept
+    usize capacity() noexcept
     {
         return limit;
     }
@@ -69,11 +69,11 @@ class ListWriterWriteHelper {
 private:
     AbstractListWriter &writer;
     Voxel *buffer;
-    size_t bufferIndex = 0;
-    size_t bufferSize = 0;
+    usize bufferIndex = 0;
+    usize bufferSize = 0;
 
 public:
-    ListWriterWriteHelper(AbstractListWriter &writer, Voxel buffer[], size_t bufferSize)
+    ListWriterWriteHelper(AbstractListWriter &writer, Voxel buffer[], usize bufferSize)
         : writer{writer}, buffer{std::move(buffer)}, bufferSize{bufferSize}
     {
     }
@@ -86,9 +86,9 @@ public:
         }
     }
 
-    [[nodiscard]] ResultCode write(Voxel buffer[], size_t bufferSize) noexcept
+    [[nodiscard]] ResultCode write(Voxel buffer[], usize bufferSize) noexcept
     {
-        for (size_t i = 0; i < bufferSize; ++i) {
+        for (usize i = 0; i < bufferSize; ++i) {
             if (auto result = write(std::move(buffer[i])); isError(result)) {
                 return result;
             }

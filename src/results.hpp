@@ -1,8 +1,11 @@
 #ifndef VXIO_RESULTCODE_HPP
 #define VXIO_RESULTCODE_HPP
 
+#include "primitives.hpp"
+
 #include <array>
 #include <optional>
+#include <string>
 
 namespace voxelio {
 
@@ -149,7 +152,7 @@ constexpr std::array<const char *, 256> makeResultCodeNameTable()
 {
     std::array<const char *, 256> result{};
 
-#define VXIO_REGISTER_RESULT_CODE(value) result[static_cast<size_t>(ResultCode::value)] = #value
+#define VXIO_REGISTER_RESULT_CODE(value) result[static_cast<usize>(ResultCode::value)] = #value
 
     VXIO_REGISTER_RESULT_CODE(OK);
     VXIO_REGISTER_RESULT_CODE(OK_INITIALIZED);
@@ -223,7 +226,7 @@ constexpr std::array<const char *, 256> RESULT_CODE_NAME_TABLE = makeResultCodeN
 
 constexpr const char *nameOf(ResultCode code)
 {
-    return detail::RESULT_CODE_NAME_TABLE[static_cast<size_t>(code)];
+    return detail::RESULT_CODE_NAME_TABLE[static_cast<usize>(code)];
 }
 
 constexpr bool isGood(ResultCode code)
@@ -273,97 +276,97 @@ static_assert(isGood(ResultCode::READ_OK));
 static_assert(isGood(ResultCode::WRITE_OK));
 
 struct Error {
-    uint64_t location;
+    u64 location;
     std::string what;
 };
 
 struct ReadResult {
     // GOOD RESULTS
 
-    static ReadResult ok(uint64_t voxelsRead = 0)
+    static ReadResult ok(u64 voxelsRead = 0)
     {
         return {voxelsRead, ResultCode::OK, std::nullopt};
     }
 
-    static ReadResult incomplete(uint64_t voxelsRead = 0)
+    static ReadResult incomplete(u64 voxelsRead = 0)
     {
         return {voxelsRead, ResultCode::READ_BUFFER_FULL, std::nullopt};
     }
 
-    static ReadResult nextObject(uint64_t voxelsRead = 0)
+    static ReadResult nextObject(u64 voxelsRead = 0)
     {
         return {voxelsRead, ResultCode::READ_OBJECT_END, std::nullopt};
     }
 
-    static ReadResult end(uint64_t voxelsRead = 0)
+    static ReadResult end(u64 voxelsRead = 0)
     {
         return {voxelsRead, ResultCode::READ_END, std::nullopt};
     }
 
     // BAD RESULTS
 
-    static ReadResult genericError(uint64_t location, std::string what)
+    static ReadResult genericError(u64 location, std::string what)
     {
         return {0, ResultCode::ERROR, Error{location, std::move(what)}};
     }
 
-    static ReadResult parseError(uint64_t location, std::string what)
+    static ReadResult parseError(u64 location, std::string what)
     {
         return {0, ResultCode::READ_ERROR_PARSE_FAIL, Error{location, std::move(what)}};
     }
 
-    static ReadResult ioError(uint64_t location, std::string what)
+    static ReadResult ioError(u64 location, std::string what)
     {
         return {0, ResultCode::READ_ERROR_IO_FAIL, Error{location, std::move(what)}};
     }
 
-    static ReadResult unexpectedEof(uint64_t location, std::string what = "Unexpected end of file (EOF)")
+    static ReadResult unexpectedEof(u64 location, std::string what = "Unexpected end of file (EOF)")
     {
         return {0, ResultCode::READ_ERROR_UNEXPECTED_EOF, Error{location, std::move(what)}};
     }
 
-    static ReadResult unexpectedMagic(uint64_t location, std::string what)
+    static ReadResult unexpectedMagic(u64 location, std::string what)
     {
         return {0, ResultCode::READ_ERROR_UNEXPECTED_MAGIC, Error{location, std::move(what)}};
     }
 
-    static ReadResult unexpectedSymbol(uint64_t location, std::string what)
+    static ReadResult unexpectedSymbol(u64 location, std::string what)
     {
         return {0, ResultCode::READ_ERROR_UNEXPECTED_SYMBOL, Error{location, std::move(what)}};
     }
 
-    static ReadResult unsupportedVersion(uint64_t location, std::string what)
+    static ReadResult unsupportedVersion(u64 location, std::string what)
     {
         return {0, ResultCode::READ_ERROR_UNSUPPORTED_VERSION, Error{location, std::move(what)}};
     }
 
-    static ReadResult unsupportedFeature(uint64_t location, std::string what)
+    static ReadResult unsupportedFeature(u64 location, std::string what)
     {
         return {0, ResultCode::READ_ERROR_UNSUPPORTED_FEATURE, Error{location, std::move(what)}};
     }
 
-    static ReadResult unknownVersion(uint64_t location, std::string what)
+    static ReadResult unknownVersion(u64 location, std::string what)
     {
         return {0, ResultCode::READ_ERROR_UNKNOWN_VERSION, Error{location, std::move(what)}};
     }
 
-    static ReadResult unknownFeature(uint64_t location, std::string what)
+    static ReadResult unknownFeature(u64 location, std::string what)
     {
         return {0, ResultCode::READ_ERROR_UNKNOWN_FEATURE, Error{location, std::move(what)}};
     }
 
-    static ReadResult missingHeaderField(uint64_t location, std::string what)
+    static ReadResult missingHeaderField(u64 location, std::string what)
     {
         return {0, ResultCode::READ_ERROR_MISSING_DATA, Error{location, std::move(what)}};
     }
 
-    uint64_t voxelsRead;
+    u64 voxelsRead;
     ResultCode type;
     std::optional<Error> error;
 
     ReadResult() = default;
 
-    ReadResult(uint64_t voxelsRead, ResultCode code, std::optional<Error> error = std::nullopt)
+    ReadResult(u64 voxelsRead, ResultCode code, std::optional<Error> error = std::nullopt)
         : voxelsRead{voxelsRead}, type{code}, error{std::move(error)}
     {
     }

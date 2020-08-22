@@ -12,6 +12,7 @@
 #include "bits.hpp"
 #include "intdiv.hpp"
 #include "intlog.hpp"
+#include "primitives.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -29,13 +30,13 @@ namespace detail {
  * @param bits the amount of zero bits per input bit to interleave
  * @return the input number interleaved with input-bits
  */
-constexpr uint64_t ileaveZeros_naive(uint32_t input, size_t bits)
+constexpr u64 ileaveZeros_naive(u32 input, usize bits)
 {
-    const auto lim = std::min<size_t>(32, voxelio::divCeil<size_t>(64, bits + 1));
+    const auto lim = std::min<usize>(32, voxelio::divCeil<usize>(64, bits + 1));
 
-    uint64_t result = 0;
-    for (size_t i = 0, b_out = 0; i < lim; ++i) {
-        result |= static_cast<uint64_t>(input & 1) << b_out;
+    u64 result = 0;
+    for (usize i = 0, b_out = 0; i < lim; ++i) {
+        result |= static_cast<u64>(input & 1) << b_out;
         input >>= 1;
         b_out += bits + 1;
     }
@@ -49,17 +50,17 @@ constexpr uint64_t ileaveZeros_naive(uint32_t input, size_t bits)
  * @param out_bits_per_in_bits the output bits per input bits
  * @return the output number or 0 if the bits parameter was zero
  */
-constexpr uint64_t duplBits_naive(uint64_t input, size_t out_bits_per_in_bits)
+constexpr u64 duplBits_naive(u64 input, usize out_bits_per_in_bits)
 {
     if (out_bits_per_in_bits == 0) {
         return 0;
     }
-    const auto lim = voxelio::divCeil<size_t>(64, out_bits_per_in_bits);
+    const auto lim = voxelio::divCeil<usize>(64, out_bits_per_in_bits);
 
-    uint64_t result = 0;
-    for (size_t i = 0, b_out = 0; i < lim; ++i) {
-        for (size_t j = 0; j < out_bits_per_in_bits; ++j, ++b_out) {
-            result |= static_cast<uint64_t>((input >> i) & 1) << b_out;
+    u64 result = 0;
+    for (usize i = 0, b_out = 0; i < lim; ++i) {
+        for (usize j = 0; j < out_bits_per_in_bits; ++j, ++b_out) {
+            result |= static_cast<u64>((input >> i) & 1) << b_out;
         }
     }
 
@@ -74,26 +75,26 @@ constexpr uint64_t duplBits_naive(uint64_t input, size_t out_bits_per_in_bits)
  * @tparam BITS the number of bits to be interleaved, must be > 0
  * @return the input interleaved with <BITS> bits
  */
-template <size_t BITS>
-constexpr uint64_t ileaveZeros_const(uint32_t input)
+template <usize BITS>
+constexpr u64 ileaveZeros_const(u32 input)
 {
     if constexpr (BITS == 0) {
         return input;
     }
     else {
-        constexpr uint64_t MASKS[] = {
-            detail::duplBits_naive(detail::ileaveZeros_naive(~uint32_t(0), BITS), 1),
-            detail::duplBits_naive(detail::ileaveZeros_naive(~uint32_t(0), BITS), 2),
-            detail::duplBits_naive(detail::ileaveZeros_naive(~uint32_t(0), BITS), 4),
-            detail::duplBits_naive(detail::ileaveZeros_naive(~uint32_t(0), BITS), 8),
-            detail::duplBits_naive(detail::ileaveZeros_naive(~uint32_t(0), BITS), 16),
+        constexpr u64 MASKS[] = {
+            detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 1),
+            detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 2),
+            detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 4),
+            detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 8),
+            detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 16),
         };
         // log2_floor(0) == 0 so this is always safe, even for 1 bit
         constexpr int start = 4 - (voxelio::log2floor(BITS >> 1));
 
-        uint64_t n = input;
+        u64 n = input;
         for (int i = start; i != -1; --i) {
-            size_t shift = BITS * (1 << i);
+            usize shift = BITS * (1 << i);
             n |= n << shift;
             n &= MASKS[i];
         }
@@ -112,13 +113,13 @@ namespace detail {
  * @param bits input bits per output bit
  * @return the the output with removed bits
  */
-constexpr uint64_t remIleavedBits_naive(uint64_t input, size_t bits) noexcept
+constexpr u64 remIleavedBits_naive(u64 input, usize bits) noexcept
 {
     // increment once to avoid modulo divisions by 0
     // this way our function is noexcept and safe for all inputs
     ++bits;
-    uint64_t result = 0;
-    for (size_t i = 0, b_out = 0; i < 64; ++i) {
+    u64 result = 0;
+    for (usize i = 0, b_out = 0; i < 64; ++i) {
         if (i % bits == 0) {
             result |= (input & 1) << b_out++;
         }
@@ -137,28 +138,28 @@ constexpr uint64_t remIleavedBits_naive(uint64_t input, size_t bits) noexcept
  * @param bits input bits per output bit
  * @return the the output with removed bits
  */
-template <size_t BITS>
-constexpr uint64_t remIleavedBits_const(uint64_t input) noexcept
+template <usize BITS>
+constexpr u64 remIleavedBits_const(u64 input) noexcept
 {
     if constexpr (BITS == 0) {
         return input;
     }
     else {
-        constexpr uint64_t MASKS[] = {
-            detail::duplBits_naive(detail::ileaveZeros_naive(~uint32_t(0), BITS), 1),
-            detail::duplBits_naive(detail::ileaveZeros_naive(~uint32_t(0), BITS), 2),
-            detail::duplBits_naive(detail::ileaveZeros_naive(~uint32_t(0), BITS), 4),
-            detail::duplBits_naive(detail::ileaveZeros_naive(~uint32_t(0), BITS), 8),
-            detail::duplBits_naive(detail::ileaveZeros_naive(~uint32_t(0), BITS), 16),
-            detail::duplBits_naive(detail::ileaveZeros_naive(~uint32_t(0), BITS), 32),
+        constexpr u64 MASKS[] = {
+            detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 1),
+            detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 2),
+            detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 4),
+            detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 8),
+            detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 16),
+            detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 32),
         };
         // log2_floor(0) == 0 so this is always safe, even for 1 bit
-        constexpr size_t iterations = 5 - (voxelio::log2floor(BITS >> 1));
+        constexpr usize iterations = 5 - (voxelio::log2floor(BITS >> 1));
 
         input &= MASKS[0];
 
-        for (size_t i = 0; i < iterations; ++i) {
-            size_t rshift = (1 << i) * BITS;
+        for (usize i = 0; i < iterations; ++i) {
+            usize rshift = (1 << i) * BITS;
             input |= input >> rshift;
             input &= MASKS[i + 1];
         }
@@ -179,20 +180,20 @@ constexpr uint64_t remIleavedBits_const(uint64_t input) noexcept
  * @param lo the low bits
  * @return the interleaved bits
  */
-constexpr uint64_t ileave2(uint32_t hi, uint32_t lo)
+constexpr u64 ileave2(u32 hi, u32 lo)
 {
-    constexpr uint64_t MASKS[] = {0x5555'5555'5555'5555,
+    constexpr u64 MASKS[] = {0x5555'5555'5555'5555,
                                   0x3333'3333'3333'3333,
                                   0x0F0F'0F0F'0F0F'0F0F,
                                   0x00FF'00FF'00FF'00FF,
                                   0x0000'FFFF'0000'FFFF};
 
-    uint64_t result = 0;
-    uint32_t *nums[] = {&hi, &lo};
+    u64 result = 0;
+    u32 *nums[] = {&hi, &lo};
 
-    for (size_t i = 0; i < 2; ++i) {
-        uint64_t n = *nums[i];
-        for (size_t i = 4; i != std::numeric_limits<size_t>::max(); --i) {
+    for (usize i = 0; i < 2; ++i) {
+        u64 n = *nums[i];
+        for (usize i = 4; i != std::numeric_limits<usize>::max(); --i) {
             n |= n << (1 << i);
             n &= MASKS[i];
         }
@@ -204,7 +205,7 @@ constexpr uint64_t ileave2(uint32_t hi, uint32_t lo)
 
 namespace detail {
 
-constexpr uint64_t ileave3_naive(uint32_t x, uint32_t y, uint32_t z)
+constexpr u64 ileave3_naive(u32 x, u32 y, u32 z)
 {
     return (detail::ileaveZeros_naive(x, 2) << 2) | (detail::ileaveZeros_naive(y, 2) << 1) | ileaveZeros_naive(z, 2);
 }
@@ -221,7 +222,7 @@ constexpr uint64_t ileave3_naive(uint32_t x, uint32_t y, uint32_t z)
  * @param z the lowest bits
  * @return the interleaved bits
  */
-constexpr uint64_t ileave3(uint32_t x, uint32_t y, uint32_t z)
+constexpr u64 ileave3(u32 x, u32 y, u32 z)
 {
     return (ileaveZeros_const<2>(x) << 2) | (ileaveZeros_const<2>(y) << 1) | ileaveZeros_const<2>(z);
 }
@@ -230,11 +231,11 @@ constexpr uint64_t ileave3(uint32_t x, uint32_t y, uint32_t z)
 
 namespace detail {
 
-constexpr void dileave3_naive(uint64_t n, uint32_t out[3])
+constexpr void dileave3_naive(u64 n, u32 out[3])
 {
-    out[0] = static_cast<uint32_t>(detail::remIleavedBits_naive(n >> 2, 2));
-    out[1] = static_cast<uint32_t>(detail::remIleavedBits_naive(n >> 1, 2));
-    out[2] = static_cast<uint32_t>(detail::remIleavedBits_naive(n >> 0, 2));
+    out[0] = static_cast<u32>(detail::remIleavedBits_naive(n >> 2, 2));
+    out[1] = static_cast<u32>(detail::remIleavedBits_naive(n >> 1, 2));
+    out[2] = static_cast<u32>(detail::remIleavedBits_naive(n >> 0, 2));
 }
 
 }  // namespace detail
@@ -248,11 +249,11 @@ constexpr void dileave3_naive(uint64_t n, uint32_t out[3])
  * @param n the number
  * @return the interleaved bits
  */
-constexpr void dileave3(uint64_t n, uint32_t out[3])
+constexpr void dileave3(u64 n, u32 out[3])
 {
-    out[0] = static_cast<uint32_t>(remIleavedBits_const<2>(n >> 2));
-    out[1] = static_cast<uint32_t>(remIleavedBits_const<2>(n >> 1));
-    out[2] = static_cast<uint32_t>(remIleavedBits_const<2>(n >> 0));
+    out[0] = static_cast<u32>(remIleavedBits_const<2>(n >> 2));
+    out[1] = static_cast<u32>(remIleavedBits_const<2>(n >> 1));
+    out[2] = static_cast<u32>(remIleavedBits_const<2>(n >> 0));
 }
 
 // BYTE INTERLEAVING ===================================================================================================
@@ -263,13 +264,13 @@ constexpr void dileave3(uint64_t n, uint32_t out[3])
  * @tparam COUNT the number of bytes to interleave
  * @return the interleaved bytes stored in a 64-bit integer
  */
-template <size_t COUNT, std::enable_if_t<COUNT <= 8, int> = 0>
-constexpr uint64_t ileaveBytes_const(uint64_t bytes)
+template <usize COUNT, std::enable_if_t<COUNT <= 8, int> = 0>
+constexpr u64 ileaveBytes_const(u64 bytes)
 {
-    uint64_t result = 0;
+    u64 result = 0;
     // use if-constexpr to avoid instantiation of ileave_zeros
     if constexpr (COUNT != 0) {
-        for (size_t i = 0; i < COUNT; ++i) {
+        for (usize i = 0; i < COUNT; ++i) {
             result |= ileaveZeros_const<COUNT - 1>(bytes & 0xff) << i;
             bytes >>= 8;
         }
@@ -280,13 +281,13 @@ constexpr uint64_t ileaveBytes_const(uint64_t bytes)
 namespace detail {
 
 // alternative implementation using a naive algorithm
-constexpr uint64_t ileaveBytes_naive(uint64_t bytes, size_t count)
+constexpr u64 ileaveBytes_naive(u64 bytes, usize count)
 {
     VXIO_DEBUG_ASSERT_LE(count, 8);
     VXIO_ASSUME(count <= 8);
 
-    uint64_t result = 0;
-    for (size_t i = 0; i < count; ++i) {
+    u64 result = 0;
+    for (usize i = 0; i < count; ++i) {
         result |= ileaveZeros_naive(bytes & 0xff, count - 1) << i;
         bytes >>= 8;
     }
@@ -294,7 +295,7 @@ constexpr uint64_t ileaveBytes_naive(uint64_t bytes, size_t count)
 }
 
 // alternative implementation adapting ileave_bytes_const to work with a runtime parameter
-constexpr uint64_t ileaveBytes_jmp(uint64_t bytes, size_t count)
+constexpr u64 ileaveBytes_jmp(u64 bytes, usize count)
 {
     VXIO_DEBUG_ASSERT_LE(count, 8);
     VXIO_ASSUME(count <= 8);
@@ -321,20 +322,20 @@ constexpr uint64_t ileaveBytes_jmp(uint64_t bytes, size_t count)
  * @param count number of bytes to interleave
  * @return the interleaved bytes stored in a 64-bit integer
  */
-constexpr uint64_t ileaveBytes(uint64_t bytes, size_t count)
+constexpr u64 ileaveBytes(u64 bytes, usize count)
 {
     return detail::ileaveBytes_jmp(bytes, count);
 }
 
 // BYTE DE-INTERLEAVING ================================================================================================
 
-template <size_t COUNT, std::enable_if_t<COUNT <= 8, int> = 0>
-constexpr uint64_t dileaveBytes_const(uint64_t ileaved)
+template <usize COUNT, std::enable_if_t<COUNT <= 8, int> = 0>
+constexpr u64 dileaveBytes_const(u64 ileaved)
 {
-    uint64_t result = 0;
+    u64 result = 0;
     // use if-constexpr to avoid instantiation of rem_ileaved_bits
     if constexpr (COUNT != 0) {
-        for (size_t i = 0; i < COUNT; ++i) {
+        for (usize i = 0; i < COUNT; ++i) {
             // if we also masked the result with 0xff, then this would be safe for a hi-polluted ileaved number
             result |= remIleavedBits_const<COUNT - 1>(ileaved >> i);
             result <<= 8;
@@ -346,7 +347,7 @@ constexpr uint64_t dileaveBytes_const(uint64_t ileaved)
 namespace detail {
 
 // alternative implementation adapting ileave_bytes_const to work with a runtime parameter
-constexpr uint64_t dileaveBytes_jmp(uint64_t bytes, size_t count)
+constexpr u64 dileaveBytes_jmp(u64 bytes, usize count)
 {
     VXIO_DEBUG_ASSERT_LE(count, 8);
     VXIO_ASSUME(count <= 8);
@@ -367,7 +368,7 @@ constexpr uint64_t dileaveBytes_jmp(uint64_t bytes, size_t count)
 
 }  // namespace detail
 
-constexpr uint64_t dileave_bytes(uint64_t bytes, size_t count)
+constexpr u64 dileave_bytes(u64 bytes, usize count)
 {
     return detail::dileaveBytes_jmp(bytes, count);
 }

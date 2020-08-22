@@ -2,6 +2,7 @@
 #define VXIO_VOXELARRAY_HPP
 
 #include "color.hpp"
+#include "types.hpp"
 
 #include <functional>
 #include <memory>
@@ -17,12 +18,12 @@ public:
     using reference = value_type &;
     using pointer = value_type *;
     using iterator_category = std::forward_iterator_tag;
-    using difference_type = size_t;
+    using difference_type = usize;
 
     TVoxelArray *parent;
-    size_t index;
+    usize index;
 
-    VoxelArrayIterator(TVoxelArray &parent, size_t index) : parent{&parent}, index{index}
+    VoxelArrayIterator(TVoxelArray &parent, usize index) : parent{&parent}, index{index}
     {
         VXIO_DEBUG_ASSERTM(index < parent.volume(), "index out of range");
         if (parent[index].isInvisible()) {
@@ -35,7 +36,7 @@ public:
 
     void operator++()
     {
-        const size_t lim = parent->volume();
+        const usize lim = parent->volume();
         while (++index < lim) {
             if ((*parent)[index].isVisible()) break;
         }
@@ -76,15 +77,15 @@ public:
 
 private:
     Vec3size size;
-    size_t _sizeXY, _volume;
+    usize _sizeXY, _volume;
     std::unique_ptr<Color32[]> voxels;
 
-    static std::unique_ptr<Color32[]> copyContents(Color32 source[], size_t size);
+    static std::unique_ptr<Color32[]> copyContents(Color32 source[], usize size);
 
-    VoxelArray(std::unique_ptr<Color32[]> voxels, size_t x, size_t y, size_t z);
+    VoxelArray(std::unique_ptr<Color32[]> voxels, usize x, usize y, usize z);
 
 public:
-    VoxelArray(size_t x, size_t y, size_t z);
+    VoxelArray(usize x, usize y, usize z);
 
     explicit VoxelArray(Vec3size size) : VoxelArray{size.x(), size.y(), size.z()} {}
     VoxelArray() : VoxelArray{nullptr, 0, 0, 0} {}
@@ -98,7 +99,7 @@ public:
     VoxelArray(VoxelArray &&) = default;
 
 private:
-    size_t indexOf(Vec3size pos) const
+    usize indexOf(Vec3size pos) const
     {
         VXIO_DEBUG_ASSERT_LT(pos.x(), size.x());
         VXIO_DEBUG_ASSERT_LT(pos.y(), size.y());
@@ -106,7 +107,7 @@ private:
         return (pos.z() * _sizeXY) + (pos.y() * size.x()) + pos.x();
     }
 
-    Vec3size posOf(size_t index) const
+    Vec3size posOf(usize index) const
     {
         return {index % size.x(), index / size.x() % size.y(), index / _sizeXY};
     }
@@ -117,12 +118,12 @@ public:
         return size;
     }
 
-    size_t volume() const
+    usize volume() const
     {
         return _volume;
     }
 
-    size_t countVoxels() const;
+    usize countVoxels() const;
 
     const Color32 &at(Vec3size pos) const
     {
@@ -183,7 +184,7 @@ public:
      *
      * @param array the array to paste this one with
      */
-    void paste(const VoxelArray &array, size_t x, size_t y, size_t z);
+    void paste(const VoxelArray &array, usize x, usize y, usize z);
 
     // MISC
 
@@ -193,13 +194,13 @@ public:
 
     VoxelArray &operator=(VoxelArray &&) = default;
 
-    const Color32 &operator[](const size_t index) const
+    const Color32 &operator[](const usize index) const
     {
         VXIO_DEBUG_ASSERT(index < _volume);
         return voxels[index];
     }
 
-    Color32 &operator[](const size_t index)
+    Color32 &operator[](const usize index)
     {
         VXIO_DEBUG_ASSERT(index < _volume);
         return voxels[index];

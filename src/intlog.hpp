@@ -7,6 +7,7 @@
  */
 
 #include "builtin.hpp"
+#include "primitives.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -24,16 +25,16 @@ auto nextLargerUint_impl()
     // Size comparisons are better than std::is_same_v because they account for equivalent but distinct types.
     // For example, unsigned long and unsigned long long might both be 64 bits but are not the same type.
     if constexpr (sizeof(Int) == sizeof(uint8_t)) {
-        return uint16_t{0};
+        return u16{0};
     }
-    else if constexpr (sizeof(Int) == sizeof(uint16_t)) {
-        return uint32_t{0};
+    else if constexpr (sizeof(Int) == sizeof(u16)) {
+        return u32{0};
     }
-    else if constexpr (sizeof(Int) == sizeof(uint32_t)) {
-        return uint64_t{0};
+    else if constexpr (sizeof(Int) == sizeof(u32)) {
+        return u64{0};
     }
     else {
-        return uintmax_t{0};
+        return umax{0};
     }
 }
 
@@ -41,10 +42,10 @@ auto nextLargerUint_impl()
 
 /**
  * @brief templated variable which contains the number of bits for any given integer type.
- * Example: bits_v<uint32_t> = 32
+ * Example: bits_v<u32> = 32
  */
 template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
-constexpr size_t bits_v = sizeof(Int) * 8;
+constexpr usize bits_v = sizeof(Int) * 8;
 
 template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
 using nextLargerUintType = decltype(detail::nextLargerUint_impl<Int>());
@@ -89,8 +90,8 @@ constexpr Uint log2floor_naive(Uint val) noexcept;
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 constexpr Uint ceilPow2m1(Uint v)
 {
-    constexpr size_t iterations = log2floor_naive(bits_v<Uint>);
-    for (size_t i = 0; i < iterations; ++i) {
+    constexpr usize iterations = log2floor_naive(bits_v<Uint>);
+    for (usize i = 0; i < iterations; ++i) {
         // after all iterations, all bits right to the msb will be filled with 1
         v |= v >> (1 << i);
     }
@@ -166,10 +167,10 @@ constexpr Uint log2floor_naive(Uint val) noexcept
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 constexpr Uint log2floor_fast(Uint v) noexcept
 {
-    constexpr size_t iterations = log2floor_naive(bits_v<Uint>);
+    constexpr usize iterations = log2floor_naive(bits_v<Uint>);
     unsigned result = 0;
 
-    for (size_t i = iterations; i != 0; --i) {
+    for (usize i = iterations; i != 0; --i) {
         unsigned compBits = 1 << (i - 1);
         Uint compShift = Uint{1} << compBits;
         unsigned shift = unsigned{v >= compShift} << (i - 1);
@@ -185,10 +186,10 @@ constexpr Uint log2floor_fast(Uint v) noexcept
  * See https://graphics.stanford.edu/~seander/bithacks.html#IntegerLogDeBruijn.
  * @param val the value
  */
-constexpr uint32_t log2floor_debruijn(uint32_t val) noexcept
+constexpr u32 log2floor_debruijn(u32 val) noexcept
 {
-    constexpr uint32_t magic = 0x07C4ACDD;
-    constexpr uint32_t MultiplyDeBruijnBitPosition[32] = {0, 9,  1,  10, 13, 21, 2,  29, 11, 14, 16, 18, 22, 25, 3, 30,
+    constexpr u32 magic = 0x07C4ACDD;
+    constexpr u32 MultiplyDeBruijnBitPosition[32] = {0, 9,  1,  10, 13, 21, 2,  29, 11, 14, 16, 18, 22, 25, 3, 30,
                                                           8, 12, 20, 28, 15, 17, 24, 7,  19, 27, 23, 6,  26, 5,  4, 31};
 
     val = ceilPow2m1(val);
@@ -232,7 +233,7 @@ constexpr Int log2floor(Int v) noexcept
 #ifdef VXIO_HAS_BUILTIN_CLZ
     return static_cast<Int>(log2floor_builtin(v));
 #else
-    if constexpr (std::is_same_v<Int, uint32_t>) {
+    if constexpr (std::is_same_v<Int, u32>) {
         return log2floor_debruijn(v);
     }
     else {
@@ -293,8 +294,8 @@ template <typename Uint, unsigned BASE, std::enable_if_t<std::is_unsigned_v<Uint
 constexpr Uint maxExp = logFloor_naive<Uint>(static_cast<Uint>(~Uint{0u}), BASE);
 
 static_assert(maxExp<uint8_t, 10> == 2);
-static_assert(maxExp<uint16_t, 10> == 4);
-static_assert(maxExp<uint32_t, 10> == 9);
+static_assert(maxExp<u16, 10> == 4);
+static_assert(maxExp<u32, 10> == 9);
 
 /**
  * @brief Simple implementation of log base N using repeated multiplication.
@@ -320,9 +321,9 @@ namespace detail {
 /**
  * @brief Tiny array implementation to avoid including <array>.
  */
-template <typename T, size_t N>
+template <typename T, usize N>
 struct Table {
-    static constexpr size_t size = N;
+    static constexpr usize size = N;
     T data[N];
 
     constexpr T back() const
@@ -331,20 +332,20 @@ struct Table {
     }
 };
 
-template <typename Uint, size_t BASE>
+template <typename Uint, usize BASE>
 constexpr Table<uint8_t, bits_v<Uint>> makeGuessTable()
 {
     using resultType = decltype(makeGuessTable<Uint, BASE>());
 
     resultType result{};
-    for (size_t i = 0; i < resultType::size; ++i) {
+    for (usize i = 0; i < resultType::size; ++i) {
         Uint pow2 = static_cast<Uint>(Uint{1} << i);
         result.data[i] = logFloor_naive(pow2, BASE);
     }
     return result;
 }
 
-template <typename Uint, size_t BASE, typename TableUint = nextLargerUintType<Uint>>
+template <typename Uint, usize BASE, typename TableUint = nextLargerUintType<Uint>>
 constexpr Table<TableUint, maxExp<Uint, BASE> + 2> makePowerTable()
 {
     // the size of the table is maxPow<Uint, BASE> + 2 because we need to store the maximum power
@@ -355,8 +356,8 @@ constexpr Table<TableUint, maxExp<Uint, BASE> + 2> makePowerTable()
     using resultType = decltype(makePowerTable<Uint, BASE, TableUint>());
 
     resultType result{};
-    uintmax_t x = 1;
-    for (size_t i = 0; i < resultType::size; ++i, x *= BASE) {
+    umax x = 1;
+    for (usize i = 0; i < resultType::size; ++i, x *= BASE) {
         result.data[i] = static_cast<TableUint>(x);
     }
     return result;
@@ -367,7 +368,7 @@ constexpr Table<TableUint, maxExp<Uint, BASE> + 2> makePowerTable()
 /**
  * @brief Computes pow(BASE, exponent) where BASE is known at compile-time.
  */
-template <size_t BASE, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <usize BASE, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 constexpr Uint powConst(Uint exponent)
 {
     if constexpr (isPow2(BASE)) {
@@ -395,7 +396,7 @@ constexpr Uint powConst(Uint exponent)
  * @param val the input value
  * @return floor(log(val, BASE))
  */
-template <size_t BASE = 10, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <usize BASE = 10, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 constexpr Uint logFloor(Uint val) noexcept
 {
     if constexpr (isPow2(BASE)) {
@@ -409,7 +410,7 @@ constexpr Uint logFloor(Uint val) noexcept
 
         uint8_t guess = guesses.data[log2floor(val)];
 
-        if constexpr (sizeof(Uint) < sizeof(uint64_t) || guesses.back() + 2 < powers.size) {
+        if constexpr (sizeof(Uint) < sizeof(u64) || guesses.back() + 2 < powers.size) {
             return guess + (val >= powers.data[guess + 1]);
         }
         else {
@@ -430,7 +431,7 @@ constexpr Uint log10floor(Uint val)
 /**
  * @brief Computes the number of digits required to represent a number with a given base.
  */
-template <size_t BASE = 10, typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
+template <usize BASE = 10, typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
 constexpr Int digitCount(Int val) noexcept
 {
     return logFloor<BASE>(val) + 1;

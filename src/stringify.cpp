@@ -16,29 +16,20 @@ static std::string fraction_to_string_impl(Int num, const Int den, const unsigne
 
     // integral part
     num %= den;
-    if constexpr (not RPAD) {
-        if (num == 0 || precision == 0) {
-            return result;
-        }
+    if (precision == 0 || (not RPAD && num == 0)) {
+        return result;
     }
 
     result.reserve(result.size() + precision + 1);
 
     // fractional part
-    result += '.';
-    if constexpr (RPAD) {
-        for (size_t i = 0; i < precision; ++i) {
-            num *= base;
-            result += stringify(num / den);
-            num %= den;
-        }
-    }
-    else {
-        for (size_t i = 0; i < precision && num != 0; ++i) {
-            num *= base;
-            result += stringify(num / den);
-            num %= den;
-        }
+    result.push_back('.');
+
+    for (size_t i = 0; i < precision && (RPAD || num != 0); ++i) {
+        num *= base;
+        char digit = static_cast<char>(num / den) + '0';
+        result.push_back(digit);
+        num %= den;
     }
 
     return result;

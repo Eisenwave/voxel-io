@@ -11,13 +11,16 @@
  * the byte order using builtin::byteSwap.
  */
 
+#include "build.hpp"
 #include "builtin.hpp"
-#include "types.hpp"
+#include "primitives.hpp"
 #include "util.hpp"
 
 #include <cstring>
 
 namespace voxelio {
+
+using build::Endian;
 
 // PORTABLE BYTE SWAP IMPLEMENTATION ===================================================================================
 
@@ -25,7 +28,7 @@ namespace voxelio {
 #define VXIO_HAS_ACCELERATED_REVERSE_BYTES
 /**
  * @brief Reverses the bytes of any integer.
- * This implementation uses the __builtin_bswapXX() pseudo-function.
+ * This implementation uses builtin::byteSwap().
  * @param integer the integer
  */
 template <typename Int>
@@ -56,12 +59,12 @@ constexpr Int reverseBytes(Int integer)
     // Even for this implementation, gcc only recognizes it up to uint32_t, clang recognizes it for 64 bits too.
     // This is why the builtin variant is quite useful.
     u8 octets[sizeof(Int)]{};
-    for (size_t i = 0; i < sizeof(Int); ++i) {
+    for (usize i = 0; i < sizeof(Int); ++i) {
         octets[i] = static_cast<u8>(integer >> (i * 8));
     }
     Int result = 0;
-    for (size_t i = 0; i < sizeof(Int); ++i) {
-        size_t shift = i * 8;
+    for (usize i = 0; i < sizeof(Int); ++i) {
+        usize shift = i * 8;
         result |= Int{octets[sizeof(Int) - i - 1]} << shift;
     }
     return result;
@@ -103,8 +106,8 @@ Int decode_builtin(const u8 buffer[sizeof(Int)])
 template <Endian ENDIAN, typename Int>
 constexpr void encode_naive(Int integer, u8 out[sizeof(Int)])
 {
-    for (size_t i = 0; i < sizeof(Int); ++i) {
-        size_t shift = 0;
+    for (usize i = 0; i < sizeof(Int); ++i) {
+        usize shift = 0;
         if constexpr (ENDIAN == Endian::LITTLE) {
             shift = (i * 8);
         }
@@ -119,8 +122,8 @@ template <Endian ENDIAN, typename Int>
 constexpr Int decode_naive(const u8 buffer[sizeof(Int)])
 {
     Int result = 0;
-    for (size_t i = 0; i < sizeof(Int); ++i) {
-        size_t shift = 0;
+    for (usize i = 0; i < sizeof(Int); ++i) {
+        usize shift = 0;
         if constexpr (ENDIAN == Endian::LITTLE) {
             shift = i * 8;
         }
@@ -208,24 +211,36 @@ constexpr i8 decode<Endian::BIG, i8>(const u8 buffer[1])
 
 // CONVENIENCE FUNCTIONS ===============================================================================================
 
+/**
+ * @brief Convenience function that forwards to decode<Endian::LITTLE>.
+ */
 template <typename Int>
 constexpr Int decodeLittle(const u8 buffer[sizeof(Int)])
 {
     return decode<Endian::LITTLE, Int>(buffer);
 }
 
+/**
+ * @brief Convenience function that forwards to decode<Endian::BIG>.
+ */
 template <typename Int>
 constexpr Int decodeBig(const u8 buffer[sizeof(Int)])
 {
     return decode<Endian::BIG, Int>(buffer);
 }
 
+/**
+ * @brief Convenience function that forwards to encode<Endian::LITTLE>.
+ */
 template <typename Int>
 constexpr void encodeLittle(Int integer, u8 out[])
 {
     encode<Endian::LITTLE>(integer, out);
 }
 
+/**
+ * @brief Convenience function that forwards to encode<Endian::BIG>.
+ */
 template <typename Int>
 constexpr void encodeBig(Int integer, u8 out[])
 {

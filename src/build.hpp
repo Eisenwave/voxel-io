@@ -26,15 +26,11 @@
 
 // compiles to t one debug builds and to f on release builds
 #define VXIO_IF_DEBUG_ELSE(t, f) VXIO_IF_DEBUG(t) VXIO_IF_RELEASE(f)
-// compiles to t on release builds and to f on debug builds
-#define VXIO_IF_RELEASE_ELSE(t, f) VXIO_IF_DEBUG(f) VXIO_IF_RELEASE(t)
 
 namespace voxelio::build {
 
 constexpr bool DEBUG = VXIO_IF_DEBUG_ELSE(true, false);
-constexpr bool RELEASE = VXIO_IF_RELEASE_ELSE(true, false);
-
-static_assert(DEBUG != RELEASE, "DEBUG and RELEASE must be mutually exclusive");
+constexpr bool RELEASE = !DEBUG;
 
 }  // namespace voxelio::build
 
@@ -102,23 +98,19 @@ static_assert(DEBUG != RELEASE, "DEBUG and RELEASE must be mutually exclusive");
 
 namespace voxelio::build {
 
-enum class Endian : unsigned { BIG = 0, LITTLE = 1 };
-
-}
-
-#ifdef VXIO_CPP20_LEAST
-// C++20 ENDIANNESS DETECTION ------------------------------------------------------------------------------------------
-#define VXIO_HAS_KNOWN_ENDIAN
-#include <bit>
-
-namespace voxelio::build {
-
-constexpr bool NATIVE_ENDIAN_KNOWN = true;
-constexpr Endian NATIVE_ENDIAN = std::endian::native == std::endian::little ? Endian::LITTLE : Endian::BIG;
+/**
+ * @brief Represents a byte order. Can be either Big Endian or Little Endian.
+ */
+enum class Endian : unsigned {
+    /// Most significant byte first.
+    BIG = 0,
+    /// Least significant byte first.
+    LITTLE = 1
+};
 
 }  // namespace voxelio::build
 
-#elif defined(__BYTE_ORDER__) && __BYTE_ORDER__  // VXIO_CPP20_LEAST
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__
 // C++17 ENDIANNESS DETECTION USING __BYTE__ORDER MACRO ----------------------------------------------------------------
 #define VXIO_HAS_KNOWN_ENDIAN
 
@@ -152,12 +144,24 @@ constexpr bool NATIVE_ENDIAN = Endian::BIG;
 
 }  // namespace voxelio::build
 
+#elif VXIO_CPP20_LEAST
+// C++20 ENDIANNESS DETECTION ------------------------------------------------------------------------------------------
+#define VXIO_HAS_KNOWN_ENDIAN
+#include <bit>
+
+namespace voxelio::build {
+
+constexpr bool NATIVE_ENDIAN_KNOWN = true;
+constexpr Endian NATIVE_ENDIAN = std::endian::native == std::endian::little ? Endian::LITTLE : Endian::BIG;
+
+}  // namespace voxelio::build
+
 #else
-// C++17 UNKNWON ENDIANNESS --------------------------------------------------------------------------------------------
+// UNKNWON ENDIANNESS --------------------------------------------------------------------------------------------------
 namespace voxelio::build {
 
 constexpr bool NATIVE_ENDIAN_KNOWN = false;
-constexpr Endian NATIVE_ENDIAN = static_cast<Endian>(0xff);
+constexpr Endian NATIVE_ENDIAN = Endian{0xff};
 
 }  // namespace voxelio::build
 #endif

@@ -72,8 +72,8 @@ constexpr bool operator<=(LogLevel x, LogLevel y)
 void logRaw(const char *msg);
 void logRaw(const std::string &msg);
 
-void log(const char *msg, LogLevel level, const char *file, const char *function, size_t line);
-void log(const std::string &msg, LogLevel level, const char *file, const char *function, size_t line);
+void log(const char *msg, LogLevel level, const char *file, const char *function, usize line);
+void log(const std::string &msg, LogLevel level, const char *file, const char *function, usize line);
 
 extern thread_local LogLevel logLevel;
 

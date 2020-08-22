@@ -1,5 +1,7 @@
 #include "palette.hpp"
 
+#include "assert.hpp"
+
 namespace voxelio {
 
 u32 Palette32::insert(argb32 color)
