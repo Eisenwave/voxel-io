@@ -21,6 +21,7 @@ SOURCES +=  \
     src/3rd_party/miniz/miniz.c \
     src/assert.cpp \
     src/builtin.cpp \
+    src/deflate.cpp \
     src/filetype.cpp \
     src/format/cubeworld.cpp \
     src/image.cpp \
@@ -53,6 +54,7 @@ HEADERS +=  \
     src/builtin.hpp \
     src/color.hpp \
     src/constantsfwd.hpp \
+    src/deflate.hpp \
     src/endian.hpp \
     src/filetype.hpp \
     src/format/cubeworld.hpp \
@@ -86,5 +88,4 @@ HEADERS +=  \
     src/format/vobj.hpp \
     src/format/vox.hpp \
     src/wbits.hpp \
-    src/wileave.hpp \
-    src/zlibencode.hpp
+    src/wileave.hpp
