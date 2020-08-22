@@ -2,7 +2,9 @@
 
 #include "miniz.hpp"
 
+#include <assert.h>
 #include <iostream>
+#include <fstream>
 #include <cstring>
 
 namespace miniz_cpp {
