@@ -73,7 +73,7 @@ Deflator::Deflator(OutputStream &stream, unsigned level, unsigned windowBits, un
 
 // INFLATOR ============================================================================================================
 
-[[nodiscard]] ResultCode Inflator::inflate(u8 out[], usize size, usize& written)
+[[nodiscard]] ResultCode Inflator::inflate(u8 out[], usize size, usize &written)
 {
     zStream.next_out = out;
     zStream.avail_out = static_cast<unsigned int>(size);
@@ -108,4 +108,4 @@ Deflator::Deflator(OutputStream &stream, unsigned level, unsigned windowBits, un
     return ResultCode::OK;
 }
 
-}
+}  // namespace voxelio::deflate

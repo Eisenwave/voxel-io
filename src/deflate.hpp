@@ -1,5 +1,5 @@
-#ifndef ZLIBENCODE_HPP
-#define ZLIBENCODE_HPP
+#ifndef VXIO_DEFLATE_HPP
+#define VXIO_DEFLATE_HPP
 /*
  * deflate.hpp
  * -----------
@@ -144,6 +144,6 @@ public:
     [[nodiscard]] ResultCode inflate(u8 out[], usize size, usize &written);
 };
 
-}  // namespace voxelio::zlib
+}  // namespace voxelio::deflate
 
 #endif  // ZLIBENCODE_HPP

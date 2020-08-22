@@ -867,7 +867,8 @@ private:
 
 inline ByteArrayInputStream::ByteArrayInputStream(const ByteArrayOutputStream &outputStream)
     : ByteArrayInputStream{outputStream.data(), outputStream.size()}
-{}
+{
+}
 
 // FILE STREAMS ========================================================================================================
 
