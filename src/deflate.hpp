@@ -80,23 +80,46 @@ public:
         VXIO_ASSERT_EQ(result, ResultCode::OK);
     }
 
+    /**
+     * @brief Returns the total number of bytes read.
+     * @return the total number of bytes read
+     */
     [[nodiscard]] u64 totalRead() const
     {
         return zStream.total_in;
     }
 
+    /**
+     * @brief Returns the total number of bytes written.
+     * @return the total number of bytes written
+     */
     [[nodiscard]] u64 totalWritten() const
     {
         return zStream.total_out;
     }
 
+    /**
+     * @brief Resets the deflator so that it can be used for encoding another data stream.
+     * @return the result code
+     */
     [[nodiscard]] ResultCode reset()
     {
         return ResultCode{mz_deflateReset(&zStream)};
     }
 
+    /**
+     * @brief deflates the next array of bytes
+     * @param in the input array
+     * @param size the size of the input
+     * @param flush the flushing mode
+     * @return the result code
+     */
     [[nodiscard]] ResultCode deflate(u8 in[], usize size, Flushing flush = Flushing::NONE);
 
+    /**
+     * @brief Flushes the deflator.
+     * @return the result code
+     */
     [[nodiscard]] ResultCode flush();
 };
 
@@ -126,22 +149,41 @@ public:
         VXIO_ASSERT_EQ(result, ResultCode::OK);
     }
 
+    /**
+     * @brief Returns the total number of bytes read.
+     * @return the total number of bytes read
+     */
     [[nodiscard]] u64 totalRead() const
     {
         return zStream.total_in;
     }
 
+    /**
+     * @brief Returns the total number of bytes written.
+     * @return the total number of bytes written
+     */
     [[nodiscard]] u64 totalWritten() const
     {
         return zStream.total_out;
     }
 
+    /**
+     * @brief Returns whether the end of the stream has been reached.
+     * @return true if the end of the stream was reached
+     */
     bool eof() const
     {
         return eof_;
     }
 
-    [[nodiscard]] ResultCode inflate(u8 out[], usize size, usize &written);
+    /**
+     * @brief Inflates the next bit of data and stores the result in the given byte buffer.
+     * @param out the output byte buffer
+     * @param size the size of the output buffer
+     * @param outWritten the actual number of bytes which were written to the buffer
+     * @return the result code
+     */
+    [[nodiscard]] ResultCode inflate(u8 out[], usize size, usize &outWritten);
 };
 
 }  // namespace voxelio::deflate
