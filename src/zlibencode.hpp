@@ -43,7 +43,7 @@ enum class Flushing : int {
     BLOCK = MZ_BLOCK
 };
 
-inline const char* errorOf(ResultCode code)
+inline const char *errorOf(ResultCode code)
 {
     return mz_error(static_cast<int>(code));
 }
@@ -53,8 +53,7 @@ private:
     mz_stream stream{};
     u8 out[BUFFER_SIZE];
 
-    Deflator() {
-    }
+    Deflator() {}
 
 public:
     Deflator(unsigned level) : Deflator{}
@@ -64,18 +63,17 @@ public:
         VXIO_ASSERT_EQ(result, ResultCode::OK);
     }
 
-    Deflator(unsigned level, unsigned windowBits, unsigned memLevel, Strategy strategy = Strategy::DEFAULT)
-     : Deflator{}
+    Deflator(unsigned level, unsigned windowBits, unsigned memLevel, Strategy strategy = Strategy::DEFAULT) : Deflator{}
     {
         VXIO_ASSERT_LT(level, 10);
         VXIO_ASSERT_NE(memLevel, 0);
         VXIO_ASSERT_LT(memLevel, 10);
         ResultCode result{mz_deflateInit2(&stream,
-                        static_cast<int>(level),
-                        MZ_DEFLATED,
-                        static_cast<int>(windowBits),
-                        static_cast<int>(memLevel),
-                        static_cast<int>(strategy))};
+                                          static_cast<int>(level),
+                                          MZ_DEFLATED,
+                                          static_cast<int>(windowBits),
+                                          static_cast<int>(memLevel),
+                                          static_cast<int>(strategy))};
         VXIO_ASSERT_EQ(result, ResultCode::OK);
     }
 
@@ -115,7 +113,7 @@ public:
     ResultCode flush(OutputStream &outStream)
     {
         stream.avail_in = 0;
-        //stream.next_in = nullptr; not necessary
+        // stream.next_in = nullptr; not necessary
         stream.next_out = out;
         stream.avail_out = BUFFER_SIZE;
 
@@ -127,17 +125,13 @@ public:
 
         return outStream.good() ? ResultCode::OK : ResultCode::STREAM_ERROR;
     }
-
 };
 
 class Inflator {
 private:
     mz_stream stream;
 
-    void initStream()
-    {
-
-    }
+    void initStream() {}
 
 public:
     Inflator()
@@ -172,16 +166,15 @@ public:
 
     // COMPRESSION =====================================================================================================
 
-    ResultCode compress(const u8* source, mz_ulong sourceLength, u8 outDest[], mz_ulong &outDestLen)
+    ResultCode compress(const u8 *source, mz_ulong sourceLength, u8 outDest[], mz_ulong &outDestLen)
     {
         return ResultCode{mz_compress(outDest, &outDestLen, source, sourceLength)};
     }
 
-    ResultCode compress(const u8* source, mz_ulong sourceLength, u8 outDest[], mz_ulong &outDestLen, unsigned level)
+    ResultCode compress(const u8 *source, mz_ulong sourceLength, u8 outDest[], mz_ulong &outDestLen, unsigned level)
     {
         return ResultCode{mz_compress2(outDest, &outDestLen, source, sourceLength, static_cast<int>(level))};
     }
-
 };
 
 }  // namespace voxelio::zlib

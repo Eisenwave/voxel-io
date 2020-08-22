@@ -8,10 +8,10 @@
  *
  */
 
-#include <cstdint>
 #include <cstddef>
-#include <limits>
+#include <cstdint>
 #include <cstdio>
+#include <limits>
 
 namespace voxelio {
 
@@ -81,6 +81,6 @@ using argb32 = u32;
 /// Alias for C-file pointers.
 using cfile = std::FILE *;
 
-}
+}  // namespace voxelio
 
-#endif // PRIMITIVES_HPP
+#endif  // PRIMITIVES_HPP

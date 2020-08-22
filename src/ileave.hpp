@@ -183,10 +183,10 @@ constexpr u64 remIleavedBits_const(u64 input) noexcept
 constexpr u64 ileave2(u32 hi, u32 lo)
 {
     constexpr u64 MASKS[] = {0x5555'5555'5555'5555,
-                                  0x3333'3333'3333'3333,
-                                  0x0F0F'0F0F'0F0F'0F0F,
-                                  0x00FF'00FF'00FF'00FF,
-                                  0x0000'FFFF'0000'FFFF};
+                             0x3333'3333'3333'3333,
+                             0x0F0F'0F0F'0F0F'0F0F,
+                             0x00FF'00FF'00FF'00FF,
+                             0x0000'FFFF'0000'FFFF};
 
     u64 result = 0;
     u32 *nums[] = {&hi, &lo};
