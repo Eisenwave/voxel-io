@@ -52,7 +52,7 @@ NullOutputStream::NullOutputStream() noexcept
 
 // =====================================================================================================================
 
-ByteArrayInputStream::ByteArrayInputStream(u8 data[], size_t size) noexcept : data{data}, size{size}
+ByteArrayInputStream::ByteArrayInputStream(const u8 data[], size_t size) noexcept : data{data}, size_{size}
 {
     this->flags.eof = false;
     this->flags.err = false;
@@ -60,7 +60,7 @@ ByteArrayInputStream::ByteArrayInputStream(u8 data[], size_t size) noexcept : da
 
 int ByteArrayInputStream::read()
 {
-    if (pos >= size) {
+    if (pos >= size()) {
         this->flags.eof = true;
         return -1;
     }
@@ -69,11 +69,11 @@ int ByteArrayInputStream::read()
 
 size_t ByteArrayInputStream::read(u8 buffer[], size_t size)
 {
-    if (this->pos >= this->size) {
+    if (this->pos >= this->size()) {
         this->flags.eof = true;
         return 0;
     }
-    size_t readCount = std::min(this->size - this->pos, size);
+    size_t readCount = std::min(this->size() - this->pos, size);
     if (readCount != size) {
         this->flags.eof = true;
     }

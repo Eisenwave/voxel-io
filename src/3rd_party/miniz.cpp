@@ -391,7 +391,8 @@ int mz_uncompress(unsigned char *pDest, mz_ulong *pDest_len, const unsigned char
   memset(&stream, 0, sizeof(stream));
 
   // In case mz_ulong is 64-bits (argh I hate longs).
-  if ((source_len | *pDest_len) > 0xFFFFFFFFU) return MZ_PARAM_ERROR;
+  if ((source_len | *pDest_len) > 0xFFFFFFFFU)
+      return MZ_PARAM_ERROR;
 
   stream.next_in = pSource;
   stream.avail_in = (mz_uint32)source_len;

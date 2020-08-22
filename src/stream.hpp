@@ -61,10 +61,15 @@ public:
     virtual int read() = 0;
 
     /**
-     * @brief Reads maxSize characters into the buffer.
+     * @brief Reads at most maxSize characters into the buffer and returns the actual number of characters read.
+     * The return value may be less than maxSize of eof is reached or an error occurrs.
+     * If an error occurs, zero is returned.
+     * Check err() in such a case.
+     *
      * May set eof and err.
      * @param buffer the buffer
      * @param maxSize the maximum number of characters to read
+     * @return the number of bytes actually read
      */
     virtual usize read(u8 buffer[], usize maxSize) = 0;
 
@@ -747,14 +752,16 @@ public:
 
 class ByteArrayInputStream : public InputStream {
 private:
-    u8 *data;
-    usize size;
+    const u8 *data;
+    usize size_;
     usize pos = 0;
 
 public:
-    ByteArrayInputStream(u8 data[], usize size) noexcept;
+    ByteArrayInputStream(const u8 data[], usize size) noexcept;
     ByteArrayInputStream(ByteArrayInputStream &&) = default;
     ~ByteArrayInputStream() final = default;
+
+    explicit ByteArrayInputStream(const ByteArrayOutputStream &outputStream);
 
     int read() final;
 
@@ -768,7 +775,7 @@ public:
     void seekAbsolute(u64 offset) final
     {
         pos = offset;
-        if (pos >= size) {
+        if (pos >= size()) {
             this->flags.eof = true;
         }
     }
@@ -782,6 +789,11 @@ public:
     {
         this->flags.eof = false;
         this->flags.err = false;
+    }
+
+    size_t size() const
+    {
+        return size_;
     }
 };
 
@@ -831,6 +843,15 @@ public:
 
     const u8 *data() const;
 
+    /**
+     * @brief Returns the total number of bytes written to the stream.
+     *
+     * This method works independently from position().
+     * Even when a certain position in the file is seeked, the size remains the same.
+     * Otherwise this is equivalent to position().
+     *
+     * @return the total number of written bytes
+     */
     usize size() const;
 
 private:
@@ -843,6 +864,10 @@ private:
         return pos > size();
     }
 };
+
+inline ByteArrayInputStream::ByteArrayInputStream(const ByteArrayOutputStream &outputStream)
+    : ByteArrayInputStream{outputStream.data(), outputStream.size()}
+{}
 
 // FILE STREAMS ========================================================================================================
 
