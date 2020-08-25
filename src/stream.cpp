@@ -93,7 +93,9 @@ ByteArrayOutputStream::ByteArrayOutputStream(size_t initialSize) noexcept : sink
 
 ByteArrayOutputStream::~ByteArrayOutputStream()
 {
-    delete static_cast<std::vector<u8> *>(sink);
+    if (sink != nullptr) {
+        delete static_cast<std::vector<u8> *>(sink);
+    }
 }
 
 void ByteArrayOutputStream::write(u8 byte)
@@ -140,6 +142,11 @@ void ByteArrayOutputStream::clear()
 void ByteArrayOutputStream::reserve(size_t size)
 {
     static_cast<std::vector<u8> *>(sink)->reserve(size);
+}
+
+u8 *ByteArrayOutputStream::data()
+{
+    return static_cast<std::vector<u8> *>(sink)->data();
 }
 
 const u8 *ByteArrayOutputStream::data() const

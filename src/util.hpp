@@ -41,6 +41,9 @@ inline To memCast(const From &from)
 /**
  * @brief Finds the first mismatch between two arrays.
  * If no mismatch was found, size is returned.
+ * @param arr0 the first array
+ * @param arr1 the second array
+ * @param size the common size of both arrays
  * @return the index of the first mismatch
  */
 template <typename T>
@@ -52,6 +55,19 @@ constexpr usize compareArrays(const T arr0[], const T arr1[], usize size)
         }
     }
     return size;
+}
+
+/**
+ * @brief Reverses an array.
+ * @param arr the array to reverse
+ * @param size the size of the array
+ */
+template <typename T>
+constexpr void reverseArray(T arr[], usize size)
+{
+    for (size_t i = 0; i < size / 2; ++i) {
+        std::swap(arr[i], arr[size - i - 1]);
+    }
 }
 
 }  // namespace voxelio

@@ -29,6 +29,9 @@ namespace voxelio {
 
 using build::Endian;
 
+template <typename T>
+constexpr bool isIoType = std::is_arithmetic_v<T> || std::is_enum_v<T>;
+
 /**
  * @brief Java-style implementation of an input stream.
  * In addition to a collection of abstract functions which provide input functionality, this class also contains flags
@@ -287,7 +290,7 @@ public:
      */
     u8 readU8()
     {
-        return readData<u8, Endian::LITTLE>();
+        return readData<u8, Endian::NATIVE>();
     }
 
     /**
@@ -297,7 +300,7 @@ public:
      */
     i8 readI8()
     {
-        return readData<i8, Endian::LITTLE>();
+        return readData<i8, Endian::NATIVE>();
     }
 
     /**
@@ -305,7 +308,7 @@ public:
      * May set eof and err.
      * @return the read data
      */
-    template <typename T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, int> = 0>
+    template <typename T, std::enable_if_t<isIoType<T>, int> = 0>
     T readBig()
     {
         return readData<T, Endian::BIG>();
@@ -316,21 +319,32 @@ public:
      * May set eof and err.
      * @return the read data
      */
-    template <typename T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, int> = 0>
+    template <typename T, std::enable_if_t<isIoType<T>, int> = 0>
     T readLittle()
     {
         return readData<T, Endian::LITTLE>();
     }
 
     /**
-     * @brief Reads multiple unsigned, big-endian arithmetic type.
+     * @brief Reads an unsigned, native-endian arithmetic type.
+     * May set eof and err.
+     * @return the read data
+     */
+    template <typename T, std::enable_if_t<isIoType<T>, int> = 0>
+    T readNative()
+    {
+        return readData<T, Endian::NATIVE>();
+    }
+
+    /**
+     * @brief Reads multiple unsigned, little-endian arithmetic type.
      * May set eof and err.
      * @param t the buffer for read data
      */
-    template <usize COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    void readBig(T t[COUNT])
+    template <usize COUNT, typename T, std::enable_if_t<isIoType<T>, int> = 0>
+    void readLittle(T t[COUNT])
     {
-        return readData<T, Endian::BIG, COUNT>(t);
+        return readData<T, Endian::LITTLE, COUNT>(t);
     }
 
     /**
@@ -338,10 +352,21 @@ public:
      * May set eof and err.
      * @param t the buffer for read data
      */
-    template <usize COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    void readLittle(T t[COUNT])
+    template <usize COUNT, typename T, std::enable_if_t<isIoType<T>, int> = 0>
+    void readBig(T t[COUNT])
     {
-        return readData<T, Endian::LITTLE, COUNT>(t);
+        return readData<T, Endian::BIG, COUNT>(t);
+    }
+
+    /**
+     * @brief Reads multiple unsigned, native-endian arithmetic type.
+     * May set eof and err.
+     * @param t the buffer for read data
+     */
+    template <usize COUNT, typename T, std::enable_if_t<isIoType<T>, int> = 0>
+    void readNative(T t[COUNT])
+    {
+        return readData<T, Endian::NATIVE, COUNT>(t);
     }
 
 private:
@@ -353,12 +378,13 @@ private:
         }
         else {
             static_assert(sizeof(T) <= sizeof(u64));
-            read(readBuffer, sizeof(T));
+
             if constexpr (sizeof(T) == 1) {
-                return static_cast<T>(readBuffer[0]);
+                return static_cast<T>(read());
             }
             else {
-                return detail::decode_builtin<ENDIAN, T>(readBuffer);
+                read(readBuffer, sizeof(T));
+                return decode<ENDIAN, T>(readBuffer);
             }
         }
     }
@@ -370,7 +396,7 @@ private:
 
         for (usize i = 0; i < COUNT; ++i) {
             u8 *insertionPos = buffer + sizeof(T) * i;
-            t[i] = detail::decode_builtin<ENDIAN, T>(insertionPos);
+            t[i] = decode<ENDIAN, T>(insertionPos);
         }
     }
 
@@ -560,47 +586,69 @@ public:
     }
 
     /**
-     * @brief Writes an unsigned, big-endian arithmetic type.
+     * @brief Writes an unsigned, little-endian IO type.
      * May set err.
      * @return the read data
      */
-    template <typename T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, int> = 0>
-    void writeBig(T t)
-    {
-        return writeData<T, Endian::BIG>(t);
-    }
-
-    /**
-     * @brief Writes an unsigned, big-endian arithmetic type.
-     * May set err.
-     * @return the read data
-     */
-    template <typename T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, int> = 0>
+    template <typename T, std::enable_if_t<isIoType<T>, int> = 0>
     void writeLittle(T t)
     {
-        return writeData<T, Endian::LITTLE>(t);
+        writeData<T, Endian::LITTLE>(t);
     }
 
     /**
-     * @brief Writes multiple unsigned, big-endian arithmetic type.
+     * @brief Writes an unsigned, big-endian IO type.
      * May set err.
-     * @param t the buffer for read data
+     * @return the read data
      */
-    template <usize COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    void writeBig(const T t[COUNT])
+    template <typename T, std::enable_if_t<isIoType<T>, int> = 0>
+    void writeBig(T t)
     {
-        return writeData<T, Endian::BIG, COUNT>(t);
+        writeData<T, Endian::BIG>(t);
     }
 
     /**
-     * @brief Writes multiple unsigned, big-endian arithmetic type.
+     * @brief Writes an unsigned, native-endian IO type.
+     * May set err.
+     * @return the read data
+     */
+    template <typename T, std::enable_if_t<isIoType<T>, int> = 0>
+    void writeNative(T t)
+    {
+        writeData<T, Endian::NATIVE>(t);
+    }
+
+    /**
+     * @brief Writes multiple unsigned, big-endian IO types.
      * May set err.
      * @param t the buffer for read data
      */
-    template <usize COUNT, typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    template <usize COUNT, typename T, std::enable_if_t<isIoType<T>, int> = 0>
     void writeLittle(const T t[COUNT])
     {
-        return writeData<T, Endian::LITTLE, COUNT>(t);
+        writeData<T, Endian::LITTLE, COUNT>(t);
+    }
+
+    /**
+     * @brief Writes multiple unsigned, big-endian IO types.
+     * May set err.
+     * @param t the buffer for read data
+     */
+    template <usize COUNT, typename T, std::enable_if_t<isIoType<T>, int> = 0>
+    void writeBig(const T t[COUNT])
+    {
+        writeData<T, Endian::BIG, COUNT>(t);
+    }
+
+    /**
+     * @brief Writes multiple unsigned, native-endian IO types.
+     * May set err.
+     * @param t the buffer for read data
+     */
+    template <usize COUNT, typename T, std::enable_if_t<isIoType<T>, int> = 0>
+    void writeNative(const T t[COUNT])
+    {
+        writeData<T, Endian::NATIVE, COUNT>(t);
     }
 
 private:
@@ -617,7 +665,7 @@ private:
                 write(static_cast<u8>(data));
             }
             else {
-                detail::encode_builtin<ENDIAN, T>(data, writeBuffer);
+                encode<ENDIAN, T>(data, writeBuffer);
                 write(writeBuffer, sizeof(T));
             }
         }
@@ -628,7 +676,7 @@ private:
     {
         for (usize i = 0; i < COUNT; ++i) {
             u8 *insertionPos = buffer + sizeof(T) * i;
-            detail::encode_builtin<ENDIAN, T>(t[i], insertionPos);
+            encode<ENDIAN, T>(t[i], insertionPos);
         }
 
         write(buffer, sizeof(T) * COUNT);
@@ -812,15 +860,23 @@ public:
 };
 
 class ByteArrayOutputStream : public OutputStream {
+public:
+    static constexpr usize DEFAULT_INITIAL_SIZE = 8192;
+
 private:
     u64 pos = 0;
     void *sink;  // actually a std::vector<u8>, but not explicitly typed to avoid a <vector> include
 
 public:
-    ByteArrayOutputStream(usize initialSize) noexcept;
-    ByteArrayOutputStream() noexcept : ByteArrayOutputStream{8192} {}
+    ByteArrayOutputStream(usize initialSize = DEFAULT_INITIAL_SIZE) noexcept;
 
-    ByteArrayOutputStream(ByteArrayOutputStream &&) = default;
+    ByteArrayOutputStream(ByteArrayOutputStream &&moveOf) : pos{moveOf.pos}, sink{moveOf.sink}
+    {
+        moveOf.sink = nullptr;
+    }
+
+    ByteArrayOutputStream(const ByteArrayOutputStream &) = delete;
+
     ~ByteArrayOutputStream() final;
 
     void write(u8) final;
@@ -849,11 +905,7 @@ public:
     void clear();
     void reserve(usize size);
 
-    u8 *data()
-    {
-        const u8 *result = const_cast<const ByteArrayOutputStream *>(this)->data();
-        return const_cast<u8 *>(result);
-    }
+    u8 *data();
 
     const u8 *data() const;
 
