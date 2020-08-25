@@ -4,29 +4,21 @@ namespace voxelio::deflate {
 
 // DEFLATOR ============================================================================================================
 
-Deflator::Deflator(OutputStream &stream, unsigned level) : oStream{stream}
+Deflator::Deflator(OutputStream &stream, DeflateSettings settings) : oStream{stream}
 {
-    VXIO_ASSERT_LT(level, 10);
-    ResultCode result{mz_deflateInit(&zStream, static_cast<int>(level))};
-    VXIO_ASSERT_EQ(result, ResultCode::OK);
-}
-
-Deflator::Deflator(OutputStream &stream, unsigned level, unsigned windowBits, unsigned memLevel, Strategy strategy)
-    : oStream{stream}
-{
-    VXIO_ASSERT_LT(level, 10);
-    VXIO_ASSERT_NE(memLevel, 0);
-    VXIO_ASSERT_LT(memLevel, 10);
+    VXIO_ASSERT_LT(settings.level, 10);
+    VXIO_ASSERT_NE(settings.memLevel, 0);
+    VXIO_ASSERT_LT(settings.memLevel, 10);
     ResultCode result{mz_deflateInit2(&zStream,
-                                      static_cast<int>(level),
+                                      static_cast<int>(settings.level),
                                       MZ_DEFLATED,
-                                      static_cast<int>(windowBits),
-                                      static_cast<int>(memLevel),
-                                      static_cast<int>(strategy))};
+                                      static_cast<int>(settings.windowBits),
+                                      static_cast<int>(settings.memLevel),
+                                      static_cast<int>(settings.strategy))};
     VXIO_ASSERT_EQ(result, ResultCode::OK);
 }
 
-[[nodiscard]] ResultCode Deflator::deflate(u8 in[], usize size, Flushing flushing)
+[[nodiscard]] ResultCode Deflator::deflate(const u8 in[], usize size, Flushing flushing)
 {
     zStream.next_in = in;
     zStream.avail_in = static_cast<unsigned int>(size);

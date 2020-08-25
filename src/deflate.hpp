@@ -57,6 +57,35 @@ inline const char *errorOf(ResultCode code)
     return mz_error(static_cast<int>(code));
 }
 
+/// Stores compression settings for deflation.
+struct DeflateSettings {
+    /**
+     * The compression level in [0, 9] sets the quality of compression vs speed:
+     * <ul>
+     *     <li>0 gives no compression at all,</li>
+     *     <li>1 gives best speed,</li>
+     *     <li>9 gives best compression</li>
+     * </ul>
+     */
+    unsigned level = MZ_DEFAULT_LEVEL;
+    /**
+     * The windowBits parameter is the base two logarithm of the window size (the size of the history buffer).
+     * It should be in (8, 16), the default is 15.
+     */
+    unsigned windowBits = 15;
+    /**
+     * The memLevel parameter specifies how much memory should be allocated for the internal compression state.
+     * - 1 uses minimum memory but is slow and reduces compression ratio
+     * - 9 uses maximum memory for optimal speed.
+     * The default value is 8.
+     */
+    unsigned memLevel = 9;
+    /**
+     * The compression strategy.
+     */
+    Strategy strategy = Strategy::DEFAULT;
+};
+
 class Deflator {
 private:
     mz_stream zStream{};
@@ -67,12 +96,22 @@ public:
     Deflator(const Deflator &) = delete;
     Deflator(Deflator &&) = delete;
 
-    Deflator(OutputStream &stream, unsigned level);
-    Deflator(OutputStream &stream,
-             unsigned level,
-             unsigned windowBits,
-             unsigned memLevel,
-             Strategy strategy = Strategy::DEFAULT);
+    /**
+     * @brief Initializes the internal stream state for compression.
+     *
+     * @param stream the output stream
+     * @param settings the compression settings
+     */
+    Deflator(OutputStream &stream, DeflateSettings settings = {});
+
+    /**
+     * @brief Initializes the internal stream state for compression.
+     * Only sets the compression level and leaves everything else at default.
+     *
+     * @param stream the output stream
+     * @param level the compression level [0, 9], defaults to 6
+     */
+    Deflator(OutputStream &stream, unsigned level) : Deflator{stream, DeflateSettings{level}} {}
 
     ~Deflator()
     {
@@ -114,7 +153,12 @@ public:
      * @param flush the flushing mode
      * @return the result code
      */
-    [[nodiscard]] ResultCode deflate(u8 in[], usize size, Flushing flush = Flushing::NONE);
+    [[nodiscard]] ResultCode deflate(const u8 in[], usize size, Flushing flush = Flushing::NONE);
+
+    [[nodiscard]] ResultCode deflate(u8 in, Flushing flush = Flushing::NONE)
+    {
+        return deflate(&in, 1, flush);
+    }
 
     /**
      * @brief Flushes the deflator.
