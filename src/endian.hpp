@@ -11,6 +11,7 @@
  * the byte order using builtin::byteSwap.
  */
 
+#include "bits.hpp"
 #include "build.hpp"
 #include "builtin.hpp"
 #include "primitives.hpp"
@@ -22,86 +23,31 @@ namespace voxelio {
 
 using build::Endian;
 
-// PORTABLE BYTE SWAP IMPLEMENTATION ===================================================================================
-
-#ifdef VXIO_HAS_BUILTIN_BSWAP
-#define VXIO_HAS_ACCELERATED_REVERSE_BYTES
-/**
- * @brief Reverses the bytes of any integer.
- * This implementation uses builtin::byteSwap().
- * @param integer the integer
- */
-template <typename Int>
-constexpr Int reverseBytes(Int integer)
-{
-    if constexpr (sizeof(Int) == 1) {
-        return integer;
-    }
-    else if constexpr (std::is_signed_v<Int>) {
-        auto unsignedSwapped = builtin::byteSwap(static_cast<std::make_unsigned_t<Int>>(integer));
-        return static_cast<Int>(unsignedSwapped);
-    }
-    else {
-        return builtin::byteSwap(integer);
-    }
-}
-#else
-/**
- * @brief Reverses the bytes of any integer.
- * This implementation does not use any builtin function.
- * @param integer the integer
- */
-template <typename Int>
-constexpr Int reverseBytes(Int integer)
-{
-    // Compiler Explorer experiments have shown that we can't use encode/decode with different endians, as gcc
-    // loses the ability to recognize the byte swap with bswap automatically.
-    // Even for this implementation, gcc only recognizes it up to uint32_t, clang recognizes it for 64 bits too.
-    // This is why the builtin variant is quite useful.
-    u8 octets[sizeof(Int)]{};
-    for (usize i = 0; i < sizeof(Int); ++i) {
-        octets[i] = static_cast<u8>(integer >> (i * 8));
-    }
-    Int result = 0;
-    for (usize i = 0; i < sizeof(Int); ++i) {
-        usize shift = i * 8;
-        result |= Int{octets[sizeof(Int) - i - 1]} << shift;
-    }
-    return result;
-}
-#endif
-
-static_assert(reverseBytes(0x11223344) == 0x44332211);
-
 // IMPLEMENTATION ======================================================================================================
 
 namespace detail {
 // The builtin version will only be chosen if VXIO_HAS_ACCELERATED_REVERSE_BYTES is defined.
 // Both are defined so that they can be tested individually.
 
-#ifdef VXIO_HAS_KNOWN_ENDIAN
-
 template <Endian ENDIAN, typename Int>
-void encode_builtin(Int integer, u8 out[sizeof(Int)])
+constexpr void encode_reverse(Int integer, u8 out[sizeof(Int)])
 {
-    if constexpr (build::NATIVE_ENDIAN != ENDIAN) {
+    if constexpr (ENDIAN != Endian::NATIVE) {
         integer = reverseBytes(integer);
     }
     std::memcpy(out, &integer, sizeof(Int));
 }
 
 template <Endian ENDIAN, typename Int>
-Int decode_builtin(const u8 buffer[sizeof(Int)])
+constexpr Int decode_reverse(const u8 buffer[sizeof(Int)])
 {
     Int result = 0;
     std::memcpy(&result, buffer, sizeof(Int));
-    if constexpr (build::NATIVE_ENDIAN != ENDIAN) {
+    if constexpr (ENDIAN != Endian::NATIVE) {
         result = reverseBytes(result);
     }
     return result;
 }
-
-#endif  // VXIO_HAS_KNOWN_ENDIAN
 
 template <Endian ENDIAN, typename Int>
 constexpr void encode_naive(Int integer, u8 out[sizeof(Int)])
@@ -137,38 +83,16 @@ constexpr Int decode_naive(const u8 buffer[sizeof(Int)])
 
 }  // namespace detail
 
-#if defined(VXIO_HAS_KNOWN_ENDIAN) && defined(VXIO_HAS_ACCELERATED_REVERSE_BYTES)
-#define VXIO_HAS_ACCELERATED_ENDIAN
-#endif
-
 template <Endian ENDIAN, typename Int>
 constexpr Int decode(const u8 buffer[sizeof(Int)])
 {
-#ifdef VXIO_HAS_ACCELERATED_ENDIAN
-    if (isConstantEvaluated()) {
-        return detail::decode_naive<ENDIAN, Int>(buffer);
-    }
-    else {
-        return detail::decode_builtin<ENDIAN, Int>(buffer);
-    }
-#else
-    return detail::decode_naive<ENDIAN, Int>(buffer);
-#endif
+    return detail::decode_reverse<ENDIAN, Int>(buffer);
 }
 
 template <Endian ENDIAN, typename Int>
 constexpr void encode(Int integer, u8 out[sizeof(Int)])
 {
-#ifdef VXIO_HAS_ACCELERATED_ENDIAN
-    if (isConstantEvaluated()) {
-        detail::encode_naive<ENDIAN, Int>(integer, out);
-    }
-    else {
-        detail::encode_builtin<ENDIAN, Int>(integer, out);
-    }
-#else
-    detail::encode_naive<ENDIAN, Int>(out);
-#endif
+    return detail::encode_reverse<ENDIAN, Int>(integer, out);
 }
 
 // SPECIALIZATION ======================================================================================================
@@ -230,6 +154,15 @@ constexpr Int decodeBig(const u8 buffer[sizeof(Int)])
 }
 
 /**
+ * @brief Convenience function that forwards to decode<Endian::NATIVE>.
+ */
+template <typename Int>
+constexpr Int decodeNative(const u8 buffer[sizeof(Int)])
+{
+    return decode<Endian::NATIVE, Int>(buffer);
+}
+
+/**
  * @brief Convenience function that forwards to encode<Endian::LITTLE>.
  */
 template <typename Int>
@@ -245,6 +178,15 @@ template <typename Int>
 constexpr void encodeBig(Int integer, u8 out[])
 {
     encode<Endian::BIG>(integer, out);
+}
+
+/**
+ * @brief Convenience function that forwards to encode<Endian::NATIVE>.
+ */
+template <typename Int>
+constexpr void encodeNative(Int integer, u8 out[])
+{
+    encode<Endian::NATIVE>(integer, out);
 }
 
 }  // namespace voxelio

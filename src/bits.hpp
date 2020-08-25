@@ -56,6 +56,62 @@ constexpr unsigned char popCount(Int input)
 #endif
 }
 
+// PORTABLE BYTE SWAP IMPLEMENTATION ===================================================================================
+
+namespace detail {
+
+/**
+ * @brief Reverses the bytes of any integer.
+ * This implementation does not use any builtin function.
+ * @param integer the integer
+ */
+template <typename Int>
+constexpr Int reverseBytes_shift(Int integer)
+{
+    // Compiler Explorer experiments have shown that we can't use encode/decode with different endians, as gcc
+    // loses the ability to recognize the byte swap with bswap automatically.
+    // Even for this implementation, gcc only recognizes it up to uint32_t, clang recognizes it for 64 bits too.
+    // This is why the builtin variant is quite useful.
+    u8 octets[sizeof(Int)]{};
+    for (usize i = 0; i < sizeof(Int); ++i) {
+        octets[i] = static_cast<u8>(integer >> (i * 8));
+    }
+    Int result = 0;
+    for (usize i = 0; i < sizeof(Int); ++i) {
+        usize shift = i * 8;
+        result |= Int{octets[sizeof(Int) - i - 1]} << shift;
+    }
+    return result;
+}
+
+}  // namespace detail
+
+/**
+ * @brief Reverses the bytes of any integer.
+ * This implementation uses builtin::byteSwap().
+ * @param integer the integer
+ */
+template <typename Int>
+constexpr Int reverseBytes(Int integer)
+{
+    if constexpr (sizeof(Int) == 1) {
+        return integer;
+    }
+    else if constexpr (std::is_signed_v<Int>) {
+        auto unsignedSwapped = builtin::byteSwap(static_cast<std::make_unsigned_t<Int>>(integer));
+        return static_cast<Int>(unsignedSwapped);
+    }
+    else {
+#ifdef VXIO_HAS_BUILTIN_BSWAP
+        return builtin::byteSwap(integer);
+#else
+        return builtin::reverseBytes_naive(integer);
+#endif
+    }
+}
+
+static_assert(reverseBytes(0x11223344) == 0x44332211);
+
 // BIT ROTATION ========================================================================================================
 
 namespace detail {
