@@ -95,6 +95,53 @@ constexpr bool RELEASE = !DEBUG;
 #endif
 
 // ENDIANNES DETECTION =================================================================================================
+/*
+ * In this section, the bool constant NATIVE_ENDIAN_LITTLE is defined.
+ * This happens either using __BYTE_ORDER__ macros or C++20's std::endian.
+ */
+
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__
+// C++17 ENDIANNESS DETECTION USING __BYTE__ORDER MACRO ----------------------------------------------------------------
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define VXIO_LITTLE_ENDIAN
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define VXIO_BIG_ENDIAN
+#elif __BYTE_ORDER == __ORDER_PDP_ENDIAN__
+#define VXIO_PDP_ENDIAN
+#else
+#error "__BYTE_ORDER__ has unrecognized value"
+#endif
+
+#ifdef VXIO_PDP_ENDIAN
+#error "voxelio can't compile on platforms with PDP endianness"
+#endif
+
+namespace voxelio::build {
+
+#ifdef VXIO_LITTLE_ENDIAN
+constexpr bool NATIVE_ENDIAN_LITTLE = true;
+#else
+constexpr bool NATIVE_ENDIAN_LITTLE = false;
+#endif
+
+}  // namespace voxelio::build
+
+#elif VXIO_CPP20_LEAST
+// C++20 ENDIANNESS DETECTION ------------------------------------------------------------------------------------------
+#include <bit>
+
+namespace voxelio::build {
+
+constexpr bool NATIVE_ENDIAN_LITTLE = std::endian::native == std::endian::little;
+
+}  // namespace voxelio::build
+
+#else
+#error "Failed to detect platform endianness"
+#endif
+
+// ENDIAN ENUM =========================================================================================================
 
 namespace voxelio::build {
 
@@ -102,68 +149,13 @@ namespace voxelio::build {
  * @brief Represents a byte order. Can be either Big Endian or Little Endian.
  */
 enum class Endian : unsigned {
-    /// Most significant byte first.
-    BIG = 0,
     /// Least significant byte first.
-    LITTLE = 1
+    LITTLE = 0,
+    /// Most significant byte first.
+    BIG = 1,
+    NATIVE = NATIVE_ENDIAN_LITTLE ? LITTLE : BIG
 };
 
 }  // namespace voxelio::build
-
-#if defined(__BYTE_ORDER__) && __BYTE_ORDER__
-// C++17 ENDIANNESS DETECTION USING __BYTE__ORDER MACRO ----------------------------------------------------------------
-#define VXIO_HAS_KNOWN_ENDIAN
-
-#define VXIO_ENDIAN_LITTLE 1234
-#define VXIO_ENDIAN_BIG 4321
-#define VXIO_ENDIAN_PDP 3412
-
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define VXIO_ENDIAN VXIO_ENDIAN_LITTLE
-#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#define VXIO_ENDIAN VXIO_ENDIAN_BIG
-#elif __BYTE_ORDER == __ORDER_PDP_ENDIAN__
-#define VXIO_ENDIAN VXIO_ENDIAN_PDP
-#endif
-
-#if VXIO_ENDIAN == VXIO_ENDIAN_PDP
-#error "voxelio can't compile on platforms with PDP endianness"
-#endif
-
-namespace voxelio::build {
-
-constexpr bool NATIVE_ENDIAN_KNOWN = true;
-
-#if VXIO_ENDIAN == VXIO_ENDIAN_LITTLE
-constexpr Endian NATIVE_ENDIAN = Endian::LITTLE;
-#elif VXIO_ENDIAN == VXIO_ENDIAN_BIG
-constexpr bool NATIVE_ENDIAN = Endian::BIG;
-#else
-#error "__BYTE_ORDER__ has unrecognized value"
-#endif
-
-}  // namespace voxelio::build
-
-#elif VXIO_CPP20_LEAST
-// C++20 ENDIANNESS DETECTION ------------------------------------------------------------------------------------------
-#define VXIO_HAS_KNOWN_ENDIAN
-#include <bit>
-
-namespace voxelio::build {
-
-constexpr bool NATIVE_ENDIAN_KNOWN = true;
-constexpr Endian NATIVE_ENDIAN = std::endian::native == std::endian::little ? Endian::LITTLE : Endian::BIG;
-
-}  // namespace voxelio::build
-
-#else
-// UNKNWON ENDIANNESS --------------------------------------------------------------------------------------------------
-namespace voxelio::build {
-
-constexpr bool NATIVE_ENDIAN_KNOWN = false;
-constexpr Endian NATIVE_ENDIAN = Endian{0xff};
-
-}  // namespace voxelio::build
-#endif
 
 #endif  // VXIO_BUILD_HPP
