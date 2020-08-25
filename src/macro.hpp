@@ -1,5 +1,5 @@
-#ifndef VXIO_UTIL_PRIVATE_HPP
-#define VXIO_UTIL_PRIVATE_HPP
+#ifndef VXIO_MACRO_HPP
+#define VXIO_MACRO_HPP
 
 #include "results.hpp"
 
@@ -14,4 +14,4 @@
     else if (this->stream.eof())                   \
     return ::voxelio::ReadResult::unexpectedEof(stream.position())
 
-#endif  // VXIO_UTIL_PRIVATE_HPP
+#endif  // VXIO_MACRO_HPP
