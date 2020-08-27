@@ -20,6 +20,8 @@ Deflator::Deflator(OutputStream &stream, DeflateSettings settings) : oStream{str
 
 [[nodiscard]] ResultCode Deflator::deflate(const u8 in[], usize size, Flushing flushing)
 {
+    VXIO_ASSERT_NOTNULL(in);
+
     zStream.next_in = in;
     zStream.avail_in = static_cast<unsigned int>(size);
 
@@ -67,6 +69,8 @@ Deflator::Deflator(OutputStream &stream, DeflateSettings settings) : oStream{str
 
 [[nodiscard]] ResultCode Inflator::inflate(u8 out[], usize size, usize &written)
 {
+    VXIO_ASSERT_NOTNULL(out);
+
     zStream.next_out = out;
     zStream.avail_out = static_cast<unsigned int>(size);
 

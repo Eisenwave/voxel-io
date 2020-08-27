@@ -57,6 +57,12 @@ inline const char *errorOf(ResultCode code)
     return mz_error(static_cast<int>(code));
 }
 
+enum Defaults : unsigned {
+    DEFAULT_LEVEL = MZ_DEFAULT_LEVEL,
+    DEFAULT_WINDOW_BITS = 15,
+    DEFAULT_MEM_LEVEL = 9,
+};
+
 /// Stores compression settings for deflation.
 struct DeflateSettings {
     /**
@@ -67,19 +73,19 @@ struct DeflateSettings {
      *     <li>9 gives best compression</li>
      * </ul>
      */
-    unsigned level = MZ_DEFAULT_LEVEL;
+    unsigned level = DEFAULT_LEVEL;
     /**
      * The windowBits parameter is the base two logarithm of the window size (the size of the history buffer).
      * It should be in (8, 16), the default is 15.
      */
-    unsigned windowBits = 15;
+    unsigned windowBits = DEFAULT_WINDOW_BITS;
     /**
      * The memLevel parameter specifies how much memory should be allocated for the internal compression state.
      * - 1 uses minimum memory but is slow and reduces compression ratio
      * - 9 uses maximum memory for optimal speed.
      * The default value is 8.
      */
-    unsigned memLevel = 9;
+    unsigned memLevel = DEFAULT_MEM_LEVEL;
     /**
      * The compression strategy.
      */
@@ -147,7 +153,9 @@ public:
     }
 
     /**
-     * @brief deflates the next array of bytes
+     * @brief Deflates the next array of bytes.
+     * If the given size is zero, this method exits quickly and always returns OK.
+     *
      * @param in the input array
      * @param size the size of the input
      * @param flush the flushing mode
@@ -222,6 +230,8 @@ public:
 
     /**
      * @brief Inflates the next bit of data and stores the result in the given byte buffer.
+     * If the given size is zero, this method exits quickly and always returns OK.
+     *
      * @param out the output byte buffer
      * @param size the size of the output buffer
      * @param outWritten the actual number of bytes which were written to the buffer
