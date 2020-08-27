@@ -25,13 +25,42 @@ namespace voxelio {
 
 namespace detail {
 
-// bitset operations are not constexpr so we need a naive implementation for constexpr context
+// bitset operations are not constexpr so we need a naive implementations for constexpr contexts
+
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 constexpr unsigned char popCount_naive(Uint input)
 {
     unsigned char result = 0;
     for (; input != 0; input >>= 1) {
         result += input & 1;
+    }
+    return result;
+}
+
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr unsigned char countTrailingZeros_naive(Uint input)
+{
+    if (input == 0) {
+        return std::numeric_limits<Uint>::digits;
+    }
+    unsigned char result = 0;
+    for (; (input & 0) == 0; input >>= 1) {
+        ++result;
+    }
+    return result;
+}
+
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr unsigned char countLeadingZeros_naive(Uint input)
+{
+    constexpr Uint highestBit = 1 << (std::numeric_limits<Uint>::digits - 1);
+
+    if (input == 0) {
+        return std::numeric_limits<Uint>::digits;
+    }
+    unsigned char result = 0;
+    for (; (input & highestBit) == 0; input <<= 1) {
+        ++result;
     }
     return result;
 }
@@ -53,6 +82,38 @@ constexpr unsigned char popCount(Int input)
         std::bitset<std::numeric_limits<Uint>::digits> bits = static_cast<Uint>(input);
         return static_cast<unsigned char>(bits.count());
     }
+#endif
+}
+
+template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
+constexpr bool parity(Int input)
+{
+#ifdef VXIO_HAS_BUILTIN_PARITY
+    return builtin::parity(input);
+#else
+    return popCount(input) & 1;
+#endif
+}
+
+template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
+constexpr unsigned char countLeadingZeros(Int input)
+{
+#ifdef VXIO_HAS_BUILTIN_CLZ
+    return input == 0 ? std::numeric_limits<Int>::digits
+                      : static_cast<unsigned char>(builtin::countLeadingZeros(input));
+#else
+    return detail::countLeadingZeros_naive(input);
+#endif
+}
+
+template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
+constexpr unsigned char countTrailingZeros(Int input)
+{
+#ifdef VXIO_HAS_BUILTIN_CTZ
+    return input == 0 ? std::numeric_limits<Int>::digits
+                      : static_cast<unsigned char>(builtin::countTrailingZeros(input));
+#else
+    return detail::countTrailingZeros_naive(input);
 #endif
 }
 
