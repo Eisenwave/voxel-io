@@ -81,6 +81,38 @@ constexpr bool isConstantEvaluated()
 }
 #endif
 
+// int countLeadingRedundantSignBits(unsigned ...):
+//     Counts the number of redundant sign bits, i.o.w. the number of bits following the sign bit which are equal to it.
+//     This is the number of leading zeros minus one for positive numbers.
+//     For negative numbers, it is the number of leading ones - 1.
+#if VXIO_HAS_BUILTIN(__builtin_clrsb) && VXIO_HAS_BUILTIN(__builtin_clrsbl) && VXIO_HAS_BUILTIN(__builtin_clrsbll)
+#define VXIO_HAS_BUILTIN_CLRSB
+constexpr int countLeadingRedundantSignBits(char x) noexcept
+{
+    return __builtin_clrsb(x);
+}
+
+constexpr int countLeadingRedundantSignBits(short x) noexcept
+{
+    return __builtin_clrsb(x);
+}
+
+constexpr int countLeadingRedundantSignBits(int x) noexcept
+{
+    return __builtin_clrsb(x);
+}
+
+constexpr int countLeadingRedundantSignBits(long x) noexcept
+{
+    return __builtin_clrsbl(x);
+}
+
+constexpr int countLeadingRedundantSignBits(long long x) noexcept
+{
+    return __builtin_clrsbll(x);
+}
+#endif
+
 // int countLeadingZeros(unsigned ...):
 //     Counts the number of leading zeros in an unsigned integer type.
 //     The result of countLeadingZeros(0) is undefined for all types.
@@ -109,6 +141,100 @@ constexpr int countLeadingZeros(unsigned long x) noexcept
 constexpr int countLeadingZeros(unsigned long long x) noexcept
 {
     return __builtin_clzll(x);
+}
+#endif
+
+// int countTrailingZeros(unsigned ...):
+//     Counts the number of trailing zeros in an unsigned integer type.
+//     The result of countTrailingZeros(0) is undefined for all types.
+#if VXIO_HAS_BUILTIN(__builtin_ctz) && VXIO_HAS_BUILTIN(__builtin_ctzl) && VXIO_HAS_BUILTIN(__builtin_ctzll)
+#define VXIO_HAS_BUILTIN_CTZ
+constexpr int countTrailingZeros(unsigned char x) noexcept
+{
+    return __builtin_ctz(x);
+}
+
+constexpr int countTrailingZeros(unsigned short x) noexcept
+{
+    return __builtin_ctz(x);
+}
+
+constexpr int countTrailingZeros(unsigned int x) noexcept
+{
+    return __builtin_ctz(x);
+}
+
+constexpr int countTrailingZeros(unsigned long x) noexcept
+{
+    return __builtin_ctzl(x);
+}
+
+constexpr int countTrailingZeros(unsigned long long x) noexcept
+{
+    return __builtin_ctzll(x);
+}
+#endif
+
+// int findFirstSet(unsigned ...):
+//     Returns one plus the number of trailing zeros.
+//     findFirstSet(0) evaluates to zero.
+#if VXIO_HAS_BUILTIN(__builtin_ffs) && VXIO_HAS_BUILTIN(__builtin_ffsl) && VXIO_HAS_BUILTIN(__builtin_ffsll)
+#define VXIO_HAS_BUILTIN_FFS
+constexpr int findFirstSet(unsigned char x) noexcept
+{
+    return __builtin_ffs(x);
+}
+
+constexpr int findFirstSet(unsigned short x) noexcept
+{
+    return __builtin_ffs(x);
+}
+
+constexpr int findFirstSet(unsigned int x) noexcept
+{
+    return __builtin_ffs(static_cast<int>(x));
+}
+
+constexpr int findFirstSet(unsigned long x) noexcept
+{
+    return __builtin_ffsl(static_cast<long>(x));
+}
+
+constexpr int findFirstSet(unsigned long long x) noexcept
+{
+    return __builtin_ffsll(static_cast<long long>(x));
+}
+#endif
+
+// int parity(unsigned ...):
+//     Returns the parity of a number.
+//     This is a bool which indicates whether the number of set bits in x is odd.
+//     The parity of 0 is 0, the parity of 1 is 1.
+#if VXIO_HAS_BUILTIN(__builtin_parity) && VXIO_HAS_BUILTIN(__builtin_parityl) && VXIO_HAS_BUILTIN(__builtin_parityll)
+#define VXIO_HAS_BUILTIN_PARITY
+constexpr bool parity(unsigned char x) noexcept
+{
+    return __builtin_parity(x);
+}
+
+constexpr int parity(unsigned short x) noexcept
+{
+    return __builtin_parity(x);
+}
+
+constexpr int parity(unsigned int x) noexcept
+{
+    return __builtin_parity(x);
+}
+
+constexpr int parity(unsigned long x) noexcept
+{
+    return __builtin_parityl(x);
+}
+
+constexpr int parity(unsigned long long x) noexcept
+{
+    return __builtin_parityll(x);
 }
 #endif
 
