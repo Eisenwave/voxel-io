@@ -1,3 +1,5 @@
 # FILES
 .directory
 
+# DIRECTORIES
+build/

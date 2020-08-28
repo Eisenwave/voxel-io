@@ -10,9 +10,19 @@ No third party dependencies exist, only single-header libraries (**lodepng**, **
 
 All sources and headers can be found in `src/`.
 `src/format` contains the readers/writers for various voxel formats.
-`src/3rd_party` contains third-party libraries, which are all single-header libraries.
+
+`src/3rd_party` contains third-party libraries.
+These are implementation details and using them through voxel-io is not safe.
+They might be changed by voxel-io or they might be removed entirely in the future.
 
 ## Build
 
-Right now, only QMake is supported.
-CMake support is in development.`
+To build using CMake:
+```sh
+mkdir build
+cd build
+cmake .. # -DCMAKE_BUILD_TYPE=DEBUG for debug builds, otherwise release is default
+make # -j NUMBER_OF_THREADS
+```
+
+**voxel-io** should build in about 0.5 to 1.0 seconds with multithreading.
