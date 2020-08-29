@@ -1,5 +1,7 @@
-add_library(voxelio STATIC
-    assert.cpp
+add_subdirectory(format)
+add_subdirectory(3rd_party)
+
+set(SOURCES assert.cpp
     builtin.cpp
     deflate.cpp
     filetype.cpp
@@ -11,4 +13,6 @@ add_library(voxelio STATIC
     stringify.cpp
     stringmanip.cpp
     voxelarray.cpp
-    voxelio.cpp) 
+    voxelio.cpp)
+
+add_library(voxelio STATIC "${SOURCES}")

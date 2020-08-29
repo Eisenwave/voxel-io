@@ -25,12 +25,10 @@
 
 // GCC / CLANG BUILTINS ================================================================================================
 
-#ifdef VXIO_GNU_OR_CLANG
-
 // VXIO_UNREACHABLE():
 //     Signals to the compiler that a given code point is unreachable.
 //     This macro is always defined, but does nothing if no builtin is available.
-#if VXIO_HAS_BUILTIN(__builtin_unreachable)
+#if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_unreachable)
 #define VXIO_HAS_BUILTIN_UNREACHABLE
 #define VXIO_UNREACHABLE() __builtin_unreachable()
 #else
@@ -42,7 +40,7 @@
 //     This macro is always defined, but does nothing if no builtin is available.
 //     Note that the expression inside of VXIO_ASSUME() is evaluated, although the result is unused.
 //     This makes it unsafe to use when the expression has side effects.
-#if VXIO_CLANG && VXIO_HAS_BUILTIN(__builtin_assume)
+#if defined(VXIO_CLANG) && VXIO_HAS_BUILTIN(__builtin_assume)
 #define VXIO_HAS_BUILTIN_ASSUME
 #define VXIO_ASSUME(condition) __builtin_assume(condition)
 #elif defined(VXIO_GNU)
@@ -58,7 +56,7 @@ namespace voxelio::builtin {
 //     Executes an abnormal instruction or otherwise exits the program immediately.
 //     This bypasses even std::terminate() and is completely unhandled.
 //     This function always exists and will call std::terminate() by default.
-#if VXIO_HAS_BUILTIN(__builtin_trap)
+#if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_trap)
 #define VXIO_HAS_BUILTIN_TRAP
 [[noreturn]] inline void trap()
 {
@@ -85,7 +83,8 @@ constexpr bool isConstantEvaluated()
 //     Counts the number of redundant sign bits, i.o.w. the number of bits following the sign bit which are equal to it.
 //     This is the number of leading zeros minus one for positive numbers.
 //     For negative numbers, it is the number of leading ones - 1.
-#if VXIO_HAS_BUILTIN(__builtin_clrsb) && VXIO_HAS_BUILTIN(__builtin_clrsbl) && VXIO_HAS_BUILTIN(__builtin_clrsbll)
+#if defined(VXIO_GNU_OR_CLANG) && \
+    VXIO_HAS_BUILTIN(__builtin_clrsb) && VXIO_HAS_BUILTIN(__builtin_clrsbl) && VXIO_HAS_BUILTIN(__builtin_clrsbll)
 #define VXIO_HAS_BUILTIN_CLRSB
 constexpr int countLeadingRedundantSignBits(char x) noexcept
 {
@@ -116,7 +115,8 @@ constexpr int countLeadingRedundantSignBits(long long x) noexcept
 // int countLeadingZeros(unsigned ...):
 //     Counts the number of leading zeros in an unsigned integer type.
 //     The result of countLeadingZeros(0) is undefined for all types.
-#if VXIO_HAS_BUILTIN(__builtin_clz) && VXIO_HAS_BUILTIN(__builtin_clzl) && VXIO_HAS_BUILTIN(__builtin_clzll)
+#if defined(VXIO_GNU_OR_CLANG) && \
+    VXIO_HAS_BUILTIN(__builtin_clz) && VXIO_HAS_BUILTIN(__builtin_clzl) && VXIO_HAS_BUILTIN(__builtin_clzll)
 #define VXIO_HAS_BUILTIN_CLZ
 constexpr int countLeadingZeros(unsigned char x) noexcept
 {
@@ -147,7 +147,8 @@ constexpr int countLeadingZeros(unsigned long long x) noexcept
 // int countTrailingZeros(unsigned ...):
 //     Counts the number of trailing zeros in an unsigned integer type.
 //     The result of countTrailingZeros(0) is undefined for all types.
-#if VXIO_HAS_BUILTIN(__builtin_ctz) && VXIO_HAS_BUILTIN(__builtin_ctzl) && VXIO_HAS_BUILTIN(__builtin_ctzll)
+#if defined(VXIO_GNU_OR_CLANG) && \
+    VXIO_HAS_BUILTIN(__builtin_ctz) && VXIO_HAS_BUILTIN(__builtin_ctzl) && VXIO_HAS_BUILTIN(__builtin_ctzll)
 #define VXIO_HAS_BUILTIN_CTZ
 constexpr int countTrailingZeros(unsigned char x) noexcept
 {
@@ -178,7 +179,8 @@ constexpr int countTrailingZeros(unsigned long long x) noexcept
 // int findFirstSet(unsigned ...):
 //     Returns one plus the number of trailing zeros.
 //     findFirstSet(0) evaluates to zero.
-#if VXIO_HAS_BUILTIN(__builtin_ffs) && VXIO_HAS_BUILTIN(__builtin_ffsl) && VXIO_HAS_BUILTIN(__builtin_ffsll)
+#if defined(VXIO_GNU_OR_CLANG) && \
+    VXIO_HAS_BUILTIN(__builtin_ffs) && VXIO_HAS_BUILTIN(__builtin_ffsl) && VXIO_HAS_BUILTIN(__builtin_ffsll)
 #define VXIO_HAS_BUILTIN_FFS
 constexpr int findFirstSet(unsigned char x) noexcept
 {
@@ -210,7 +212,8 @@ constexpr int findFirstSet(unsigned long long x) noexcept
 //     Returns the parity of a number.
 //     This is a bool which indicates whether the number of set bits in x is odd.
 //     The parity of 0 is 0, the parity of 1 is 1.
-#if VXIO_HAS_BUILTIN(__builtin_parity) && VXIO_HAS_BUILTIN(__builtin_parityl) && VXIO_HAS_BUILTIN(__builtin_parityll)
+#if defined(VXIO_GNU_OR_CLANG) && \
+    VXIO_HAS_BUILTIN(__builtin_parity) && VXIO_HAS_BUILTIN(__builtin_parityl) && VXIO_HAS_BUILTIN(__builtin_parityll)
 #define VXIO_HAS_BUILTIN_PARITY
 constexpr bool parity(unsigned char x) noexcept
 {
@@ -240,7 +243,8 @@ constexpr int parity(unsigned long long x) noexcept
 
 // int popCount(unsigned ...):
 //     Counts the number of one-bits in an unsigned integer type.
-#if VXIO_HAS_BUILTIN(__builtin_popcount) && VXIO_HAS_BUILTIN(__builtin_popcountl) && \
+#if defined(VXIO_GNU_OR_CLANG) && \
+    VXIO_HAS_BUILTIN(__builtin_popcount) && VXIO_HAS_BUILTIN(__builtin_popcountl) && \
     VXIO_HAS_BUILTIN(__builtin_popcountll)
 #define VXIO_HAS_BUILTIN_POPCOUNT
 constexpr int popCount(unsigned char x) noexcept
@@ -271,7 +275,7 @@ constexpr int popCount(unsigned long long x) noexcept
 
 // unsigned rotr(unsigned ...):
 //     Right-rotates the bits of a number.
-#if VXIO_HAS_BUILTIN(__builtin_rotateright8) && VXIO_HAS_BUILTIN(__builtin_rotateright64)
+#if defined(VXIO_CLANG) && VXIO_HAS_BUILTIN(__builtin_rotateright8) && VXIO_HAS_BUILTIN(__builtin_rotateright64)
 #define VXIO_HAS_BUILTIN_ROTR
 inline uint8_t rotr(uint8_t x, unsigned char rot) noexcept
 {
@@ -296,7 +300,7 @@ inline uint64_t rotr(uint64_t x, unsigned char rot) noexcept
 
 // unsigned rotl(unsigned ...):
 //     Left-rotates the bits of a number.
-#if VXIO_HAS_BUILTIN(__builtin_rotateleft8) && VXIO_HAS_BUILTIN(__builtin_rotateleft64)
+#if defined(VXIO_CLANG) && VXIO_HAS_BUILTIN(__builtin_rotateleft8) && VXIO_HAS_BUILTIN(__builtin_rotateleft64)
 #define VXIO_HAS_BUILTIN_ROTL
 inline uint8_t rotl(uint8_t x, unsigned char rot) noexcept
 {
@@ -323,7 +327,8 @@ inline uint64_t rotl(uint64_t x, unsigned char rot) noexcept
 //     Swaps the bytes of any uintXX type.
 //     This reverses the byte order (little-endian/big-endian).
 //     This does nothing for byteSwap(uint8_t).
-#if VXIO_HAS_BUILTIN(__builtin_bswap16) && VXIO_HAS_BUILTIN(__builtin_bswap32) && VXIO_HAS_BUILTIN(__builtin_bswap64)
+#if defined(VXIO_GNU_OR_CLANG) && \
+    VXIO_HAS_BUILTIN(__builtin_bswap16) && VXIO_HAS_BUILTIN(__builtin_bswap32) && VXIO_HAS_BUILTIN(__builtin_bswap64)
 #define VXIO_HAS_BUILTIN_BSWAP
 constexpr uint8_t byteSwap(uint8_t x) noexcept
 {
@@ -347,7 +352,5 @@ constexpr uint64_t byteSwap(uint64_t x) noexcept
 #endif
 
 }  // namespace voxelio::builtin
-
-#endif  // ifdef VXIO_GNU_OR_CLANG
 
 #endif  // BUILTIN_HPP
