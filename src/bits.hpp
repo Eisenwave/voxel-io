@@ -65,6 +65,20 @@ constexpr unsigned char countLeadingZeros_naive(Uint input)
     return result;
 }
 
+// This implementation is taken from https://stackoverflow.com/a/21618038 .
+// The core idea is to XOR the high half bits with the low half bits recursively.
+// In the end, the lowest bit will have been XORed with every other bit.
+template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
+constexpr bool parity_fast(Int input)
+{
+    constexpr unsigned iterations = log2floor(bits_v<Int>);
+
+    for (unsigned shift = 1 << iterations; shift != 0; shift >>= 1) {
+        input ^= input >> shift;
+    }
+    return input & 1;
+}
+
 }  // namespace detail
 
 template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
@@ -91,7 +105,7 @@ constexpr bool parity(Int input)
 #ifdef VXIO_HAS_BUILTIN_PARITY
     return builtin::parity(input);
 #else
-    return popCount(input) & 1;
+    return detail::parity_fast<Int>(input);
 #endif
 }
 
