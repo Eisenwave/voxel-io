@@ -46,7 +46,6 @@ NullInputStream::NullInputStream() noexcept
 
 NullOutputStream::NullOutputStream() noexcept
 {
-    this->flags.bin = false;
     this->flags.err = false;
 }
 
@@ -87,7 +86,6 @@ size_t ByteArrayInputStream::read(u8 buffer[], size_t size)
 ByteArrayOutputStream::ByteArrayOutputStream(size_t initialSize) noexcept : sink{new std::vector<u8>}
 {
     static_cast<std::vector<u8> *>(sink)->reserve(initialSize);
-    this->flags.bin = false;
     this->flags.err = false;
 }
 
@@ -191,6 +189,14 @@ FileInputStream::~FileInputStream()
     }
 }
 
+FileInputStream &FileInputStream::operator=(FileInputStream &&moveOf)
+{
+    this->flags = moveOf.flags;
+    this->file = moveOf.file;
+    moveOf.file = nullptr;
+    return *this;
+}
+
 u8 FileInputStream::read()
 {
     int rawResult = std::fgetc(file);
@@ -262,11 +268,7 @@ std::optional<FileOutputStream> FileOutputStream::open(const char *path, unsigne
         return std::nullopt;
     }
 
-    FileOutputStream result{file};
-    result.flags.err = false;
-    result.flags.bin = bin;
-
-    return result;
+    return FileOutputStream{file};
 }
 
 FileOutputStream::FileOutputStream(FileOutputStream &&moveOf) : OutputStream{std::move(moveOf)}, file{moveOf.file}
@@ -280,6 +282,14 @@ FileOutputStream::~FileOutputStream()
         VXIO_LOG(ERROR, "Failed to close file: " + stringify(file));
         VXIO_DEBUG_ASSERT_UNREACHABLE();
     }
+}
+
+FileOutputStream &FileOutputStream::operator=(FileOutputStream &&moveOf)
+{
+    this->flags = moveOf.flags;
+    this->file = moveOf.file;
+    moveOf.file = nullptr;
+    return *this;
 }
 
 void FileOutputStream::write(u8 byte)
@@ -402,7 +412,6 @@ void StdInputStream::updateErrorFlags()
 StdOutputStream::StdOutputStream(std::ostream &stream) : stream{&stream}
 {
     flags.err = this->stream->bad();
-    flags.bin = false;
 }
 
 void StdOutputStream::write(u8 byte)

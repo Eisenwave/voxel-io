@@ -431,8 +431,6 @@ protected:
     struct Flags {
         /// true if a write-operation failed
         bool err : 1;
-        /// true if the underlying resource was opened in binary mode
-        bool bin : 1;
     };
 
     /// Small write buffer for writing (multiple) integers, used in the writeU16(), writeI32(), ... functions.
@@ -528,15 +526,6 @@ public:
         return not err();
     }
 
-    /**
-     * @brief Returns true if the stream was opened in binary mode.
-     * @return true if no error occured
-     */
-    bool bin() const
-    {
-        return flags.bin;
-    }
-
     // UTILITY ---------------------------------------------------------------------------------------------------------
 
     /**
@@ -557,11 +546,7 @@ public:
      */
     void writeLine(const std::string &str)
     {
-#ifdef _WIN32
-        writeString(str + (flags.bin ? "\r\n" : "\n"));
-#else
         writeString(str + '\n');
-#endif
     }
 
     /**
@@ -953,14 +938,21 @@ public:
 private:
     cfile file;
 
+public:
     FileInputStream(cfile file) : file{file}
     {
-        VXIO_DEBUG_ASSERT_NOTNULL(file);
+        if constexpr (build::DEBUG) {
+            cfile stdoutput = stdout;
+            VXIO_ASSERT_NE(file, stdoutput);
+        }
+        flags.err = file == nullptr || std::ferror(file);
+        flags.eof = file != nullptr && std::feof(file);
     }
 
-public:
     FileInputStream(FileInputStream &&);
     ~FileInputStream() final;
+
+    FileInputStream &operator=(FileInputStream &&);
 
     u8 read() final;
     usize read(u8 buffer[], usize size) final;
@@ -988,14 +980,20 @@ public:
 private:
     cfile file;
 
+public:
     FileOutputStream(cfile file) : file{file}
     {
-        VXIO_DEBUG_ASSERT_NOTNULL(file);
+        if constexpr (build::DEBUG) {
+            cfile stdinput = stdin;
+            VXIO_ASSERT_NE(file, stdinput);
+        }
+        flags.err = file == nullptr || std::ferror(file);
     }
 
-public:
     FileOutputStream(FileOutputStream &&);
     ~FileOutputStream() final;
+
+    FileOutputStream &operator=(FileOutputStream &&);
 
     void write(u8 byte) final;
     void write(const u8 *buffer, usize size) final;
