@@ -24,6 +24,7 @@ SOURCES +=  \
     src/deflate.cpp \
     src/filetype.cpp \
     src/format/cubeworld.cpp \
+    src/format/png.cpp \
     src/image.cpp \
     src/ioutil.cpp \
     src/log.cpp \
@@ -58,6 +59,7 @@ HEADERS +=  \
     src/endian.hpp \
     src/filetype.hpp \
     src/format/cubeworld.hpp \
+    src/format/png.hpp \
     src/ileave.hpp \
     src/image.hpp \
     src/intdiv.hpp \

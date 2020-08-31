@@ -4,6 +4,7 @@ include_directories(${PARENT_DIR})
 add_library(voxelio-format STATIC
     binvox.cpp
     cubeworld.cpp
+    png.cpp
     qb.cpp
     qef.cpp
     svx.cpp
