@@ -16,3 +16,4 @@ set(SOURCES assert.cpp
     voxelio.cpp)
 
 add_library(voxelio STATIC "${SOURCES}")
+target_link_libraries(voxelio INTERFACE voxelio-format voxelio-3rd-party)
