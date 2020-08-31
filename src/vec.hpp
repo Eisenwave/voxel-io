@@ -2,6 +2,7 @@
 #define VXIO_VEC_HPP
 
 #include "assert.hpp"
+#include "primitives.hpp"
 
 #include <cstddef>
 #include <string>
@@ -349,5 +350,65 @@ struct hash<voxelio::Vec<T, N>> {
 };
 
 }  // namespace std
+
+namespace voxelio {
+
+using Vec2c = Vec<char, 2>;
+using Vec2s = Vec<short, 2>;
+using Vec2i = Vec<int, 2>;
+using Vec2l = Vec<long, 2>;
+using Vec2ll = Vec<long long, 2>;
+using Vec2uc = Vec<unsigned char, 2>;
+using Vec2us = Vec<unsigned short, 2>;
+using Vec2ui = Vec<unsigned int, 2>;
+using Vec2u = Vec<unsigned, 2>;
+using Vec2ul = Vec<unsigned long, 2>;
+using Vec2ull = Vec<unsigned long long, 2>;
+using Vec2b = Vec<bool, 2>;
+using Vec2f = Vec<float, 2>;
+using Vec2d = Vec<double, 2>;
+using Vec2ld = Vec<long double, 2>;
+
+using Vec2i8 = Vec<i8, 2>;
+using Vec2i16 = Vec<i16, 2>;
+using Vec2i32 = Vec<i32, 2>;
+using Vec2i64 = Vec<i64, 2>;
+using Vec2imax = Vec<imax, 2>;
+using Vec2u8 = Vec<u8, 2>;
+using Vec2u16 = Vec<u16, 2>;
+using Vec2u32 = Vec<u32, 2>;
+using Vec2u64 = Vec<u64, 2>;
+using Vec2umax = Vec<umax, 2>;
+using Vec2size = Vec<usize, 2>;
+
+using Vec3c = Vec<char, 3>;
+using Vec3s = Vec<short, 3>;
+using Vec3i = Vec<int, 3>;
+using Vec3l = Vec<long, 3>;
+using Vec3ll = Vec<long long, 3>;
+using Vec3uc = Vec<unsigned char, 3>;
+using Vec3us = Vec<unsigned short, 3>;
+using Vec3ui = Vec<unsigned int, 3>;
+using Vec3u = Vec<unsigned, 3>;
+using Vec3ul = Vec<unsigned long, 3>;
+using Vec3ull = Vec<unsigned long long, 3>;
+using Vec3b = Vec<bool, 3>;
+using Vec3f = Vec<float, 3>;
+using Vec3d = Vec<double, 3>;
+using Vec3ld = Vec<long double, 3>;
+
+using Vec3i8 = Vec<i8, 3>;
+using Vec3i16 = Vec<i16, 3>;
+using Vec3i32 = Vec<i32, 3>;
+using Vec3i64 = Vec<i64, 3>;
+using Vec3imax = Vec<imax, 3>;
+using Vec3u8 = Vec<u8, 3>;
+using Vec3u16 = Vec<u16, 3>;
+using Vec3u32 = Vec<u32, 3>;
+using Vec3u64 = Vec<u64, 3>;
+using Vec3umax = Vec<umax, 3>;
+using Vec3size = Vec<usize, 3>;
+
+}  // namespace voxelio
 
 #endif  // VXIO_VEC_HPP
