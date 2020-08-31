@@ -51,7 +51,7 @@ namespace voxelio::cub {
                     // this implies that pure black is not possible to encode
                     continue;
                 }
-                Vec3i32 pos = static_vec_cast<i32>(currentPos);
+                Vec3i32 pos = currentPos.cast<i32>();
                 argb32 color = Color32{rgb[0], rgb[1], rgb[2]};
                 writeHelper.emplace(pos, color);
             }

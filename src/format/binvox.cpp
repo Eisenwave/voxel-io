@@ -17,7 +17,7 @@ ReadResult Reader::init() noexcept
         return ReadResult::missingHeaderField(state.lineNum, "missing dimensions in header");
     }
 
-    auto dim = static_vec_cast<u64>(header.dim);
+    Vec3u64 dim = header.dim.cast<u64>();
     header.volume = dim.x() * dim.y() * dim.z();
     if (header.volume == 0) {
         return ReadResult::end();
@@ -135,7 +135,7 @@ bool Reader::resumeWritingToBuffer(Voxel64 buffer[], size_t bufferLength)
     auto lim = std::min<u32>(state.resumeCount, static_cast<u32>(bufferLength));
     u8 i = 0;
     for (; i != lim; ++i) {
-        buffer[state.readVoxels++] = {static_vec_cast<i64>(posOf(state.index++)), {this->color}};
+        buffer[state.readVoxels++] = {posOf(state.index++).cast<i64>(), {this->color}};
     }
     state.resumeCount -= lim;
 
@@ -170,7 +170,7 @@ ReadResult Reader::readNextVoxels(Voxel64 buffer[], size_t bufferLength)
         const auto lim = std::min<u32>(count, static_cast<u32>(bufferLength));
         u8 i = 0;
         for (; i != lim; ++i) {
-            buffer[state.readVoxels++] = {static_vec_cast<i64>(posOf(state.index++)), {this->color}};
+            buffer[state.readVoxels++] = {posOf(state.index++).cast<i64>(), {this->color}};
         }
         if (lim < count) {
             state.resumeCount = count - lim;

@@ -51,6 +51,9 @@ public:
     {
     }
 
+    template <typename To>
+    constexpr auto cast() const;
+
     constexpr T &x()
     {
         return this->operator[](0);
@@ -178,6 +181,8 @@ std::string Vec<T, N>::toString() const
 
 // CASTING
 
+namespace detail {
+
 template <typename T>
 struct is_vec : std::false_type {
 };
@@ -186,22 +191,25 @@ template <typename T, usize N>
 struct is_vec<Vec<T, N>> : std::true_type {
 };
 
-template <typename T>
-constexpr bool is_vec_v = is_vec<T>::value;
+}  // namespace detail
 
-template <typename To, typename Source, usize N>
-constexpr auto static_vec_cast(const Vec<Source, N> &source)
+template <typename T>
+constexpr bool isVec = detail::is_vec<T>::value;
+
+template <typename T, usize N>
+template <typename To>
+constexpr auto Vec<T, N>::cast() const
 {
-    if constexpr (std::is_same_v<To, Source>) {
-        return source;
+    if constexpr (std::is_same_v<To, value_t>) {
+        return *this;
     }
-    else if constexpr (is_vec_v<To>) {
-        return static_vec_cast<typename To::value_t, Source, N>(source);
+    else if constexpr (isVec<To>) {
+        return cast<typename To::value_t>(*this);
     }
     else {
         Vec<To, N> result{};
         for (usize i = 0; i < N; ++i)
-            result[i] = static_cast<To>(source[i]);
+            result[i] = static_cast<To>(operator[](i));
         return result;
     }
 }

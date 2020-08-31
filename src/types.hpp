@@ -101,10 +101,10 @@ constexpr To voxelCast(From from)
         return from;
     }
     else if constexpr (std::is_same_v<To, Voxel32>) {
-        return Voxel32{static_vec_cast<i32>(from.pos), {from.argb}};
+        return Voxel32{from.pos.template cast<i32>(), {from.argb}};
     }
     else {
-        return Voxel64{static_vec_cast<i64>(from.pos), {from.argb}};
+        return Voxel64{from.pos.template cast<i64>(), {from.argb}};
     }
 }
 

@@ -36,7 +36,7 @@ struct MatrixHeader {
 
     std::pair<Vec3i32, Vec3i32> bounds() const
     {
-        auto max = pos + static_vec_cast<i32>(size) - Vec3i32{1, 1, 1};
+        auto max = pos + size.cast<i32>() - Vec3i32{1, 1, 1};
         return {pos, max};
     }
 };

@@ -10,7 +10,7 @@ namespace voxelio {
 namespace qb {
 
 Matrix::Matrix(std::string name_, Vec3i32 pos_, VoxelArray voxels_)
-    : MatrixHeader{std::move(name_), pos_, static_vec_cast<u32>(voxels_.dimensions())}, voxels{std::move(voxels_)}
+    : MatrixHeader{std::move(name_), pos_, voxels_.dimensions().cast<u32>()}, voxels{std::move(voxels_)}
 {
 }
 
@@ -291,7 +291,7 @@ std::pair<u32, u32> Reader::readCompressed_writeToBuffer(
         const u64 relIndex = this->index % (matSizeX * matSizeY);
         const u64 relX = relIndex % matSizeX;
         const u64 relY = relIndex / matSizeX;
-        const Vec3i64 pos = static_vec_cast<i64>(Vec3u64{relX, relY, relZ});
+        const Vec3i64 pos = Vec3u64{relX, relY, relZ}.cast<i64>();
 
         VXIO_DEBUG_ASSERT_LT(bufferIndex, bufferLength);
         VXIO_DEBUG_ASSERT_LT(this->index, matVolume);

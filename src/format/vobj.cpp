@@ -484,7 +484,7 @@ argb32 Reader::decodeColor(u8 data[])
     VXIO_NO_EOF();
     argb32 color;
     VXIO_FORWARD_ERROR(readVoxel(color));
-    writeHelper.write(static_vec_cast<i64>(pos), color);
+    writeHelper.write(pos.cast<i64>(), color);
     return ReadResult::nextObject(writeHelper.voxelsWritten());
 }
 
@@ -505,7 +505,7 @@ argb32 Reader::decodeColor(u8 data[])
     if (not resume) {
         stream.readBig<3, i64>(state.arrPos.data());
         VXIO_NO_EOF();
-        state.arrPos = mul(state.arrPos, static_vec_cast<i64>(state.arrDims));
+        state.arrPos = mul(state.arrPos, state.arrDims.cast<i64>());
     }
 
     return readArrayContent(resume);

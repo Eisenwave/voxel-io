@@ -30,7 +30,7 @@ void VoxelBufferWriteHelper::emplace(Vec3i32 pos, u32 color) noexcept
 {
     VXIO_DEBUG_ASSERT_LT(index, limit);
     if (is64) {
-        buffer64[index++] = {static_vec_cast<Vec3i64>(pos), {color}};
+        buffer64[index++] = {pos.cast<i64>(), {color}};
     }
     else {
         buffer32[index++] = {pos, {color}};
@@ -44,7 +44,7 @@ void VoxelBufferWriteHelper::emplace(Vec3i64 pos, u32 color) noexcept
         buffer64[index++] = {pos, {color}};
     }
     else {
-        buffer32[index++] = {static_vec_cast<Vec3i32>(pos), {color}};
+        buffer32[index++] = {pos.cast<i32>(), {color}};
     }
 }
 

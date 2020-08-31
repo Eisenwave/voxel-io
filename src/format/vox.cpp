@@ -230,7 +230,7 @@ Transformation Transformation::concat(const Transformation &lhs, const Transform
 
 Vec3i32 Transformation::apply(const Vec3u32 &pointInModel, const Vec3u32 &doublePivot) const
 {
-    Vec3i32 doublePointRelToCenter = static_vec_cast<i32>(pointInModel * 2) - static_vec_cast<i32>(doublePivot);
+    Vec3i32 doublePointRelToCenter = (pointInModel * 2).cast<i32>() - doublePivot.cast<i32>();
     Vec3i32 rotated{};
     for (size_t row = 0; row < matrix.size(); ++row) {
         rotated[row] = divFloor(dot(matrix[row], doublePointRelToCenter), 2u);
