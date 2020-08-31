@@ -48,7 +48,8 @@ enum class FileType : unsigned {
     ACE_OF_SPADES_VXL = 29,
     SLABSPRI_VOX = 30,
     PAINT3D_3MP = 31,
-    ZOXEL = 32
+    ZOXEL = 32,
+    FLVC = 33
 };
 
 enum class FileTypeCategory : unsigned { VOXEL, MESH, IMAGE, TEXT, ARCHIVE, POINT_CLOUD };
@@ -132,6 +133,7 @@ constexpr const char *nameOf(FileType fileType)
         VXIO_REGISTER(SLABSPRI_VOX);
         VXIO_REGISTER(PAINT3D_3MP);
         VXIO_REGISTER(ZOXEL);
+        VXIO_REGISTER(FLVC);
     }
     return "";
 #undef VXIO_REGISTER
@@ -197,6 +199,7 @@ constexpr const char *extensionOf(FileType fileType)
     case FileType::SLABSPRI_VOX: return "vox";
     case FileType::PAINT3D_3MP: return "3mp";
     case FileType::ZOXEL: return "zox";
+    case FileType::FLVC: return "flvc";
     }
     return "";
 }
@@ -245,6 +248,7 @@ constexpr const char *displayNameOf(FileType fileType)
     case FileType::SLABSPRI_VOX: return "SLABSPRI VOX";
     case FileType::PAINT3D_3MP: return "Paint3D 3MP";
     case FileType::ZOXEL: return "Zoxel";
+    case FileType::FLVC: return "Free Lossless Voxel Compression";
     }
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
@@ -285,6 +289,7 @@ constexpr const char *mediaTypeOf(FileType fileType)
     case FileType::SLABSPRI_VOX: return "model/x-slabspri-vox";
     case FileType::PAINT3D_3MP: return "model/x-3mp";
     case FileType::ZOXEL: return "model/x-zoxel";
+    case FileType::FLVC: return "model/x-flvc";
     }
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
@@ -313,39 +318,24 @@ constexpr const char *magicOf(FileType fileType)
 constexpr FileTypeCategory categoryOf(FileType type)
 {
     switch (type) {
-    case FileType::BINVOX: return FileTypeCategory::VOXEL;
-    case FileType::IMAGE_BMP: return FileTypeCategory::IMAGE;
-    case FileType::IMAGE_GIF: return FileTypeCategory::IMAGE;
-    case FileType::IMAGE_JPEG: return FileTypeCategory::IMAGE;
+    case FileType::IMAGE_BMP:
+    case FileType::IMAGE_GIF:
+    case FileType::IMAGE_JPEG:
     case FileType::IMAGE_PNG: return FileTypeCategory::IMAGE;
-    case FileType::QUBICLE_BINARY: return FileTypeCategory::VOXEL;
-    case FileType::QUBICLE_BINARY_TREE: return FileTypeCategory::VOXEL;
-    case FileType::QUBICLE_EXCHANGE: return FileTypeCategory::VOXEL;
-    case FileType::STL: return FileTypeCategory::MESH;
+
+    case FileType::PLY:
+    case FileType::STL:
     case FileType::WAVEFRONT_OBJ: return FileTypeCategory::MESH;
-    case FileType::VOBJ: return FileTypeCategory::VOXEL;
-    case FileType::MAGICA_VOX: return FileTypeCategory::VOXEL;
-    case FileType::VL32: return FileTypeCategory::VOXEL;
-    case FileType::CSV: return FileTypeCategory::TEXT;
-    case FileType::MARKDOWN: return FileTypeCategory::TEXT;
-    case FileType::JSON: return FileTypeCategory::TEXT;
-    case FileType::PROPERTIES: return FileTypeCategory::TEXT;
+
+    case FileType::CSV:
+    case FileType::MARKDOWN:
+    case FileType::JSON:
+    case FileType::PROPERTIES:
     case FileType::PLAINTEXT: return FileTypeCategory::TEXT;
-    case FileType::VDB: return FileTypeCategory::VOXEL;
-    case FileType::SIMPLE_VOXELS: return FileTypeCategory::VOXEL;
+
     case FileType::ZIP: return FileTypeCategory::ARCHIVE;
-    case FileType::PLY: return FileTypeCategory::MESH;
-    case FileType::KV6: return FileTypeCategory::VOXEL;
-    case FileType::KVX: return FileTypeCategory::VOXEL;
-    case FileType::SLAB6_VOX: return FileTypeCategory::VOXEL;
-    case FileType::CUBEWORLD_CUB: return FileTypeCategory::VOXEL;
-    case FileType::MINECRAFT_SCHEMATIC: return FileTypeCategory::VOXEL;
-    case FileType::MINECRAFT_STRUCTURE: return FileTypeCategory::VOXEL;
-    case FileType::MINECRAFT_REGION: return FileTypeCategory::VOXEL;
-    case FileType::ACE_OF_SPADES_VXL: return FileTypeCategory::VOXEL;
-    case FileType::SLABSPRI_VOX: return FileTypeCategory::VOXEL;
-    case FileType::PAINT3D_3MP: return FileTypeCategory::VOXEL;
-    case FileType::ZOXEL: return FileTypeCategory::VOXEL;
+
+    default: return FileTypeCategory::VOXEL;
     }
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
@@ -353,39 +343,20 @@ constexpr FileTypeCategory categoryOf(FileType type)
 constexpr FileTypeStructure structureOf(FileType type)
 {
     switch (type) {
-    case FileType::BINVOX: return FileTypeStructure::BINARY_WITH_TEXT_HEADER;
-    case FileType::IMAGE_BMP: return FileTypeStructure::BINARY;
-    case FileType::IMAGE_GIF: return FileTypeStructure::BINARY;
-    case FileType::IMAGE_JPEG: return FileTypeStructure::BINARY;
-    case FileType::IMAGE_PNG: return FileTypeStructure::BINARY;
-    case FileType::QUBICLE_BINARY: return FileTypeStructure::BINARY;
-    case FileType::QUBICLE_BINARY_TREE: return FileTypeStructure::BINARY;
-    case FileType::QUBICLE_EXCHANGE: return FileTypeStructure::TEXT;
-    case FileType::STL: return FileTypeStructure::MIXED;
-    case FileType::WAVEFRONT_OBJ: return FileTypeStructure::TEXT;
-    case FileType::VOBJ: return FileTypeStructure::BINARY;
-    case FileType::MAGICA_VOX: return FileTypeStructure::BINARY;
-    case FileType::VL32: return FileTypeStructure::BINARY;
-    case FileType::CSV: return FileTypeStructure::TEXT;
-    case FileType::MARKDOWN: return FileTypeStructure::TEXT;
-    case FileType::JSON: return FileTypeStructure::TEXT;
-    case FileType::PROPERTIES: return FileTypeStructure::TEXT;
-    case FileType::PLAINTEXT: return FileTypeStructure::TEXT;
-    case FileType::VDB: return FileTypeStructure::BINARY;
-    case FileType::SIMPLE_VOXELS: return FileTypeStructure::BINARY;
-    case FileType::ZIP: return FileTypeStructure::BINARY;
+    case FileType::BINVOX:
     case FileType::PLY: return FileTypeStructure::BINARY_WITH_TEXT_HEADER;
-    case FileType::KV6: return FileTypeStructure::BINARY;
-    case FileType::KVX: return FileTypeStructure::BINARY;
-    case FileType::SLAB6_VOX: return FileTypeStructure::BINARY;
-    case FileType::CUBEWORLD_CUB: return FileTypeStructure::BINARY;
-    case FileType::MINECRAFT_SCHEMATIC: return FileTypeStructure::BINARY;
-    case FileType::MINECRAFT_STRUCTURE: return FileTypeStructure::BINARY;
-    case FileType::MINECRAFT_REGION: return FileTypeStructure::BINARY;
-    case FileType::ACE_OF_SPADES_VXL: return FileTypeStructure::BINARY;
-    case FileType::SLABSPRI_VOX: return FileTypeStructure::BINARY;
-    case FileType::PAINT3D_3MP: return FileTypeStructure::BINARY;
-    case FileType::ZOXEL: return FileTypeStructure::BINARY;
+
+    case FileType::STL: return FileTypeStructure::MIXED;
+
+    case FileType::QUBICLE_EXCHANGE:
+    case FileType::WAVEFRONT_OBJ:
+    case FileType::CSV:
+    case FileType::MARKDOWN:
+    case FileType::JSON:
+    case FileType::PROPERTIES:
+    case FileType::PLAINTEXT: return FileTypeStructure::TEXT;
+
+    default: return FileTypeStructure::BINARY;
     }
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
