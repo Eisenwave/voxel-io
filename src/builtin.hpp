@@ -43,9 +43,15 @@
 #if defined(VXIO_CLANG) && VXIO_HAS_BUILTIN(__builtin_assume)
 #define VXIO_HAS_BUILTIN_ASSUME
 #define VXIO_ASSUME(condition) __builtin_assume(condition)
+
 #elif defined(VXIO_GNU)
 #define VXIO_HAS_BUILTIN_ASSUME
 #define VXIO_ASSUME(condition) static_cast<bool>(condition) ? void(0) : VXIO_UNREACHABLE()
+
+#elif defined(VXIO_MSVC)
+#define VXIO_HAS_BUILTIN_ASSUME
+#define VXIO_ASSUME(condition) __assume(condition)
+
 #else
 #define VXIO_ASSUME(condition)
 #endif
@@ -269,6 +275,26 @@ constexpr int popCount(unsigned long x) noexcept
 constexpr int popCount(unsigned long long x) noexcept
 {
     return __builtin_popcountll(x);
+}
+#elif defined(VXIO_MSVC)
+constexpr uint8_t popCount(uint8_t x) noexcept
+{
+    return __popcnt16(x);
+}
+
+constexpr uint16_t popCount(uint16_t x) noexcept
+{
+    return __popcnt16(x);
+}
+
+constexpr uint32_t popCount(uint32_t x) noexcept
+{
+    return __popcnt32(x);
+}
+
+constexpr uint64_t popCount(uint64_t x) noexcept
+{
+    return __popcnt64(x);
 }
 #endif
 

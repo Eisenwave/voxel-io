@@ -13,7 +13,7 @@ namespace voxelio::png {
  * @param out the output stream
  * @return the result code
  */
-ResultCode encode(const Image &image, OutputStream &out);
+[[nodiscard]] ResultCode encode(const Image &image, OutputStream &out);
 
 }  // namespace voxelio::png
 
