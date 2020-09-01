@@ -25,4 +25,4 @@ cmake .. # -DCMAKE_BUILD_TYPE=DEBUG for debug builds, otherwise release is defau
 make # -j NUMBER_OF_THREADS
 ```
 
-**voxel-io** should build in about 0.5 to 1.0 seconds with multithreading.
+**voxel-io** should build in about 1-2 seconds with multithreading.
