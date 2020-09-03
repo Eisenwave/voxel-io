@@ -90,6 +90,11 @@ struct DeflateSettings {
      * The compression strategy.
      */
     Strategy strategy = Strategy::DEFAULT;
+
+    constexpr bool isValid()
+    {
+        return level < 10 && windowBits < 16 &&  memLevel < 10;
+    }
 };
 
 class Deflator {

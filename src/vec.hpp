@@ -69,6 +69,11 @@ public:
         return this->operator[](2);
     }
 
+    constexpr T &w()
+    {
+        return this->operator[](3);
+    }
+
     constexpr const T &x() const
     {
         return this->operator[](0);
@@ -82,6 +87,11 @@ public:
     constexpr const T &z() const
     {
         return this->operator[](2);
+    }
+
+    constexpr const T &w() const
+    {
+        return this->operator[](3);
     }
 
     constexpr T *data()
@@ -179,7 +189,7 @@ std::string Vec<T, N>::toString() const
     return stream + '}';
 }
 
-// CASTING
+// TRAITS & CASTING ====================================================================================================
 
 namespace detail {
 
@@ -200,6 +210,7 @@ template <typename T, usize N>
 template <typename To>
 constexpr auto Vec<T, N>::cast() const
 {
+    // return type is std::conditional_t<isVec<To>, Vec<typename To::value_t, N>, Vec<To, N>>
     if constexpr (std::is_same_v<To, value_t>) {
         return *this;
     }
@@ -214,7 +225,7 @@ constexpr auto Vec<T, N>::cast() const
     }
 }
 
-// COMPARISON
+// COMPARISON ==========================================================================================================
 
 template <typename L, typename R, usize N>
 constexpr bool operator==(const Vec<L, N> &a, const Vec<R, N> &b)
@@ -232,7 +243,7 @@ constexpr bool operator!=(const Vec<L, N> &a, const Vec<R, N> &b)
     return false;
 }
 
-// ARITHMETIC
+// ARITHMETIC ==========================================================================================================
 
 // addition
 template <typename L, typename R, usize N>
@@ -340,6 +351,8 @@ constexpr Vec<T, N> &Vec<T, N>::operator/=(T s)
     return *this;
 }
 
+// HASHING =============================================================================================================
+
 }  // namespace voxelio
 
 namespace std {
@@ -358,6 +371,8 @@ struct hash<voxelio::Vec<T, N>> {
 };
 
 }  // namespace std
+
+// ALIASES =============================================================================================================
 
 namespace voxelio {
 
