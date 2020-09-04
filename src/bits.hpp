@@ -82,7 +82,7 @@ constexpr bool parity_xor(Int input)
 }  // namespace detail
 
 template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
-constexpr unsigned char popCount(Int input)
+[[nodiscard]] constexpr unsigned char popCount(Int input)
 {
     using Uint = std::make_unsigned_t<Int>;
 #ifdef VXIO_HAS_BUILTIN_POPCOUNT
@@ -100,7 +100,7 @@ constexpr unsigned char popCount(Int input)
 }
 
 template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
-constexpr bool parity(Int input)
+[[nodiscard]] constexpr bool parity(Int input)
 {
     if constexpr (std::is_signed_v<Int>) {
         return parity(static_cast<std::make_unsigned_t<Int>>(input));
@@ -115,7 +115,7 @@ constexpr bool parity(Int input)
 }
 
 template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
-constexpr unsigned char countLeadingZeros(Int input)
+[[nodiscard]] constexpr unsigned char countLeadingZeros(Int input)
 {
 #ifdef VXIO_HAS_BUILTIN_CLZ
     return input == 0 ? std::numeric_limits<Int>::digits
@@ -126,7 +126,7 @@ constexpr unsigned char countLeadingZeros(Int input)
 }
 
 template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
-constexpr unsigned char countTrailingZeros(Int input)
+[[nodiscard]] constexpr unsigned char countTrailingZeros(Int input)
 {
 #ifdef VXIO_HAS_BUILTIN_CTZ
     return input == 0 ? std::numeric_limits<Int>::digits
@@ -172,7 +172,7 @@ constexpr Int reverseBytes_shift(Int integer)
  * @param integer the integer
  */
 template <typename Int>
-constexpr Int reverseBytes(Int integer)
+[[nodiscard]] constexpr Int reverseBytes(Int integer)
 {
     if constexpr (sizeof(Int) == 1) {
         return integer;
@@ -197,7 +197,7 @@ static_assert(reverseBytes(0x11223344) == 0x44332211);
 namespace detail {
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint rotl_impl(Uint n, unsigned char rot)
+[[nodiscard]] constexpr Uint rotl_impl(Uint n, unsigned char rot)
 {
     constexpr Uint mask = 8 * sizeof(Uint) - 1;
 
@@ -208,7 +208,7 @@ constexpr Uint rotl_impl(Uint n, unsigned char rot)
 }
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint rotr_impl(Uint n, unsigned char rot)
+[[nodiscard]] constexpr Uint rotr_impl(Uint n, unsigned char rot)
 {
     const unsigned int mask = 8 * sizeof(Uint) - 1;
 
@@ -221,7 +221,7 @@ constexpr Uint rotr_impl(Uint n, unsigned char rot)
 }  // namespace detail
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint leftRot(Uint n, unsigned char rot = 1)
+[[nodiscard]] constexpr Uint leftRot(Uint n, unsigned char rot = 1)
 {
 #ifdef VXIO_HAS_BUILTIN_ROTL
     return voxelio::isConstantEvaluated() ? detail::rotl_impl(n, rot) : voxelio::builtin::rotl(n, rot);
@@ -231,7 +231,7 @@ constexpr Uint leftRot(Uint n, unsigned char rot = 1)
 }
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint rightRot(Uint n, unsigned char rot = 1)
+[[nodiscard]] constexpr Uint rightRot(Uint n, unsigned char rot = 1)
 {
 #ifdef VXIO_HAS_BUILTIN_ROTL
     return voxelio::isConstantEvaluated() ? detail::rotr_impl(n, rot) : voxelio::builtin::rotr(n, rot);
