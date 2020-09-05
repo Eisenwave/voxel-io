@@ -92,6 +92,10 @@ public:
      */
     [[nodiscard]] virtual ResultCode write(Voxel32 buffer[], size_t bufferLength) noexcept = 0;
 
+    [[nodiscard]] virtual ResultCode write(Voxel32 voxel) noexcept{
+        return write(&voxel, 1);
+    }
+
     // impl
 
     /**
