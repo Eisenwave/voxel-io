@@ -56,7 +56,7 @@ enum class FileTypeCategory : unsigned { VOXEL, MESH, IMAGE, TEXT, ARCHIVE, POIN
 
 enum class FileTypeStructure : unsigned { BINARY, TEXT, BINARY_WITH_TEXT_HEADER, MIXED };
 
-constexpr std::array<FileType, 26> FILE_TYPE_VALUES{FileType::BINVOX,
+constexpr std::array<FileType, 34> FILE_TYPE_VALUES{FileType::BINVOX,
                                                     FileType::IMAGE_BMP,
                                                     FileType::IMAGE_GIF,
                                                     FileType::IMAGE_JPEG,
@@ -81,7 +81,15 @@ constexpr std::array<FileType, 26> FILE_TYPE_VALUES{FileType::BINVOX,
                                                     FileType::KV6,
                                                     FileType::KVX,
                                                     FileType::SLAB6_VOX,
-                                                    FileType::CUBEWORLD_CUB};
+                                                    FileType::CUBEWORLD_CUB,
+                                                   FileType::MINECRAFT_SCHEMATIC,
+                                                   FileType::MINECRAFT_STRUCTURE,
+                                                   FileType::MINECRAFT_REGION,
+                                                   FileType::ACE_OF_SPADES_VXL,
+                                                   FileType::SLABSPRI_VOX,
+                                                   FileType::PAINT3D_3MP,
+                                                   FileType::ZOXEL,
+                                                   FileType::FLVC};
 
 constexpr std::array<FileTypeCategory, 6> FILE_TYPE_CATEGORY_VALUES{FileTypeCategory::VOXEL,
                                                                     FileTypeCategory::MESH,

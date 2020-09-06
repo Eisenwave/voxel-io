@@ -888,6 +888,7 @@ public:
     void flush() final {}
 
     void clear();
+
     void reserve(usize size);
 
     u8 *data();
