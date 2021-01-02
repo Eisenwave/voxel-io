@@ -2,11 +2,11 @@
 
 #include "3rd_party/miniz_cpp/miniz_cpp.hpp"
 
-#include "png.hpp"
-#include "macro.hpp"
 #include "color.hpp"
 #include "image.hpp"
 #include "log.hpp"
+#include "macro.hpp"
+#include "png.hpp"
 #include "stringmanip.hpp"
 
 namespace voxelio::svx {
@@ -113,7 +113,7 @@ void writeSvxLayerToImage(Image &image, const VoxelArray &voxels, size_t slice)
     }
 }
 
-} // namespace
+}  // namespace
 
 std::string Channel::fullFileNameFormat() const
 {

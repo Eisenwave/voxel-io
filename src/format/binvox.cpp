@@ -7,12 +7,12 @@
 
 namespace voxelio::binvox {
 
-namespace  {
+namespace {
 
-constexpr const char* MAGIC = "#binvox";
+constexpr const char *MAGIC = "#binvox";
 constexpr u32 VERSION = 1;
 
-}
+}  // namespace
 
 ReadResult Reader::init() noexcept
 {

@@ -116,14 +116,14 @@ constexpr std::array<FileType, 34> FILE_TYPE_VALUES{FileType::BINVOX,
                                                     FileType::KVX,
                                                     FileType::SLAB6_VOX,
                                                     FileType::CUBEWORLD_CUB,
-                                                   FileType::MINECRAFT_SCHEMATIC,
-                                                   FileType::MINECRAFT_STRUCTURE,
-                                                   FileType::MINECRAFT_REGION,
-                                                   FileType::ACE_OF_SPADES_VXL,
-                                                   FileType::SLABSPRI_VOX,
-                                                   FileType::PAINT3D_3MP,
-                                                   FileType::ZOXEL,
-                                                   FileType::FLVC};
+                                                    FileType::MINECRAFT_SCHEMATIC,
+                                                    FileType::MINECRAFT_STRUCTURE,
+                                                    FileType::MINECRAFT_REGION,
+                                                    FileType::ACE_OF_SPADES_VXL,
+                                                    FileType::SLABSPRI_VOX,
+                                                    FileType::PAINT3D_3MP,
+                                                    FileType::ZOXEL,
+                                                    FileType::FLVC};
 
 constexpr std::array<FileTypeCategory, 6> FILE_TYPE_CATEGORY_VALUES{FileTypeCategory::VOXEL,
                                                                     FileTypeCategory::MESH,
@@ -341,12 +341,12 @@ constexpr const char *magicOf(FileType fileType)
     switch (fileType) {
     case FileType::BINVOX: return "#binvox";
     case FileType::MICROSOFT_BITMAP: return "BM";
-    case FileType::GRAPHICS_INTERCHANGE: return "GIF\x38";        // GIF87a or GIF89a
-    case FileType::JPEG_IMAGE: return "\xff\xd8\xff";  // 4 variants exist starting at the next byte
+    case FileType::GRAPHICS_INTERCHANGE: return "GIF\x38";  // GIF87a or GIF89a
+    case FileType::JPEG_IMAGE: return "\xff\xd8\xff";       // 4 variants exist starting at the next byte
     case FileType::PORTABLE_NETWORK_GRAPHICS: return "\x89PNG\x0d\x0a\x1a\x0a";
     case FileType::QUBICLE_BINARY_TREE: return "QB 2";                  // ... oh look, he fixed it
     case FileType::QUBICLE_EXCHANGE: return "Qubicle Exchange Format";  // first line of mandatory copyright header
-    case FileType::STEREOLITHOGRAPHY: return "solid";                                 // only applies to the ASCII version of STL
+    case FileType::STEREOLITHOGRAPHY: return "solid";                   // only applies to the ASCII version of STL
     case FileType::MVE_VOBJ: return "model/x-vobj";
     case FileType::MAGICA_VOX: return "VOX ";  // the trailing space is intentional
     case FileType::PKWARE_ZIP:

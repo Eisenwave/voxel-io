@@ -51,7 +51,7 @@ std::string vecToStringLine(Vec3u32 v)
     return stringify(v[0]) + ' ' + stringify(v[1]) + ' ' + stringify(v[2]) + '\n';
 }
 
-} // namespace
+}  // namespace
 
 ReadResult Reader::init() noexcept
 {

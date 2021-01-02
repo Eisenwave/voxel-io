@@ -21,7 +21,7 @@
 
 namespace voxelio {
 
-// BIT GETTING / SETTING
+// BIT GETTING / SETTING ===============================================================================================
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 constexpr bool getBit(Uint input, usize index)

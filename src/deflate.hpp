@@ -93,7 +93,7 @@ struct DeflateSettings {
 
     constexpr bool isValid()
     {
-        return level < 10 && windowBits < 16 &&  memLevel < 10;
+        return level < 10 && windowBits < 16 && memLevel < 10;
     }
 };
 
