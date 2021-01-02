@@ -7,6 +7,13 @@
 
 namespace voxelio::binvox {
 
+namespace  {
+
+constexpr const char* MAGIC = "#binvox";
+constexpr u32 VERSION = 1;
+
+}
+
 ReadResult Reader::init() noexcept
 {
     initialized = true;
@@ -30,7 +37,7 @@ ReadResult Reader::readMagicAndVersion()
 {
     std::string line = stream.readStringUntil(' ');
 
-    if (line != "#binvox") {
+    if (line != MAGIC) {
         return ReadResult::unexpectedMagic(state.lineNum, "expected \"#binvox\", got \"" + line + "\"");
     }
 
@@ -39,7 +46,7 @@ ReadResult Reader::readMagicAndVersion()
     if (not parse(line, version)) {
         return ReadResult::parseError(state.lineNum, "Failed to parse version number \"" + line + "\"");
     }
-    if (version != 1) {
+    if (version != VERSION) {
         return ReadResult::unknownVersion(state.lineNum, stringify(version));
     }
 
@@ -187,7 +194,8 @@ ReadResult Reader::readNextVoxels(Voxel64 buffer[], size_t bufferLength)
 
 Vec3u64 Reader::posOf(u64 index)
 {
-    // int index = x * wxh + z * width + y;
+    // y id the fastest-growing axis, followed by z, followed by x:
+    //     index = x * width * height + z * width + y;
     const Vec3u32 &dim = header.dim;
 
     u64 x = index / dim.y() / dim.z();
