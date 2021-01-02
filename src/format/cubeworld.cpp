@@ -48,7 +48,8 @@ namespace voxelio::cub {
                 stream.read(rgb, 3);
                 VXIO_NO_EOF();
                 if ((rgb[0] | rgb[1] | rgb[2]) == 0) {
-                    // this implies that pure black is not possible to encode
+                    // pure black is not possible to encode because it represents the absence of a voxel
+                    // when we read pure black, we don't output any voxels
                     continue;
                 }
                 Vec3i32 pos = currentPos.cast<i32>();

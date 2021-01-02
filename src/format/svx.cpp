@@ -1,8 +1,9 @@
 #include "svx.hpp"
 
 #include "3rd_party/miniz_cpp/miniz_cpp.hpp"
-#include "png.hpp"
 
+#include "png.hpp"
+#include "macro.hpp"
 #include "color.hpp"
 #include "image.hpp"
 #include "log.hpp"
@@ -10,7 +11,11 @@
 
 namespace voxelio::svx {
 
-static constexpr const char *xmlNameOf(ChannelType type)
+// STATIC UTILITY ======================================================================================================
+
+namespace {
+
+constexpr const char *xmlNameOf(ChannelType type)
 {
     switch (type) {
     case ChannelType::DENSITY: return "DENSITY";
@@ -21,10 +26,94 @@ static constexpr const char *xmlNameOf(ChannelType type)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-static constexpr bool usesId(ChannelType type)
+constexpr bool usesId(ChannelType type)
 {
     return type == ChannelType::MATERIAL || type == ChannelType::CUSTOM;
 }
+
+struct SvxLimits {
+    size_t slice;
+    size_t u;
+    size_t v;
+};
+
+/**
+ * Transforms world space coordinates into slice, u, v coordinates.
+ */
+template <Axis AXIS>
+constexpr SvxLimits svxLimitsOf(Vec3size xyzLimits)
+{
+    if constexpr (AXIS == Axis::X) {
+        return {xyzLimits.x(), xyzLimits.y(), xyzLimits.z()};
+    }
+    else if constexpr (AXIS == Axis::Y) {
+        return {xyzLimits.y(), xyzLimits.x(), xyzLimits.z()};
+    }
+    else {
+        return {xyzLimits.z(), xyzLimits.x(), xyzLimits.y()};
+    }
+}
+
+/**
+ * Transforms slice, u, v coordinates into world space.
+ */
+template <Axis AXIS>
+constexpr Vec3size svxProject(Vec3size suv)
+{
+    if constexpr (AXIS == Axis::X) {
+        return Vec3size(suv[0], suv[1], suv[2]);
+    }
+    else if constexpr (AXIS == Axis::Y) {
+        return Vec3size(suv[1], suv[0], suv[2]);
+    }
+    else {
+        return Vec3size(suv[1], suv[2], suv[0]);
+    }
+}
+
+constexpr ColorFormat densityFormatOf(const size_t bits)
+{
+    switch (bits) {
+    case 1: return ColorFormat::V1;
+    case 8: return ColorFormat::V8;
+    default: VXIO_DEBUG_ASSERT_UNREACHABLE();
+    }
+}
+
+constexpr ColorFormat rgbFormatOf(const size_t bits)
+{
+    switch (bits) {
+    case 1: return ColorFormat::V1;
+    case 24: return ColorFormat::RGB24;
+    default: VXIO_DEBUG_ASSERT_UNREACHABLE();
+    }
+}
+
+constexpr ColorFormat formatOf(const Channel &channel)
+{
+    switch (channel.type) {
+    case ChannelType::DENSITY: return densityFormatOf(channel.bits);
+    case ChannelType::COLOR_RGB: return rgbFormatOf(channel.bits);
+    default: VXIO_DEBUG_ASSERT_UNREACHABLE();
+    }
+}
+
+template <Axis AXIS>
+void writeSvxLayerToImage(Image &image, const VoxelArray &voxels, size_t slice)
+{
+    const size_t w = image.width();
+    const size_t h = image.height();
+
+    for (size_t u = 0; u < w; ++u) {
+        for (size_t v = 0; v < h; ++v) {
+            Vec3size xyz = svxProject<AXIS>({slice, u, v});
+            Color32 rgb = voxels[xyz];
+            image.setPixel(u, v, rgb);
+        }
+    }
+}
+
+} // namespace
 
 std::string Channel::fullFileNameFormat() const
 {
@@ -82,88 +171,6 @@ bool Manifest::matches(const VoxelArray &voxels) const
     return gridSize().x() >= size.x() && gridSize().y() >= size.y() && gridSize().z() >= size.z();
 }
 
-struct SvxLimits {
-    size_t slice;
-    size_t u;
-    size_t v;
-};
-
-/**
- * Transforms world space coordinates into slice, u, v coordinates.
- */
-template <Axis AXIS>
-static constexpr SvxLimits svxLimitsOf(Vec3size xyzLimits)
-{
-    if constexpr (AXIS == Axis::X) {
-        return {xyzLimits.x(), xyzLimits.y(), xyzLimits.z()};
-    }
-    else if constexpr (AXIS == Axis::Y) {
-        return {xyzLimits.y(), xyzLimits.x(), xyzLimits.z()};
-    }
-    else {
-        return {xyzLimits.z(), xyzLimits.x(), xyzLimits.y()};
-    }
-}
-
-/**
- * Transforms slice, u, v coordinates into world space.
- */
-template <Axis AXIS>
-static constexpr Vec3size svxProject(Vec3size suv)
-{
-    if constexpr (AXIS == Axis::X) {
-        return Vec3size(suv[0], suv[1], suv[2]);
-    }
-    else if constexpr (AXIS == Axis::Y) {
-        return Vec3size(suv[1], suv[0], suv[2]);
-    }
-    else {
-        return Vec3size(suv[1], suv[2], suv[0]);
-    }
-}
-
-static constexpr ColorFormat densityFormatOf(const size_t bits)
-{
-    switch (bits) {
-    case 1: return ColorFormat::V1;
-    case 8: return ColorFormat::V8;
-    default: VXIO_DEBUG_ASSERT_UNREACHABLE();
-    }
-}
-
-static constexpr ColorFormat rgbFormatOf(const size_t bits)
-{
-    switch (bits) {
-    case 1: return ColorFormat::V1;
-    case 24: return ColorFormat::RGB24;
-    default: VXIO_DEBUG_ASSERT_UNREACHABLE();
-    }
-}
-
-static constexpr ColorFormat formatOf(const Channel &channel)
-{
-    switch (channel.type) {
-    case ChannelType::DENSITY: return densityFormatOf(channel.bits);
-    case ChannelType::COLOR_RGB: return rgbFormatOf(channel.bits);
-    default: VXIO_DEBUG_ASSERT_UNREACHABLE();
-    }
-}
-
-template <Axis AXIS>
-static void writeSvxLayerToImage(Image &image, const VoxelArray &voxels, size_t slice)
-{
-    const size_t w = image.width();
-    const size_t h = image.height();
-
-    for (size_t u = 0; u < w; ++u) {
-        for (size_t v = 0; v < h; ++v) {
-            Vec3size xyz = svxProject<AXIS>({slice, u, v});
-            Color32 rgb = voxels[xyz];
-            image.setPixel(u, v, rgb);
-        }
-    }
-}
-
 template <Axis AXIS>
 ResultCode Serializer::writeChannel(miniz_cpp::zip_file &archive, const SimpleVoxels &svx, const Channel &channel)
 {
@@ -185,17 +192,17 @@ ResultCode Serializer::writeChannel(miniz_cpp::zip_file &archive, const SimpleVo
     }*/
 
     Image image{lims.u, lims.v, format};
-    ByteArrayOutputStream png;
-    png.reserve(lims.u * lims.v * bitSizeOf(format) / 8);
+    ByteArrayOutputStream pngStream;
+    pngStream.reserve(lims.u * lims.v * bitSizeOf(format) / 8);
 
     for (size_t slice = 0; slice < lims.slice; ++slice) {
         std::string fileName = voxelio::format(fileNameFormatCstr, slice);
         VXIO_LOG(SPAM, "Writing slice #" + stringify(slice) + ", named" + fileName);
 
         writeSvxLayerToImage<AXIS>(image, voxels, slice);
-        png.clear();
-        png::encode(image, png);
-        archive.writestr(fileName, {reinterpret_cast<char *>(png.data()), png.size()});
+        pngStream.clear();
+        VXIO_FORWARD_ERROR(png::encode(image, pngStream));
+        archive.writestr(fileName, {reinterpret_cast<char *>(pngStream.data()), pngStream.size()});
     }
 
     return ResultCode::OK;

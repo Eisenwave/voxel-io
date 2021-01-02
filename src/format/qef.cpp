@@ -12,15 +12,17 @@
 
 namespace voxelio::qef {
 
-static constexpr const char *CSTR_MAGIC = magicOf(FileType::QUBICLE_EXCHANGE);
-static constexpr const char *CSTR_VERSION = "Version 0.2";
-static constexpr const char *CSTR_SUPPORT_URL = "www.minddesk.com";
+namespace {
 
-static const std::string PREAMBLE = CSTR_MAGIC + std::string{'\n'} + CSTR_VERSION + '\n' + CSTR_SUPPORT_URL + '\n';
+constexpr const char *CSTR_MAGIC = magicOf(FileType::QUBICLE_EXCHANGE);
+constexpr const char *CSTR_VERSION = "Version 0.2";
+constexpr const char *CSTR_SUPPORT_URL = "www.minddesk.com";
+
+const std::string PREAMBLE = CSTR_MAGIC + std::string{'\n'} + CSTR_VERSION + '\n' + CSTR_SUPPORT_URL + '\n';
 
 constexpr size_t HEADER_LINE_COUNT = 5;
 
-static Color32 roundColor(const float rgb[3])
+Color32 roundColor(const float rgb[3])
 {
     u8 result[3];
     for (size_t i = 0; i < 3; ++i) {
@@ -30,7 +32,7 @@ static Color32 roundColor(const float rgb[3])
 }
 
 template <typename T>
-static std::vector<T> parseMultiple(const std::string &line) noexcept(false)
+std::vector<T> parseMultiple(const std::string &line) noexcept(false)
 {
     std::vector<T> result;
     std::vector<std::string> splits = splitAtDelimiter(line, ' ');
@@ -44,10 +46,12 @@ static std::vector<T> parseMultiple(const std::string &line) noexcept(false)
     return result;
 }
 
-static std::string vecToStringLine(Vec3u32 v)
+std::string vecToStringLine(Vec3u32 v)
 {
     return stringify(v[0]) + ' ' + stringify(v[1]) + ' ' + stringify(v[2]) + '\n';
 }
+
+} // namespace
 
 ReadResult Reader::init() noexcept
 {

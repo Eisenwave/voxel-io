@@ -51,7 +51,7 @@ std::string ext(const std::string &str, char delimiter = '.');
 
 std::vector<std::string> splitAtDelimiter(const std::string &str, char delimiter, usize maxParts = 0);
 
-// FORMATING ===========================================================================================================
+// FORMATTING ==========================================================================================================
 
 /**
  * Formats a function like C's printf but writes the result into a std::string.
