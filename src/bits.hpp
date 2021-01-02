@@ -21,6 +21,38 @@
 
 namespace voxelio {
 
+// BIT GETTING / SETTING
+
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr bool getBit(Uint input, usize index)
+{
+    return (input >> index) & 1;
+}
+
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint setBit(Uint input, usize index)
+{
+    return input | (1 << index);
+}
+
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint setBit(Uint input, usize index, bool value)
+{
+    return input ^ ((getBit(input) ^ value) << index);
+}
+
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint clearBit(Uint input, usize index)
+{
+    return input & ~(1 << index);
+}
+
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint flipBit(Uint input, usize index)
+{
+    return input ^ (1 << index);
+}
+
 // BIT COUNTING ========================================================================================================
 
 namespace detail {
