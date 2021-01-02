@@ -16,39 +16,73 @@
 namespace voxelio {
 
 enum class FileType : unsigned {
+    /** Binvox voxel model. */
     BINVOX = 0,
-    IMAGE_BMP = 1,
-    IMAGE_GIF = 2,
-    IMAGE_JPEG = 3,
-    IMAGE_PNG = 4,
+    /** Microsoft Bitmap image.  */
+    MICROSOFT_BITMAP = 1,
+    /** CompuServe Graphics Interchange Format. */
+    GRAPHICS_INTERCHANGE = 2,
+    /** Joint Pictures Expert Group image. */
+    JPEG_IMAGE = 3,
+    /** Portable Network Graphics image. */
+    PORTABLE_NETWORK_GRAPHICS = 4,
+    /** Qubicle Binary model. */
     QUBICLE_BINARY = 5,
+    /** Qubicle Binary Tree model. Successor to Qubicle Binary. */
     QUBICLE_BINARY_TREE = 6,
+    /** Qubicle Exchange Format. Plaintext alternative to Qubicle Binary. */
     QUBICLE_EXCHANGE = 7,
-    STL = 8,
+    /** 3D Systems Stereolithography triangle mesh. */
+    STEREOLITHOGRAPHY = 8,
+    /** Wavefront polygonal mesh. */
     WAVEFRONT_OBJ = 9,
+    /** MagicaVoxel voxel model. */
     MAGICA_VOX = 10,
-    VOBJ = 11,
+    /** MassVoxelEditor Voxel Object. */
+    MVE_VOBJ = 11,
+    /** 32-bit voxel list. */
     VL32 = 12,
-    CSV = 13,
+    /** Comma-separated values. */
+    COMMA_SEPARATED_VALUES = 13,
+    /** Markdown text. */
     MARKDOWN = 14,
+    /** JavaScript object notation. */
     JSON = 15,
-    PROPERTIES = 16,
+    /** Java properties configuration file. */
+    JAVA_PROPERTIES = 16,
+    /** Plaintext file. */
     PLAINTEXT = 17,
-    VDB = 18,
+    /** OpenVDB voxel database. */
+    OPENVDB_VDB = 18,
+    /** Shapeways Simple Voxels model. */
     SIMPLE_VOXELS = 19,
-    ZIP = 20,
-    PLY = 21,
+    /** PKWare ZIP archive. */
+    PKWARE_ZIP = 20,
+    /** Stanford triangle Format, aka. Polygon File Format (PLY). */
+    STANFORD_TRIANGLE = 21,
+    /** KV6 voxel model. */
     KV6 = 22,
+    /** KVX voxel model. */
     KVX = 23,
+    /** SLAB6 voxel model. */
     SLAB6_VOX = 24,
+    /** Cubeworld CUB model. */
     CUBEWORLD_CUB = 25,
+    /** Minecraft schematic model. */
     MINECRAFT_SCHEMATIC = 26,
+    /** Minecraft structure model. */
     MINECRAFT_STRUCTURE = 27,
+    /** Minecraft region model. */
     MINECRAFT_REGION = 28,
+    /** Ace of Spades voxel model. */
     ACE_OF_SPADES_VXL = 29,
+    /** SLABSPRI voxel model. */
     SLABSPRI_VOX = 30,
+    /** Paint3D 3MP model. */
     PAINT3D_3MP = 31,
+    /** Zoxel voxel model. */
     ZOXEL = 32,
+    /** Free lossless voxel compression. */
     FLVC = 33
 };
 
@@ -57,27 +91,27 @@ enum class FileTypeCategory : unsigned { VOXEL, MESH, IMAGE, TEXT, ARCHIVE, POIN
 enum class FileTypeStructure : unsigned { BINARY, TEXT, BINARY_WITH_TEXT_HEADER, MIXED };
 
 constexpr std::array<FileType, 34> FILE_TYPE_VALUES{FileType::BINVOX,
-                                                    FileType::IMAGE_BMP,
-                                                    FileType::IMAGE_GIF,
-                                                    FileType::IMAGE_JPEG,
-                                                    FileType::IMAGE_PNG,
+                                                    FileType::MICROSOFT_BITMAP,
+                                                    FileType::GRAPHICS_INTERCHANGE,
+                                                    FileType::JPEG_IMAGE,
+                                                    FileType::PORTABLE_NETWORK_GRAPHICS,
                                                     FileType::QUBICLE_BINARY,
                                                     FileType::QUBICLE_BINARY_TREE,
                                                     FileType::QUBICLE_EXCHANGE,
-                                                    FileType::STL,
+                                                    FileType::STEREOLITHOGRAPHY,
                                                     FileType::WAVEFRONT_OBJ,
-                                                    FileType::VOBJ,
+                                                    FileType::MVE_VOBJ,
                                                     FileType::MAGICA_VOX,
                                                     FileType::VL32,
-                                                    FileType::CSV,
+                                                    FileType::COMMA_SEPARATED_VALUES,
                                                     FileType::MARKDOWN,
                                                     FileType::JSON,
-                                                    FileType::PROPERTIES,
+                                                    FileType::JAVA_PROPERTIES,
                                                     FileType::PLAINTEXT,
-                                                    FileType::VDB,
+                                                    FileType::OPENVDB_VDB,
                                                     FileType::SIMPLE_VOXELS,
-                                                    FileType::ZIP,
-                                                    FileType::PLY,
+                                                    FileType::PKWARE_ZIP,
+                                                    FileType::STANFORD_TRIANGLE,
                                                     FileType::KV6,
                                                     FileType::KVX,
                                                     FileType::SLAB6_VOX,
@@ -109,27 +143,27 @@ constexpr const char *nameOf(FileType fileType)
     case FileType::name: return #name
     switch (fileType) {
         VXIO_REGISTER(BINVOX);
-        VXIO_REGISTER(IMAGE_BMP);
-        VXIO_REGISTER(IMAGE_GIF);
-        VXIO_REGISTER(IMAGE_JPEG);
-        VXIO_REGISTER(IMAGE_PNG);
+        VXIO_REGISTER(MICROSOFT_BITMAP);
+        VXIO_REGISTER(GRAPHICS_INTERCHANGE);
+        VXIO_REGISTER(JPEG_IMAGE);
+        VXIO_REGISTER(PORTABLE_NETWORK_GRAPHICS);
         VXIO_REGISTER(QUBICLE_BINARY);
         VXIO_REGISTER(QUBICLE_BINARY_TREE);
         VXIO_REGISTER(QUBICLE_EXCHANGE);
-        VXIO_REGISTER(STL);
+        VXIO_REGISTER(STEREOLITHOGRAPHY);
         VXIO_REGISTER(WAVEFRONT_OBJ);
-        VXIO_REGISTER(VOBJ);
+        VXIO_REGISTER(MVE_VOBJ);
         VXIO_REGISTER(MAGICA_VOX);
         VXIO_REGISTER(VL32);
-        VXIO_REGISTER(CSV);
+        VXIO_REGISTER(COMMA_SEPARATED_VALUES);
         VXIO_REGISTER(MARKDOWN);
         VXIO_REGISTER(JSON);
-        VXIO_REGISTER(PROPERTIES);
+        VXIO_REGISTER(JAVA_PROPERTIES);
         VXIO_REGISTER(PLAINTEXT);
         VXIO_REGISTER(SIMPLE_VOXELS);
-        VXIO_REGISTER(VDB);
-        VXIO_REGISTER(ZIP);
-        VXIO_REGISTER(PLY);
+        VXIO_REGISTER(OPENVDB_VDB);
+        VXIO_REGISTER(PKWARE_ZIP);
+        VXIO_REGISTER(STANFORD_TRIANGLE);
         VXIO_REGISTER(KV6);
         VXIO_REGISTER(KVX);
         VXIO_REGISTER(SLAB6_VOX);
@@ -175,27 +209,27 @@ constexpr const char *extensionOf(FileType fileType)
 {
     switch (fileType) {
     case FileType::BINVOX: return "binvox";
-    case FileType::IMAGE_BMP: return "bmp";
-    case FileType::IMAGE_GIF: return "gif";
-    case FileType::IMAGE_JPEG: return "jpeg";
-    case FileType::IMAGE_PNG: return "png";
+    case FileType::MICROSOFT_BITMAP: return "bmp";
+    case FileType::GRAPHICS_INTERCHANGE: return "gif";
+    case FileType::JPEG_IMAGE: return "jpeg";
+    case FileType::PORTABLE_NETWORK_GRAPHICS: return "png";
     case FileType::QUBICLE_BINARY: return "qb";
     case FileType::QUBICLE_BINARY_TREE: return "qbt";
     case FileType::QUBICLE_EXCHANGE: return "qef";
-    case FileType::STL: return "stl";
+    case FileType::STEREOLITHOGRAPHY: return "stl";
     case FileType::WAVEFRONT_OBJ: return "obj";
-    case FileType::VOBJ: return "vobj";
+    case FileType::MVE_VOBJ: return "vobj";
     case FileType::MAGICA_VOX: return "vox";
     case FileType::VL32: return "vl32";
-    case FileType::CSV: return "csv";
+    case FileType::COMMA_SEPARATED_VALUES: return "csv";
     case FileType::MARKDOWN: return "md";
     case FileType::JSON: return "json";
-    case FileType::PROPERTIES: return "properties";
+    case FileType::JAVA_PROPERTIES: return "properties";
     case FileType::PLAINTEXT: return "txt";
-    case FileType::VDB: return "vdb";
+    case FileType::OPENVDB_VDB: return "vdb";
     case FileType::SIMPLE_VOXELS: return "svx";
-    case FileType::ZIP: return "zip";
-    case FileType::PLY: return "ply";
+    case FileType::PKWARE_ZIP: return "zip";
+    case FileType::STANFORD_TRIANGLE: return "ply";
     case FileType::KV6: return "kv6";
     case FileType::KVX: return "kvx";
     case FileType::SLAB6_VOX: return "vox";
@@ -215,7 +249,7 @@ constexpr const char *extensionOf(FileType fileType)
 constexpr const char *alternativeExtensionOf(FileType fileType)
 {
     switch (fileType) {
-    case FileType::IMAGE_JPEG: return "jpg";
+    case FileType::JPEG_IMAGE: return "jpg";
     default: return "";
     }
 }
@@ -224,27 +258,27 @@ constexpr const char *displayNameOf(FileType fileType)
 {
     switch (fileType) {
     case FileType::BINVOX: return "Binvox";
-    case FileType::IMAGE_BMP: return "Microsoft Bitmap";
-    case FileType::IMAGE_GIF: return "Graphics Interchange Format";
-    case FileType::IMAGE_JPEG: return "JPEG";
-    case FileType::IMAGE_PNG: return "Portable Network Graphics";
+    case FileType::MICROSOFT_BITMAP: return "Microsoft Bitmap";
+    case FileType::GRAPHICS_INTERCHANGE: return "Graphics Interchange Format";
+    case FileType::JPEG_IMAGE: return "JPEG";
+    case FileType::PORTABLE_NETWORK_GRAPHICS: return "Portable Network Graphics";
     case FileType::QUBICLE_BINARY: return "Qubicle Binary";
     case FileType::QUBICLE_BINARY_TREE: return "Qubicle Binary Tree";
     case FileType::QUBICLE_EXCHANGE: return "Qubicle Exchange Format";
-    case FileType::STL: return "Stereolithography Model";
+    case FileType::STEREOLITHOGRAPHY: return "Stereolithography Model";
     case FileType::WAVEFRONT_OBJ: return "Wavefront Object";
-    case FileType::VOBJ: return "MVE Voxel Object";
+    case FileType::MVE_VOBJ: return "MVE Voxel Object";
     case FileType::MAGICA_VOX: return "MagicaVoxel Model";
     case FileType::VL32: return "32-Bit Voxel List";
-    case FileType::CSV: return "Comma-Separated Values";
+    case FileType::COMMA_SEPARATED_VALUES: return "Comma-Separated Values";
     case FileType::MARKDOWN: return "Markdown Document";
     case FileType::JSON: return "JavaScript Object Notation";
-    case FileType::PROPERTIES: return "Properties";
+    case FileType::JAVA_PROPERTIES: return "Properties";
     case FileType::PLAINTEXT: return "Plaintext";
-    case FileType::VDB: return "OpenVDB Volume Database";
+    case FileType::OPENVDB_VDB: return "OpenVDB Volume Database";
     case FileType::SIMPLE_VOXELS: return "Simple Voxels";
-    case FileType::ZIP: return "Zip Archive";
-    case FileType::PLY: return "Polygon";
+    case FileType::PKWARE_ZIP: return "Zip Archive";
+    case FileType::STANFORD_TRIANGLE: return "Polygon";
     case FileType::KV6: return "SLAB6 KV6 Model";
     case FileType::KVX: return "KVX Model";
     case FileType::SLAB6_VOX: return "SLAB6 VOX Model";
@@ -265,27 +299,27 @@ constexpr const char *mediaTypeOf(FileType fileType)
 {
     switch (fileType) {
     case FileType::BINVOX: return "model/x-binvox";
-    case FileType::IMAGE_BMP: return "image/bmp";
-    case FileType::IMAGE_GIF: return "image/gif";
-    case FileType::IMAGE_JPEG: return "image/jpeg";
-    case FileType::IMAGE_PNG: return "image/png";
+    case FileType::MICROSOFT_BITMAP: return "image/bmp";
+    case FileType::GRAPHICS_INTERCHANGE: return "image/gif";
+    case FileType::JPEG_IMAGE: return "image/jpeg";
+    case FileType::PORTABLE_NETWORK_GRAPHICS: return "image/png";
     case FileType::QUBICLE_BINARY: return "model/x-qb";
     case FileType::QUBICLE_BINARY_TREE: return "model/x-qbt";
     case FileType::QUBICLE_EXCHANGE: return "text/x-qef";
-    case FileType::STL: return "model/stl";
+    case FileType::STEREOLITHOGRAPHY: return "model/stl";
     case FileType::WAVEFRONT_OBJ: return "model/obj";
-    case FileType::VOBJ: return "model/x-vobj";
+    case FileType::MVE_VOBJ: return "model/x-vobj";
     case FileType::MAGICA_VOX: return "model/x-vox";
     case FileType::VL32: return "model/x-vl32";
-    case FileType::CSV: return "text/csv";
+    case FileType::COMMA_SEPARATED_VALUES: return "text/csv";
     case FileType::MARKDOWN: return "text/md";
     case FileType::JSON: return "application/json";
-    case FileType::PROPERTIES: return "text/x-properties+plain";
+    case FileType::JAVA_PROPERTIES: return "text/x-properties+plain";
     case FileType::PLAINTEXT: return "text/plain";
-    case FileType::VDB: return "model/x-vdb";
+    case FileType::OPENVDB_VDB: return "model/x-vdb";
     case FileType::SIMPLE_VOXELS: return "application/x-svx+zip";
-    case FileType::ZIP: return "application/zip";
-    case FileType::PLY: return "text/x-ply+plain";
+    case FileType::PKWARE_ZIP: return "application/zip";
+    case FileType::STANFORD_TRIANGLE: return "text/x-ply+plain";
     case FileType::KV6: return "model/x-kv6";
     case FileType::KVX: return "model/x-kv";
     case FileType::SLAB6_VOX: return "model/x-slab6-vox";
@@ -306,18 +340,18 @@ constexpr const char *magicOf(FileType fileType)
 {
     switch (fileType) {
     case FileType::BINVOX: return "#binvox";
-    case FileType::IMAGE_BMP: return "BM";
-    case FileType::IMAGE_GIF: return "GIF\x38";        // GIF87a or GIF89a
-    case FileType::IMAGE_JPEG: return "\xff\xd8\xff";  // 4 variants exist starting at the next byte
-    case FileType::IMAGE_PNG: return "\x89PNG\x0d\x0a\x1a\x0a";
+    case FileType::MICROSOFT_BITMAP: return "BM";
+    case FileType::GRAPHICS_INTERCHANGE: return "GIF\x38";        // GIF87a or GIF89a
+    case FileType::JPEG_IMAGE: return "\xff\xd8\xff";  // 4 variants exist starting at the next byte
+    case FileType::PORTABLE_NETWORK_GRAPHICS: return "\x89PNG\x0d\x0a\x1a\x0a";
     case FileType::QUBICLE_BINARY_TREE: return "QB 2";                  // ... oh look, he fixed it
     case FileType::QUBICLE_EXCHANGE: return "Qubicle Exchange Format";  // first line of mandatory copyright header
-    case FileType::STL: return "solid";                                 // only applies to the ASCII version of STL
-    case FileType::VOBJ: return "model/x-vobj";
+    case FileType::STEREOLITHOGRAPHY: return "solid";                                 // only applies to the ASCII version of STL
+    case FileType::MVE_VOBJ: return "model/x-vobj";
     case FileType::MAGICA_VOX: return "VOX ";  // the trailing space is intentional
-    case FileType::ZIP:
+    case FileType::PKWARE_ZIP:
     case FileType::SIMPLE_VOXELS: return "\x50\x4b";  // one can go more into detail to detect empty archives too
-    case FileType::PLY: return "ply\n";
+    case FileType::STANFORD_TRIANGLE: return "ply\n";
     case FileType::KV6: return "Kvxl";
     default: return "";
     }
@@ -326,22 +360,22 @@ constexpr const char *magicOf(FileType fileType)
 constexpr FileTypeCategory categoryOf(FileType type)
 {
     switch (type) {
-    case FileType::IMAGE_BMP:
-    case FileType::IMAGE_GIF:
-    case FileType::IMAGE_JPEG:
-    case FileType::IMAGE_PNG: return FileTypeCategory::IMAGE;
+    case FileType::MICROSOFT_BITMAP:
+    case FileType::GRAPHICS_INTERCHANGE:
+    case FileType::JPEG_IMAGE:
+    case FileType::PORTABLE_NETWORK_GRAPHICS: return FileTypeCategory::IMAGE;
 
-    case FileType::PLY:
-    case FileType::STL:
+    case FileType::STANFORD_TRIANGLE:
+    case FileType::STEREOLITHOGRAPHY:
     case FileType::WAVEFRONT_OBJ: return FileTypeCategory::MESH;
 
-    case FileType::CSV:
+    case FileType::COMMA_SEPARATED_VALUES:
     case FileType::MARKDOWN:
     case FileType::JSON:
-    case FileType::PROPERTIES:
+    case FileType::JAVA_PROPERTIES:
     case FileType::PLAINTEXT: return FileTypeCategory::TEXT;
 
-    case FileType::ZIP: return FileTypeCategory::ARCHIVE;
+    case FileType::PKWARE_ZIP: return FileTypeCategory::ARCHIVE;
 
     default: return FileTypeCategory::VOXEL;
     }
@@ -352,16 +386,16 @@ constexpr FileTypeStructure structureOf(FileType type)
 {
     switch (type) {
     case FileType::BINVOX:
-    case FileType::PLY: return FileTypeStructure::BINARY_WITH_TEXT_HEADER;
+    case FileType::STANFORD_TRIANGLE: return FileTypeStructure::BINARY_WITH_TEXT_HEADER;
 
-    case FileType::STL: return FileTypeStructure::MIXED;
+    case FileType::STEREOLITHOGRAPHY: return FileTypeStructure::MIXED;
 
     case FileType::QUBICLE_EXCHANGE:
     case FileType::WAVEFRONT_OBJ:
-    case FileType::CSV:
+    case FileType::COMMA_SEPARATED_VALUES:
     case FileType::MARKDOWN:
     case FileType::JSON:
-    case FileType::PROPERTIES:
+    case FileType::JAVA_PROPERTIES:
     case FileType::PLAINTEXT: return FileTypeStructure::TEXT;
 
     default: return FileTypeStructure::BINARY;
@@ -376,7 +410,7 @@ constexpr bool isReadableByDefault(FileType fileType)
     case FileType::BINVOX:
     case FileType::QUBICLE_BINARY:
     case FileType::QUBICLE_EXCHANGE:
-    case FileType::VOBJ:
+    case FileType::MVE_VOBJ:
     case FileType::MAGICA_VOX:
     case FileType::VL32:
     case FileType::CUBEWORLD_CUB: return true;
@@ -408,7 +442,7 @@ constexpr bool supportsPalette(FileType fileType)
     switch (fileType) {
     case FileType::QUBICLE_EXCHANGE:
     case FileType::QUBICLE_BINARY_TREE:
-    case FileType::VOBJ:
+    case FileType::MVE_VOBJ:
     case FileType::MAGICA_VOX:
     case FileType::KV6:
     case FileType::KVX: return true;
