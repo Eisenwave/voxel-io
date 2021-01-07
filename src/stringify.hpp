@@ -225,6 +225,22 @@ std::string stringifyFractionRpad(uint64_t num, uint64_t den, unsigned precision
 // SPECIAL PURPOSE STRINGIFICATION =====================================================================================
 
 /**
+ * @brief Creates a string from an integer with a comma separating each three digits (thousands).
+ * @param num the number to stringify
+ * @param c the separator, comma by default
+ * @return the human-readable string
+ */
+template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
+std::string stringifyLargeInt(Int num, char separator = ',')
+{
+    std::string result = stringifyDec(num);
+    for (usize n = result.length() - 3; n > 0; n -= 3) {
+        result.insert(n, {separator});
+    }
+    return result;
+}
+
+/**
  * @brief Creates a human-readable string from a file size given in bytes.
  * @param size the number of bytes
  * @param precision the maximum number of decimals to print
