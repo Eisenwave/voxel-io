@@ -234,8 +234,8 @@ template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
 std::string stringifyLargeInt(Int num, char separator = ',')
 {
     std::string result = stringifyDec(num);
-    for (usize n = result.length() - 3; n > 0; n -= 3) {
-        result.insert(n, {separator});
+    for (usize n = result.length(); n > 3;) {
+        result.insert(n -= 3, {separator});
     }
     return result;
 }
