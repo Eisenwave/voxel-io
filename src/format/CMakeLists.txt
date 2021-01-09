@@ -10,3 +10,4 @@ add_library(voxelio-format STATIC
     vox.cpp)
 
 target_include_directories(voxelio-format PUBLIC "${voxel-io_SOURCE_DIR}/include")
+target_link_libraries(voxelio-format INTERFACE voxelio)
