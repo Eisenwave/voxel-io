@@ -1,8 +1,8 @@
-#include "png.hpp"
+#include "voxelio/format/png.hpp"
 
-#include "../3rd_party/lodepng/lodepngfwd.hpp"
+#include "voxelio/3rd_party/lodepngfwd.hpp"
 
-#include "log.hpp"
+#include "voxelio/log.hpp"
 
 namespace voxelio::png {
 

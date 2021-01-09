@@ -1,8 +1,8 @@
 #ifndef VXIO_VOX_HPP
 #define VXIO_VOX_HPP
 
-#include "../ioutil.hpp"
-#include "../voxelio.hpp"
+#include "voxelio/ioutil.hpp"
+#include "voxelio/voxelio.hpp"
 
 #include <cstddef>
 #include <map>

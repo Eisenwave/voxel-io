@@ -1,8 +1,8 @@
-#include "assert.hpp"
+#include "voxelio/assert.hpp"
 
 #ifndef VXIO_DISABLE_ASSERTS
 
-#include "log.hpp"
+#include "voxelio/log.hpp"
 
 #include <vector>
 

@@ -1,5 +1,6 @@
 # FILES
-.directory
+**/.directory
 
 # DIRECTORIES
+**/.vscode
 build/

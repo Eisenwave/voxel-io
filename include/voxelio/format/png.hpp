@@ -1,9 +1,9 @@
 #ifndef VXIO_PNG_HPP
 #define VXIO_PNG_HPP
 
-#include "../image.hpp"
-#include "../results.hpp"
-#include "../streamfwd.hpp"
+#include "voxelio/image.hpp"
+#include "voxelio/results.hpp"
+#include "voxelio/streamfwd.hpp"
 
 namespace voxelio::png {
 

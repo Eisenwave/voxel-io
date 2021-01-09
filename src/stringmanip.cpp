@@ -1,4 +1,4 @@
-#include "stringmanip.hpp"
+#include "voxelio/stringmanip.hpp"
 
 #include <algorithm>
 #include <cstdarg>

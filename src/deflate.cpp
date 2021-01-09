@@ -1,4 +1,4 @@
-#include "deflate.hpp"
+#include "voxelio/deflate.hpp"
 
 namespace voxelio::deflate {
 

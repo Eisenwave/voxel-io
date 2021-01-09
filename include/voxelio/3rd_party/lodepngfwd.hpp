@@ -1,8 +1,8 @@
 #ifndef VXIO_LODEPNGFWD_HPP
 #define VXIO_LODEPNGFWD_HPP
 
-#include "../../streamfwd.hpp"
-#include "../../primitives.hpp"
+#include "voxelio/streamfwd.hpp"
+#include "voxelio/primitives.hpp"
 
 typedef enum LodePNGColorType {
   LCT_GREY = 0, /*grayscale: 1,2,4,8,16 bit*/

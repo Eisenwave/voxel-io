@@ -13,12 +13,12 @@ CONFIG(debug, debug|release) {
 
 LIBS += -lstdc++fs
 
-INCLUDEPATH += src
+INCLUDEPATH += include
 
 SOURCES +=  \
-    src/3rd_party/lodepng/lodepng.cpp \
-    src/3rd_party/miniz_cpp/miniz_cpp.cpp \
-    src/3rd_party/miniz/miniz.c \
+    src/3rd_party/lodepng.cpp \
+    src/3rd_party/miniz_cpp.cpp \
+    src/3rd_party/miniz.c \
     src/assert.cpp \
     src/builtin.cpp \
     src/deflate.cpp \
@@ -44,50 +44,50 @@ SOURCES +=  \
     src/format/vox.cpp
 
 HEADERS +=  \
-    src/3rd_party/lodepng/lodepng.hpp \
-    src/3rd_party/lodepng/lodepngfwd.hpp \
-    src/3rd_party/miniz_cpp/miniz_cpp.hpp \
-    src/3rd_party/miniz_cpp/miniz_cppfwd.hpp \
-    src/3rd_party/miniz/miniz.h \
-    src/assert.hpp \
-    src/bits.hpp \
-    src/build.hpp \
-    src/builtin.hpp \
-    src/color.hpp \
-    src/constantsfwd.hpp \
-    src/deflate.hpp \
-    src/endian.hpp \
-    src/filetype.hpp \
-    src/format/cubeworld.hpp \
-    src/format/png.hpp \
-    src/ileave.hpp \
-    src/image.hpp \
-    src/intdiv.hpp \
-    src/intlog.hpp \
-    src/ioutil.hpp \
-    src/log.hpp \
-    src/macro.hpp \
-    src/parse.hpp \
-    src/primitives.hpp \
-    src/sstreamwrap.hpp \
-    src/stream.hpp \
-    src/format/svx.hpp \
-    src/streamfwd.hpp \
-    src/stringmanip.hpp \
-    src/util.hpp \
-    src/vec.hpp \
-    src/stringify.hpp \
-    src/voxelarray.hpp \
-    src/voxelio.hpp \
-    src/format/binvox.hpp \
-    src/palette.hpp \
-    src/format/qb.hpp \
-    src/format/qbt.hpp \
-    src/format/qef.hpp \
-    src/results.hpp \
-    src/types.hpp \
-    src/format/vl32.hpp \
-    src/format/vobj.hpp \
-    src/format/vox.hpp \
-    src/wbits.hpp \
-    src/wileave.hpp
+    include/voxelio/3rd_party/lodepng/lodepng.hpp \
+    include/voxelio/3rd_party/lodepng/lodepngfwd.hpp \
+    include/voxelio/3rd_party/miniz_cpp/miniz_cpp.hpp \
+    include/voxelio/3rd_party/miniz_cpp/miniz_cppfwd.hpp \
+    include/voxelio/3rd_party/miniz/miniz.h \
+    include/voxelio/assert.hpp \
+    include/voxelio/bits.hpp \
+    include/voxelio/build.hpp \
+    include/voxelio/builtin.hpp \
+    include/voxelio/color.hpp \
+    include/voxelio/constantsfwd.hpp \
+    include/voxelio/deflate.hpp \
+    include/voxelio/endian.hpp \
+    include/voxelio/filetype.hpp \
+    include/voxelio/format/cubeworld.hpp \
+    include/voxelio/format/png.hpp \
+    include/voxelio/ileave.hpp \
+    include/voxelio/image.hpp \
+    include/voxelio/intdiv.hpp \
+    include/voxelio/intlog.hpp \
+    include/voxelio/ioutil.hpp \
+    include/voxelio/log.hpp \
+    include/voxelio/macro.hpp \
+    include/voxelio/parse.hpp \
+    include/voxelio/primitives.hpp \
+    include/voxelio/sstreamwrap.hpp \
+    include/voxelio/stream.hpp \
+    include/voxelio/format/svx.hpp \
+    include/voxelio/streamfwd.hpp \
+    include/voxelio/stringmanip.hpp \
+    include/voxelio/util.hpp \
+    include/voxelio/vec.hpp \
+    include/voxelio/stringify.hpp \
+    include/voxelio/voxelarray.hpp \
+    include/voxelio/voxelio.hpp \
+    include/voxelio/format/binvox.hpp \
+    include/voxelio/palette.hpp \
+    include/voxelio/format/qb.hpp \
+    include/voxelio/format/qbt.hpp \
+    include/voxelio/format/qef.hpp \
+    include/voxelio/results.hpp \
+    include/voxelio/types.hpp \
+    include/voxelio/format/vl32.hpp \
+    include/voxelio/format/vobj.hpp \
+    include/voxelio/format/vox.hpp \
+    include/voxelio/wbits.hpp \
+    include/voxelio/wileave.hpp

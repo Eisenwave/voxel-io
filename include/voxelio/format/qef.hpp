@@ -1,11 +1,11 @@
 #ifndef VXIO_QEF_HPP
 #define VXIO_QEF_HPP
 
-#include "../ioutil.hpp"
-#include "../stream.hpp"
-#include "../types.hpp"
-#include "../voxelarray.hpp"
-#include "../voxelio.hpp"
+#include "voxelio/ioutil.hpp"
+#include "voxelio/stream.hpp"
+#include "voxelio/types.hpp"
+#include "voxelio/voxelarray.hpp"
+#include "voxelio/voxelio.hpp"
 
 namespace voxelio {
 namespace qef {

@@ -1,7 +1,7 @@
-#include "vl32.hpp"
+#include "voxelio/format/vl32.hpp"
 
-#include "log.hpp"
-#include "macro.hpp"
+#include "voxelio/log.hpp"
+#include "voxelio/macro.hpp"
 
 namespace voxelio::vl32 {
 

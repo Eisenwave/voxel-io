@@ -13,7 +13,7 @@
 #include "primitives.hpp"
 #include "stream.hpp"
 
-#include "3rd_party/miniz/miniz.h"
+#include "3rd_party/miniz.h"
 
 namespace voxelio::deflate {
 

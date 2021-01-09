@@ -1,6 +1,6 @@
-#include "filetype.hpp"
+#include "voxelio/filetype.hpp"
 
-#include "stringmanip.hpp"
+#include "voxelio/stringmanip.hpp"
 
 #include <cstring>
 #include <iostream>

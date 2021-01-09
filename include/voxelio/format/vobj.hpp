@@ -1,8 +1,8 @@
 #ifndef VXIO_VOXOBJ_HPP
 #define VXIO_VOXOBJ_HPP
 
-#include "../types.hpp"
-#include "../voxelio.hpp"
+#include "voxelio/types.hpp"
+#include "voxelio/voxelio.hpp"
 
 #include <stack>
 #include <unordered_set>

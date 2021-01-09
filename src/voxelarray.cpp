@@ -1,4 +1,4 @@
-#include "voxelarray.hpp"
+#include "voxelio/voxelarray.hpp"
 
 namespace voxelio {
 

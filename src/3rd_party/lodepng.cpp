@@ -28,9 +28,9 @@ The manual and changelog are in the header file "lodepng.h"
 Rename this file to lodepng.cpp to use it for C++, or to lodepng.c to use it for C.
 */
 
-#include "lodepng.hpp"
+#include "voxelio/3rd_party/lodepng.hpp"
 
-#include "stream.hpp"
+#include "voxelio/stream.hpp"
 
 #ifdef LODEPNG_COMPILE_DISK
 #include <limits.h> /* LONG_MAX */

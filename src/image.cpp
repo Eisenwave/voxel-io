@@ -1,6 +1,6 @@
-#include "image.hpp"
+#include "voxelio/image.hpp"
 
-#include "intdiv.hpp"
+#include "voxelio/intdiv.hpp"
 
 namespace voxelio {
 

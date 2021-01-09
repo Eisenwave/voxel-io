@@ -1,8 +1,8 @@
-#include "qb.hpp"
+#include "voxelio/format/qb.hpp"
 
-#include "log.hpp"
-#include "macro.hpp"
-#include "stringify.hpp"
+#include "voxelio/log.hpp"
+#include "voxelio/macro.hpp"
+#include "voxelio/stringify.hpp"
 
 #include <stdexcept>
 

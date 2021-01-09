@@ -1,6 +1,6 @@
-#include "miniz_cpp.hpp"
+#include "voxelio/3rd_party/miniz_cpp.hpp"
 
-#include "../miniz/miniz.h"
+#include "voxelio/3rd_party/miniz.h"
 
 #include <assert.h>
 #include <iostream>

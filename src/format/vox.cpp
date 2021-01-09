@@ -1,13 +1,13 @@
-#include "vox.hpp"
+#include "voxelio/format/vox.hpp"
 
-#include "color.hpp"
-#include "filetype.hpp"
-#include "intdiv.hpp"
-#include "log.hpp"
-#include "macro.hpp"
-#include "parse.hpp"
-#include "stringify.hpp"
-#include "stringmanip.hpp"
+#include "voxelio/color.hpp"
+#include "voxelio/filetype.hpp"
+#include "voxelio/intdiv.hpp"
+#include "voxelio/log.hpp"
+#include "voxelio/macro.hpp"
+#include "voxelio/parse.hpp"
+#include "voxelio/stringify.hpp"
+#include "voxelio/stringmanip.hpp"
 
 #include <set>
 #include <sstream>

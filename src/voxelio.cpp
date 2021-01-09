@@ -1,7 +1,7 @@
-#include "voxelio.hpp"
+#include "voxelio/voxelio.hpp"
 
-#include "log.hpp"
-#include "stringify.hpp"
+#include "voxelio/log.hpp"
+#include "voxelio/stringify.hpp"
 
 #include <sstream>
 

@@ -1,6 +1,6 @@
-#include "stream.hpp"
+#include "voxelio/stream.hpp"
 
-#include "log.hpp"
+#include "voxelio/log.hpp"
 
 #include <istream>
 #include <ostream>

@@ -1,9 +1,9 @@
-#include "binvox.hpp"
+#include "voxelio/format/binvox.hpp"
 
-#include "log.hpp"
-#include "macro.hpp"
-#include "parse.hpp"
-#include "stringmanip.hpp"
+#include "voxelio/log.hpp"
+#include "voxelio/macro.hpp"
+#include "voxelio/parse.hpp"
+#include "voxelio/stringmanip.hpp"
 
 namespace voxelio::binvox {
 

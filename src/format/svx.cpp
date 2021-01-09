@@ -1,13 +1,14 @@
-#include "svx.hpp"
+#include "voxelio/format/svx.hpp"
 
-#include "3rd_party/miniz_cpp/miniz_cpp.hpp"
+#include "voxelio/3rd_party/miniz_cpp.hpp"
 
-#include "color.hpp"
-#include "image.hpp"
-#include "log.hpp"
-#include "macro.hpp"
-#include "png.hpp"
-#include "stringmanip.hpp"
+#include "voxelio/format/png.hpp"
+
+#include "voxelio/color.hpp"
+#include "voxelio/image.hpp"
+#include "voxelio/log.hpp"
+#include "voxelio/macro.hpp"
+#include "voxelio/stringmanip.hpp"
 
 namespace voxelio::svx {
 

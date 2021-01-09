@@ -1,8 +1,8 @@
-#include "cubeworld.hpp"
+#include "voxelio/format/cubeworld.hpp"
 
-#include "color.hpp"
-#include "log.hpp"
-#include "macro.hpp"
+#include "voxelio/color.hpp"
+#include "voxelio/log.hpp"
+#include "voxelio/macro.hpp"
 
 namespace voxelio::cub {
 

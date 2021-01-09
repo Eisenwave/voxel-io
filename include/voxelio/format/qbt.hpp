@@ -2,8 +2,8 @@
 #define VXIO_QBT_HPP
 
 #if false
-#include "endian_convert.hpp"
-#include "vec.hpp"
+#include "voxelio/endian_convert.hpp"
+#include "voxelio/vec.hpp"
 #include "voxelio/types.hpp"
 
 #include <istream>

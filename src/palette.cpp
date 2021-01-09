@@ -1,6 +1,6 @@
-#include "palette.hpp"
+#include "voxelio/palette.hpp"
 
-#include "assert.hpp"
+#include "voxelio/assert.hpp"
 
 namespace voxelio {
 

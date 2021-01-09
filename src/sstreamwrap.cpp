@@ -1,4 +1,4 @@
-#include "sstreamwrap.hpp"
+#include "voxelio/sstreamwrap.hpp"
 
 #include <sstream>
 

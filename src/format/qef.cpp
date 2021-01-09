@@ -1,11 +1,11 @@
-#include "qef.hpp"
+#include "voxelio/format/qef.hpp"
 
-#include "filetype.hpp"
-#include "log.hpp"
-#include "macro.hpp"
-#include "parse.hpp"
-#include "stringify.hpp"
-#include "stringmanip.hpp"
+#include "voxelio/filetype.hpp"
+#include "voxelio/log.hpp"
+#include "voxelio/macro.hpp"
+#include "voxelio/parse.hpp"
+#include "voxelio/stringify.hpp"
+#include "voxelio/stringmanip.hpp"
 
 #include <cmath>
 #include <stdexcept>

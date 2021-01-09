@@ -1,9 +1,9 @@
 #ifndef VXIO_QB_HPP
 #define VXIO_QB_HPP
 
-#include "../stream.hpp"
-#include "../voxelarray.hpp"
-#include "../voxelio.hpp"
+#include "voxelio/stream.hpp"
+#include "voxelio/voxelarray.hpp"
+#include "voxelio/voxelio.hpp"
 
 #include <tuple>
 #include <vector>

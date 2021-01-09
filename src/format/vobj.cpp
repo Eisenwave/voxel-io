@@ -1,8 +1,8 @@
-﻿#include "vobj.hpp"
+﻿#include "voxelio/format/vobj.hpp"
 
-#include "color.hpp"
-#include "macro.hpp"
-#include "stringify.hpp"
+#include "voxelio/color.hpp"
+#include "voxelio/macro.hpp"
+#include "voxelio/stringify.hpp"
 
 #include <cstdint>
 #include <cstring>

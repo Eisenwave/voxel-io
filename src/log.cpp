@@ -1,6 +1,6 @@
-#include "log.hpp"
+#include "voxelio/log.hpp"
 
-#include "stringmanip.hpp"
+#include "voxelio/stringmanip.hpp"
 
 #include <ctime>
 #include <iostream>
