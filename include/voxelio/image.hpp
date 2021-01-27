@@ -22,6 +22,8 @@ namespace voxelio {
  */
 enum class ColorFormat { V1, V8, VA16, RGB24, ARGB32, RGBA32 };
 
+enum class WrapMode { CLAMP, REPEAT };
+
 /**
  * @brief Returns the number of channels in a color format.
  * @param format the color format.
@@ -80,6 +82,14 @@ constexpr usize bitSizeOf(ColorFormat format)
 namespace detail {
 using RgbEncoder = void (*)(Color32 rgb, u8 *out, usize bitOffset);
 using RgbDecoder = Color32 (*)(const u8 *in, usize bitOffset);
+using UvFunction = float(*)(float);
+
+inline float repeat(float x) noexcept
+{
+    float integral;
+    float fraction = std::modf(x, &integral);
+    return fraction == 0 ? 1 : fraction;
+}
 }
 
 /**
@@ -96,6 +106,7 @@ private:
     // poor-man's vtable
     detail::RgbEncoder encoder;
     detail::RgbDecoder decoder;
+    detail::UvFunction uvFunction;
 
 public:
     Image(usize w, usize h, ColorFormat format, std::unique_ptr<u8[]> content);
@@ -137,10 +148,15 @@ public:
         return h;
     }
 
+    void setWrapMode(WrapMode mode)
+    {
+        uvFunction = mode == WrapMode::CLAMP ? detail::clamp01<float> : detail::repeat;
+    }
+
     Vec<usize, 2> uvToXy(Vec2f uv) const
     {
-        usize x = static_cast<usize>(detail::clamp01(uv.x()) * float(w - 1));
-        usize y = static_cast<usize>(detail::clamp01(uv.y()) * float(h - 1));
+        usize x = static_cast<usize>(uvFunction(uv.x()) * float(w - 1));
+        usize y = static_cast<usize>(uvFunction(uv.y()) * float(h - 1));
         return {x, y};
     }
 
