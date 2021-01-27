@@ -15,6 +15,8 @@ namespace voxelio::png {
  */
 [[nodiscard]] ResultCode encode(const Image &image, OutputStream &out);
 
+[[nodiscard]] std::optional<Image> decode(InputStream &in, usize desiredChannels);
+
 }  // namespace voxelio::png
 
 #endif  // VXIO_PNG_HPP

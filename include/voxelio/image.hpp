@@ -20,7 +20,7 @@ namespace voxelio {
  *
  * V (value) describes the brightness of a grayscale value.
  */
-enum class ColorFormat { V1, V8, RGB24, ARGB32, RGBA32 };
+enum class ColorFormat { V1, V8, VA16, RGB24, ARGB32, RGBA32 };
 
 /**
  * @brief Returns the number of channels in a color format.
@@ -32,6 +32,7 @@ constexpr usize channelCountOf(ColorFormat format)
     switch (format) {
     case ColorFormat::V1: return 1;
     case ColorFormat::V8: return 1;
+    case ColorFormat::VA16: return 2;
     case ColorFormat::RGB24: return 3;
     case ColorFormat::ARGB32: return 4;
     case ColorFormat::RGBA32: return 4;
@@ -50,6 +51,7 @@ constexpr usize bitDepthOf(ColorFormat format)
     switch (format) {
     case ColorFormat::V1: return 1;
     case ColorFormat::V8: return 8;
+    case ColorFormat::VA16: return 8;
     case ColorFormat::RGB24: return 8;
     case ColorFormat::ARGB32: return 8;
     case ColorFormat::RGBA32: return 8;
@@ -67,6 +69,7 @@ constexpr usize bitSizeOf(ColorFormat format)
     switch (format) {
     case ColorFormat::V1: return 1;
     case ColorFormat::V8: return 8;
+    case ColorFormat::VA16: return 16;
     case ColorFormat::RGB24: return 24;
     case ColorFormat::ARGB32: return 32;
     case ColorFormat::RGBA32: return 32;
@@ -76,6 +79,7 @@ constexpr usize bitSizeOf(ColorFormat format)
 
 namespace detail {
 using RgbEncoder = void (*)(Color32 rgb, u8 *out, usize bitOffset);
+using RgbDecoder = Color32 (*)(const u8 *in, usize bitOffset);
 }
 
 /**
@@ -89,17 +93,19 @@ private:
     usize h;
     usize bitsPerPixel;
     ColorFormat f;
+    // poor-man's vtable
     detail::RgbEncoder encoder;
+    detail::RgbDecoder decoder;
 
 public:
+    Image(usize w, usize h, ColorFormat format, std::unique_ptr<u8[]> content);
     Image(usize w, usize h, ColorFormat format);
-    Image(Image &&) = default;
-    Image &operator=(Image &&) = default;
 
-    usize bitIndexOf(usize x, usize y) const
-    {
-        return pixelIndexOf(x, y) * bitsPerPixel;
-    }
+    Image(const Image &) = delete;
+    Image(Image &&) = default;
+
+    Image &operator=(const Image &) = delete;
+    Image &operator=(Image &&) = default;
 
     u8 *data()
     {
@@ -131,9 +137,51 @@ public:
         return h;
     }
 
+    Vec<usize, 2> uvToXy(Vec2f uv) const
+    {
+        usize x = static_cast<usize>(detail::clamp01(uv.x()) * float(w - 1));
+        usize y = static_cast<usize>(detail::clamp01(uv.y()) * float(h - 1));
+        return {x, y};
+    }
+
+    /**
+     * @brief Returns the index of the pixel in memory.
+     * @param x the x-coordinate
+     * @param y the y-coordinate
+     * @return the pixel index
+     */
     usize pixelIndexOf(usize x, usize y) const
     {
+        VXIO_DEBUG_ASSERT_LT(x, w);
+        VXIO_DEBUG_ASSERT_LT(y, h);
         return y * w + x;
+    }
+
+    /**
+     * @brief Returns the color of a pixel at a given location.
+     * @param x the x-coordinate
+     * @param y the y-coordinate
+     * @return the color
+     */
+    Color32 getPixel(usize x, usize y) const
+    {
+        return decodeColor(bitIndexOf(x, y));
+    }
+
+    Color32 getPixel(Vec2f uv) const
+    {
+        Vec<usize, 2> xy = uvToXy(uv);
+        return getPixel(xy.x(), xy.y());
+    }
+
+    /**
+     * @brief Sets the color of a pixel at a given location.
+     * @param pixelIndex the index of the pixel
+     */
+    Color32 getPixel(usize pixelIndex) const
+    {
+        VXIO_DEBUG_ASSERT_LT(pixelIndex, w * h);
+        return decodeColor(pixelIndex * bitsPerPixel);
     }
 
     /**
@@ -144,9 +192,7 @@ public:
      */
     void setPixel(usize x, usize y, Color32 color)
     {
-        VXIO_DEBUG_ASSERT_LT(x, w);
-        VXIO_DEBUG_ASSERT_LT(y, h);
-        setData(bitIndexOf(x, y), color);
+        encodeColor(bitIndexOf(x, y), color);
     }
 
     /**
@@ -157,7 +203,32 @@ public:
     void setPixel(usize pixelIndex, Color32 color)
     {
         VXIO_DEBUG_ASSERT_LT(pixelIndex, w * h);
-        setData(pixelIndex * bitsPerPixel, color);
+        encodeColor(pixelIndex * bitsPerPixel, color);
+    }
+
+    void setPixel(Vec2f uv, Color32 color)
+    {
+        Vec<usize, 2> xy = uvToXy(uv);
+        setPixel(xy.x(), xy.y(), color);
+    }
+
+private:
+    usize bitIndexOf(usize x, usize y) const
+    {
+        return pixelIndexOf(x, y) * bitsPerPixel;
+    }
+
+    /**
+     * @brief Returns the color at the given bit-location.
+     * @param the index of the bit in the image
+     * @return the color
+     */
+    Color32 decodeColor(usize bitIndex) const
+    {
+        const usize byteIndex = bitIndex / 8;
+        const usize bitOffset = bitIndex % 8;
+        VXIO_DEBUG_ASSERT_LT(byteIndex, contentSize);
+        return decoder(content.get() + byteIndex, bitOffset);
     }
 
     /**
@@ -165,13 +236,15 @@ public:
      * @param bitIndex the index of the bit in the image
      * @param color the color
      */
-    void setData(usize bitIndex, Color32 color)
+    void encodeColor(usize bitIndex, Color32 color)
     {
         const usize byteIndex = bitIndex / 8;
         const usize bitOffset = bitIndex % 8;
         VXIO_DEBUG_ASSERT_LT(byteIndex, contentSize);
-        encoder(color, &content[byteIndex], bitOffset);
+        encoder(color, content.get() + byteIndex, bitOffset);
     }
+
+    static usize contentSizeOf(usize w, usize h, ColorFormat format);
 };
 
 }  // namespace voxelio

@@ -24,6 +24,8 @@ struct Color32 {
     constexpr Color32(argb32 argb);
     constexpr Color32(u8 r, u8 g, u8 b, u8 a = 0xFF);
     constexpr Color32(float r, float g, float b, float a = 1);
+    constexpr Color32(Vec<float, 3> rgb);
+    constexpr Color32(Vec<float, 4> argb);
     constexpr Color32(const Color32 &) = default;
     constexpr Color32(Color32 &&) = default;
 
@@ -167,6 +169,16 @@ constexpr Color32::Color32(float r, float g, float b, float a)
               static_cast<u8>(detail::clamp01(g) * 0xFF),
               static_cast<u8>(detail::clamp01(b) * 0xFF),
               static_cast<u8>(detail::clamp01(a) * 0xFF)}
+{
+}
+
+constexpr Color32::Color32(Vec<float, 3> rgb)
+    : Color32{rgb.x(), rgb.y(), rgb.z()}
+{
+}
+
+constexpr Color32::Color32(Vec<float, 4> rgba)
+    : Color32{rgba.x(), rgba.y(), rgba.z(), rgba.w()}
 {
 }
 

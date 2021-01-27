@@ -243,6 +243,43 @@ constexpr bool operator!=(const Vec<L, N> &a, const Vec<R, N> &b)
     return false;
 }
 
+template <typename L, typename R, size_t N>
+constexpr size_t indexOfFirstMismatch(const Vec<L, N> &a, const Vec<R, N> &b)
+{
+    size_t index = 0;
+    for (; index < N && a[index] == b[index]; ++index)
+        ;
+    return index;
+}
+
+template <typename L, typename R, size_t N>
+constexpr bool operator<(const Vec<L, N> &a, const Vec<R, N> &b)
+{
+    size_t index = indexOfFirstMismatch(a, b);
+    return index != N && a[index] < b[index];
+}
+
+template <typename L, typename R, size_t N>
+constexpr bool operator>(const Vec<L, N> &a, const Vec<R, N> &b)
+{
+    size_t index = indexOfFirstMismatch(a, b);
+    return index != N && a[index] > b[index];
+}
+
+template <typename L, typename R, size_t N>
+constexpr bool operator<=(const Vec<L, N> &a, const Vec<R, N> &b)
+{
+    size_t index = indexOfFirstMismatch(a, b);
+    return index == N || a[index] <= b[index];
+}
+
+template <typename L, typename R, size_t N>
+constexpr bool operator>=(const Vec<L, N> &a, const Vec<R, N> &b)
+{
+    size_t index = indexOfFirstMismatch(a, b);
+    return index == N || a[index] >= b[index];
+}
+
 // ARITHMETIC ==========================================================================================================
 
 // addition
@@ -278,6 +315,13 @@ constexpr Vec<std::common_type_t<T, S>, N> operator*(const Vec<T, N> &a, const S
     return result;
 }
 
+// scalar product
+template <typename T, typename S, usize N>
+constexpr Vec<std::common_type_t<T, S>, N> operator*(const S &t, const Vec<T, N> &a)
+{
+    return a * t;
+}
+
 // inverse scalar product
 template <typename T, typename S, usize N>
 constexpr Vec<std::common_type_t<T, S>, N> operator/(const Vec<T, N> &a, const S &t)
@@ -300,7 +344,21 @@ constexpr std::common_type_t<L, R> dot(const Vec<L, N> &a, const Vec<R, N> &b)
     return result;
 }
 
-// dot product
+// cross product
+template <typename L, typename R, size_t N, std::enable_if_t<N == 3, int> = 0>
+constexpr Vec<std::common_type_t<L, R>, N> cross(const Vec<L, N> &a, const Vec<R, N> &b)
+{
+    VXIO_DEBUG_ASSERT_EQ(N, 3);
+    // clang-format off
+    return {
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0]
+    };
+    // clang-format on
+}
+
+// component-wise product
 template <typename L, typename R, usize N>
 constexpr Vec<std::common_type_t<L, R>, N> mul(const Vec<L, N> &a, const Vec<R, N> &b)
 {
