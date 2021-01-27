@@ -220,10 +220,6 @@ ResultCode Writer::init() noexcept
         this->err = {0, "canvas dimensions must be set"};
         return ResultCode::USER_ERROR_MISSING_BOUNDARIES;
     }
-    if (palette().empty()) {
-        this->err = {0, "can't write qef without a palette (palette is empty)"};
-        return ResultCode::USER_ERROR_MISSING_PALETTE;
-    }
 
     VXIO_FORWARD_ERROR(writeString(PREAMBLE));
     VXIO_FORWARD_ERROR(writeString(vecToStringLine(*canvasDims)));
@@ -247,12 +243,17 @@ ResultCode Writer::writePalette() noexcept
     return ResultCode::WRITE_OK;
 }
 
-ResultCode Writer::write(Voxel32 buffer[], size_t bufferLength) noexcept
+ResultCode Writer::write(Voxel32 buffer[], usize bufferLength) noexcept
 {
     if (not initialized) {
         VXIO_FORWARD_ERROR(init());
     }
     VXIO_DEBUG_ASSERT(initialized);
+
+    if (bufferLength != 0 && palette().empty()) {
+        this->err = {0, "can't write qef without a palette (palette is empty)"};
+        return ResultCode::USER_ERROR_MISSING_PALETTE;
+    }
 
     for (size_t i = 0; i < bufferLength; ++i) {
         VXIO_FORWARD_ERROR(writeVoxelLine(buffer[i]));
