@@ -104,9 +104,9 @@ private:
     usize bitsPerPixel;
     ColorFormat f;
     // poor-man's vtable
-    detail::RgbEncoder encoder;
-    detail::RgbDecoder decoder;
-    detail::UvFunction uvFunction;
+    detail::RgbEncoder encoder = nullptr;
+    detail::RgbDecoder decoder = nullptr;
+    detail::UvFunction uvFunction = nullptr;
 
 public:
     Image(usize w, usize h, ColorFormat format, std::unique_ptr<u8[]> content);

@@ -129,11 +129,13 @@ Image::Image(usize w, usize h, ColorFormat format, std::unique_ptr<u8[]> content
     , encoder{encoderOf(format)}
     , decoder{decoderOf(format)}
 {
+    setWrapMode(WrapMode::CLAMP);
 }
 
 Image::Image(usize w, usize h, ColorFormat format)
     : Image(w, h, format, std::make_unique<u8[]>(contentSizeOf(w, h, format)))
 {
+    setWrapMode(WrapMode::CLAMP);
 }
 
 }  // namespace voxelio
