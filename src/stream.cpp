@@ -207,7 +207,7 @@ u8 FileInputStream::read()
     return static_cast<u8>(rawResult);
 }
 
-size_t FileInputStream::read(u8 buffer[], size_t size)
+usize FileInputStream::read(u8 buffer[], size_t size)
 {
     if (size == 0) {
         return 0;
