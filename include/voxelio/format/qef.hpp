@@ -44,7 +44,7 @@ public:
     Writer(OutputStream &ostream) : AbstractListWriter{ostream} {}
 
     [[nodiscard]] ResultCode init() noexcept override;
-    [[nodiscard]] ResultCode write(Voxel32 buffer[], size_t bufferLength) noexcept override;
+    [[nodiscard]] ResultCode write(Voxel32 buffer[], size_t bufferLength) noexcept final;
 
 private:
     [[nodiscard]] ResultCode writeString(std::string line) noexcept;

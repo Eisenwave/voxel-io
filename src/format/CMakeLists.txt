@@ -1,6 +1,7 @@
 add_library(voxelio-format STATIC
     binvox.cpp
     cubeworld.cpp
+    ply.cpp
     png.cpp
     qb.cpp
     qef.cpp

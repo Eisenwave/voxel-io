@@ -5,8 +5,7 @@
 #include "voxelio/types.hpp"
 #include "voxelio/voxelio.hpp"
 
-namespace voxelio {
-namespace vl32 {
+namespace voxelio::vl32 {
 
 class Reader : public AbstractReader {
 public:
@@ -32,14 +31,13 @@ private:
 public:
     Writer(OutputStream &ostream) : AbstractListWriter{ostream} {}
 
-    [[nodiscard]] ResultCode init() noexcept override;
-    [[nodiscard]] ResultCode write(Voxel32 buffer[], size_t bufferLength) noexcept override;
+    [[nodiscard]] ResultCode init() noexcept final;
+    [[nodiscard]] ResultCode write(Voxel32 buffer[], size_t bufferLength) noexcept final;
 
 private:
     [[nodiscard]] ResultCode writeVoxel(Voxel32 voxel) noexcept;
 };
 
-}  // namespace vl32
-}  // namespace voxelio
+}  // namespace voxelio::vl32
 
 #endif  // VOXELIO_VL32_HPP
