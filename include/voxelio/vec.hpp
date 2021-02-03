@@ -43,10 +43,21 @@ public:
         std::copy(data, data + N, begin());
     }
 
-    template <typename... Args,
-              std::enable_if_t<(((std::is_same_v<T, Args> && ...) ||
-                                 std::is_same_v<T, std::common_type_t<T, Args...>>) &&sizeof...(Args) <= N),
-                               int> = 0>
+private:
+#ifdef VXIO_MSVC
+    template <typename... Args>
+    static constexpr bool areValidConstructorArgs = (std::is_arithmetic_v<Args> && ...) && sizeof...(Args) <= N;
+#else
+    // TODO get the full condition to work on MSVC
+    template <typename... Args>
+    static constexpr bool areValidConstructorArgs =
+        ((std::is_same_v<T, Args> && ...) ||
+         std::conjunction_v<std::is_arithmetic_v<T>,
+                            std::is_same<T, std::common_type_t<T, Args...>>>) &&sizeof...(Args) <= N;
+#endif
+
+public:
+    template <typename... Args, std::enable_if_t<areValidConstructorArgs<Args...>, int> = 0>
     constexpr Vec(Args... args) : content{static_cast<T>(std::move(args))...}
     {
     }

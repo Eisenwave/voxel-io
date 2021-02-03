@@ -8,6 +8,8 @@
  *
  */
 
+#include "build.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>

@@ -271,8 +271,8 @@ ResultCode Writer::writeColorLine(Color32 color) noexcept
 {
     // Using proper rounding, a precision of 3 would already be enough.
     // We use a precision of 4 in case other software uses improper rounding, such as floor.
-    constexpr unsigned precision = 4;
     constexpr auto stringifyChannel = [](u8 channel) -> std::string {
+        constexpr unsigned precision = 4;
         return stringifyFractionRpad(channel, 255u, precision);
     };
 
