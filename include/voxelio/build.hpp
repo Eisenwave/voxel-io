@@ -94,6 +94,24 @@ constexpr bool RELEASE = !DEBUG;
 #define VXIO_FWDHEADER(header) <header>
 #endif
 
+// ARCH DETECTION ======================================================================================================
+
+#ifdef __i386__
+#define VXIO_X86
+#endif
+
+#ifdef __x86_64__
+#define VXIO_X64
+#endif
+
+#ifdef _M_X86
+#define VXIO_X86
+#endif
+
+#ifdef _M_AMD64
+#define VXIO_X64
+#endif
+
 // ENDIANNES DETECTION =================================================================================================
 /*
  * In this section, the bool constant NATIVE_ENDIAN_LITTLE is defined.
@@ -134,6 +152,15 @@ constexpr bool NATIVE_ENDIAN_LITTLE = false;
 namespace voxelio::build {
 
 constexpr bool NATIVE_ENDIAN_LITTLE = std::endian::native == std::endian::little;
+
+}  // namespace voxelio::build
+
+#elif defined(VXIO_X86) || defined(VXIO_X64)
+// ARCHITECTURE BASED ENDIANNESS DETECTION -----------------------------------------------------------------------------
+
+namespace voxelio::build {
+
+constexpr bool NATIVE_ENDIAN_LITTLE = true;
 
 }  // namespace voxelio::build
 
