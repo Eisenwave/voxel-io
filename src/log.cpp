@@ -129,7 +129,7 @@ void log(const std::string &msg, LogLevel level, const char *file, const char *,
     output += ": ";
     output += ansi::RESET;
 #else
-    std::cout << str::basename<char>(file) << '@' << line << ": ";
+    std::cout << basename(file) << '@' << line << ": ";
 #endif
     output += msg;
     output += '\n';

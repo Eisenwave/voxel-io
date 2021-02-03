@@ -8,6 +8,10 @@
 
 #include "build.hpp"
 
+#ifdef VXIO_MSVC
+#include <intrin.h>
+#endif
+
 #include <cstdint>
 
 // COMPILER AGNOSTIC ===================================================================================================
@@ -277,22 +281,22 @@ constexpr int popCount(unsigned long long x) noexcept
     return __builtin_popcountll(x);
 }
 #elif defined(VXIO_MSVC)
-constexpr uint8_t popCount(uint8_t x) noexcept
+inline uint8_t popCount(uint8_t x) noexcept
 {
     return __popcnt16(x);
 }
 
-constexpr uint16_t popCount(uint16_t x) noexcept
+inline uint16_t popCount(uint16_t x) noexcept
 {
     return __popcnt16(x);
 }
 
-constexpr uint32_t popCount(uint32_t x) noexcept
+inline uint32_t popCount(uint32_t x) noexcept
 {
-    return __popcnt32(x);
+    return __popcnt(x);
 }
 
-constexpr uint64_t popCount(uint64_t x) noexcept
+inline uint64_t popCount(uint64_t x) noexcept
 {
     return __popcnt64(x);
 }

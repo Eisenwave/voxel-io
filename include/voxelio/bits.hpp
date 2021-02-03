@@ -210,14 +210,14 @@ template <typename Int>
         return integer;
     }
     else if constexpr (std::is_signed_v<Int>) {
-        auto unsignedSwapped = builtin::byteSwap(static_cast<std::make_unsigned_t<Int>>(integer));
+        auto unsignedSwapped = reverseBytes(static_cast<std::make_unsigned_t<Int>>(integer));
         return static_cast<Int>(unsignedSwapped);
     }
     else {
 #ifdef VXIO_HAS_BUILTIN_BSWAP
         return builtin::byteSwap(integer);
 #else
-        return builtin::reverseBytes_naive(integer);
+        return detail::reverseBytes_shift(integer);
 #endif
     }
 }

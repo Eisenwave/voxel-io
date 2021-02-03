@@ -2,6 +2,7 @@
 #define VXIO_SSTREAMWRAP_HPP
 
 #include <iosfwd>
+#include <string>
 
 namespace voxelio::detail {
 
