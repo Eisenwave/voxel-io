@@ -3,8 +3,8 @@
 
 #if false
 #include "voxelio/endian_convert.hpp"
-#include "voxelio/vec.hpp"
 #include "voxelio/types.hpp"
+#include "voxelio/vec.hpp"
 
 #include <istream>
 

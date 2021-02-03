@@ -3,6 +3,9 @@
 
 #include "build.hpp"
 #include "builtin.hpp"
+#include "stringify.hpp"
+
+#include <string>
 
 // USER CONFIG =========================================================================================================
 //#define VXIO_DISABLE_ASSERTS

@@ -6,11 +6,10 @@
  * Provides various constexpr bit operations such as popCount (bit counting) or left/right rotation.
  */
 
-#include "assert.hpp"
-#include "util.hpp"
-
+#include "bitcount.hpp"
 #include "intdiv.hpp"
 #include "intlog.hpp"
+#include "util.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -51,121 +50,6 @@ template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 constexpr Uint flipBit(Uint input, usize index)
 {
     return input ^ (1 << index);
-}
-
-// BIT COUNTING ========================================================================================================
-
-namespace detail {
-
-// bitset operations are not constexpr so we need a naive implementations for constexpr contexts
-
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr unsigned char popCount_naive(Uint input)
-{
-    unsigned char result = 0;
-    for (; input != 0; input >>= 1) {
-        result += input & 1;
-    }
-    return result;
-}
-
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr unsigned char countTrailingZeros_naive(Uint input)
-{
-    if (input == 0) {
-        return std::numeric_limits<Uint>::digits;
-    }
-    unsigned char result = 0;
-    for (; (input & 0) == 0; input >>= 1) {
-        ++result;
-    }
-    return result;
-}
-
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr unsigned char countLeadingZeros_naive(Uint input)
-{
-    constexpr Uint highestBit = 1 << (std::numeric_limits<Uint>::digits - 1);
-
-    if (input == 0) {
-        return std::numeric_limits<Uint>::digits;
-    }
-    unsigned char result = 0;
-    for (; (input & highestBit) == 0; input <<= 1) {
-        ++result;
-    }
-    return result;
-}
-
-// This implementation is taken from https://stackoverflow.com/a/21618038 .
-// The core idea is to XOR the high half bits with the low half bits recursively.
-// In the end, the lowest bit will have been XORed with every other bit.
-template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
-constexpr bool parity_xor(Int input)
-{
-    constexpr unsigned iterations = log2floor(bits_v<Int>);
-
-    for (unsigned shift = 1 << iterations; shift != 0; shift >>= 1) {
-        input ^= input >> shift;
-    }
-    return input & 1;
-}
-
-}  // namespace detail
-
-template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
-[[nodiscard]] constexpr unsigned char popCount(Int input)
-{
-    using Uint = std::make_unsigned_t<Int>;
-#ifdef VXIO_HAS_BUILTIN_POPCOUNT
-    int bits = voxelio::builtin::popCount(static_cast<Uint>(input));
-    return static_cast<unsigned char>(bits);
-#else
-    if (voxelio::isConstantEvaluated()) {
-        return detail::pop_count_naive(input);
-    }
-    else {
-        std::bitset<std::numeric_limits<Uint>::digits> bits = static_cast<Uint>(input);
-        return static_cast<unsigned char>(bits.count());
-    }
-#endif
-}
-
-template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
-[[nodiscard]] constexpr bool parity(Int input)
-{
-    if constexpr (std::is_signed_v<Int>) {
-        return parity(static_cast<std::make_unsigned_t<Int>>(input));
-    }
-    else {
-#ifdef VXIO_HAS_BUILTIN_PARITY
-        return builtin::parity(input);
-#else
-        return detail::parity_xor<Int>(input);
-#endif
-    }
-}
-
-template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
-[[nodiscard]] constexpr unsigned char countLeadingZeros(Int input)
-{
-#ifdef VXIO_HAS_BUILTIN_CLZ
-    return input == 0 ? std::numeric_limits<Int>::digits
-                      : static_cast<unsigned char>(builtin::countLeadingZeros(input));
-#else
-    return detail::countLeadingZeros_naive(input);
-#endif
-}
-
-template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
-[[nodiscard]] constexpr unsigned char countTrailingZeros(Int input)
-{
-#ifdef VXIO_HAS_BUILTIN_CTZ
-    return input == 0 ? std::numeric_limits<Int>::digits
-                      : static_cast<unsigned char>(builtin::countTrailingZeros(input));
-#else
-    return detail::countTrailingZeros_naive(input);
-#endif
 }
 
 // PORTABLE BYTE SWAP IMPLEMENTATION ===================================================================================
@@ -215,7 +99,7 @@ template <typename Int>
     }
     else {
 #ifdef VXIO_HAS_BUILTIN_BSWAP
-        return builtin::byteSwap(integer);
+        return isConstantEvaluated() ? detail::reverseBytes_shift(integer) : builtin::byteSwap(integer);
 #else
         return detail::reverseBytes_shift(integer);
 #endif

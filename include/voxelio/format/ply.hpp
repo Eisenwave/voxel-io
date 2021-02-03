@@ -1,8 +1,8 @@
 #ifndef VXIO_PLY_HPP
 #define VXIO_PLY_HPP
 
-#include "voxelio/voxelio.hpp"
 #include "voxelio/stream.hpp"
+#include "voxelio/voxelio.hpp"
 
 namespace voxelio::ply {
 
@@ -23,6 +23,6 @@ private:
     [[nodiscard]] ResultCode writeVoxel(Voxel32 voxel) noexcept;
 };
 
-}
+}  // namespace voxelio::ply
 
 #endif

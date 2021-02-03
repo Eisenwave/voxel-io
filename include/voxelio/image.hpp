@@ -82,7 +82,7 @@ constexpr usize bitSizeOf(ColorFormat format)
 namespace detail {
 using RgbEncoder = void (*)(Color32 rgb, u8 *out, usize bitOffset);
 using RgbDecoder = Color32 (*)(const u8 *in, usize bitOffset);
-using UvFunction = float(*)(float);
+using UvFunction = float (*)(float);
 
 inline float repeat(float x) noexcept
 {
@@ -91,7 +91,7 @@ inline float repeat(float x) noexcept
     fraction += fraction < 0;
     return fraction == 0 ? 1 : fraction;
 }
-}
+}  // namespace detail
 
 /**
  * @brief Rudimentary implementation of an in-memory image with support for multiple color formats.

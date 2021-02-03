@@ -172,15 +172,9 @@ constexpr Color32::Color32(float r, float g, float b, float a)
 {
 }
 
-constexpr Color32::Color32(Vec<float, 3> rgb)
-    : Color32{rgb.x(), rgb.y(), rgb.z()}
-{
-}
+constexpr Color32::Color32(Vec<float, 3> rgb) : Color32{rgb.x(), rgb.y(), rgb.z()} {}
 
-constexpr Color32::Color32(Vec<float, 4> rgba)
-    : Color32{rgba.x(), rgba.y(), rgba.z(), rgba.w()}
-{
-}
+constexpr Color32::Color32(Vec<float, 4> rgba) : Color32{rgba.x(), rgba.y(), rgba.z(), rgba.w()} {}
 
 constexpr Color32 operator|(const Color32 &rgb0, const Color32 &rgb1)
 {

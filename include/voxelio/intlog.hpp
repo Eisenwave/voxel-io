@@ -6,6 +6,7 @@
  * Implements arithmetic related to integer logarithms or exponentiation.
  */
 
+#include "bitcount.hpp"
 #include "builtin.hpp"
 #include "primitives.hpp"
 
@@ -14,41 +15,6 @@
 #include <type_traits>
 
 namespace voxelio {
-
-// TRAITS ==============================================================================================================
-
-namespace detail {
-
-template <typename Int>
-auto nextLargerUint_impl()
-{
-    // Size comparisons are better than std::is_same_v because they account for equivalent but distinct types.
-    // For example, unsigned long and unsigned long long might both be 64 bits but are not the same type.
-    if constexpr (sizeof(Int) == sizeof(uint8_t)) {
-        return u16{0};
-    }
-    else if constexpr (sizeof(Int) == sizeof(u16)) {
-        return u32{0};
-    }
-    else if constexpr (sizeof(Int) == sizeof(u32)) {
-        return u64{0};
-    }
-    else {
-        return umax{0};
-    }
-}
-
-}  // namespace detail
-
-/**
- * @brief templated variable which contains the number of bits for any given integer type.
- * Example: bits_v<u32> = 32
- */
-template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
-constexpr usize bits_v = sizeof(Int) * 8;
-
-template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
-using nextLargerUintType = decltype(detail::nextLargerUint_impl<Int>());
 
 // POWER OF 2 TESTING ==================================================================================================
 
@@ -208,7 +174,7 @@ constexpr u32 log2floor_debruijn(u32 val) noexcept
  * countLeadingZeros(0) is undefined and must be handled specially.
  */
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint log2floor_builtin(Uint v) noexcept
+inline Uint log2floor_builtin(Uint v) noexcept
 {
     constexpr int maxIndex = bits_v<Uint> - 1;
     return static_cast<Uint>(v == 0 ? 0 : maxIndex - builtin::countLeadingZeros(v));
@@ -231,15 +197,16 @@ template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
 constexpr Int log2floor(Int v) noexcept
 {
 #ifdef VXIO_HAS_BUILTIN_CLZ
-    return static_cast<Int>(log2floor_builtin(v));
-#else
+    if (not isConstantEvaluated()) {
+        return static_cast<Int>(log2floor_builtin(v));
+    }
+#endif
     if constexpr (std::is_same_v<Int, u32>) {
         return log2floor_debruijn(v);
     }
     else {
         return log2floor_fast<Int>(v);
     }
-#endif
 }
 
 /**

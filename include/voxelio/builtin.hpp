@@ -96,27 +96,27 @@ constexpr bool isConstantEvaluated()
 #if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_clrsb) && VXIO_HAS_BUILTIN(__builtin_clrsbl) && \
     VXIO_HAS_BUILTIN(__builtin_clrsbll)
 #define VXIO_HAS_BUILTIN_CLRSB
-constexpr int countLeadingRedundantSignBits(char x) noexcept
+inline int countLeadingRedundantSignBits(char x) noexcept
 {
     return __builtin_clrsb(x);
 }
 
-constexpr int countLeadingRedundantSignBits(short x) noexcept
+inline int countLeadingRedundantSignBits(short x) noexcept
 {
     return __builtin_clrsb(x);
 }
 
-constexpr int countLeadingRedundantSignBits(int x) noexcept
+inline int countLeadingRedundantSignBits(int x) noexcept
 {
     return __builtin_clrsb(x);
 }
 
-constexpr int countLeadingRedundantSignBits(long x) noexcept
+inline int countLeadingRedundantSignBits(long x) noexcept
 {
     return __builtin_clrsbl(x);
 }
 
-constexpr int countLeadingRedundantSignBits(long long x) noexcept
+inline int countLeadingRedundantSignBits(long long x) noexcept
 {
     return __builtin_clrsbll(x);
 }
@@ -128,27 +128,27 @@ constexpr int countLeadingRedundantSignBits(long long x) noexcept
 #if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_clz) && VXIO_HAS_BUILTIN(__builtin_clzl) && \
     VXIO_HAS_BUILTIN(__builtin_clzll)
 #define VXIO_HAS_BUILTIN_CLZ
-constexpr int countLeadingZeros(unsigned char x) noexcept
+inline int countLeadingZeros(unsigned char x) noexcept
 {
     return __builtin_clz(x) - int{(sizeof(int) - sizeof(unsigned char)) * 8};
 }
 
-constexpr int countLeadingZeros(unsigned short x) noexcept
+inline int countLeadingZeros(unsigned short x) noexcept
 {
     return __builtin_clz(x) - int{(sizeof(int) - sizeof(unsigned short)) * 8};
 }
 
-constexpr int countLeadingZeros(unsigned int x) noexcept
+inline int countLeadingZeros(unsigned int x) noexcept
 {
     return __builtin_clz(x);
 }
 
-constexpr int countLeadingZeros(unsigned long x) noexcept
+inline int countLeadingZeros(unsigned long x) noexcept
 {
     return __builtin_clzl(x);
 }
 
-constexpr int countLeadingZeros(unsigned long long x) noexcept
+inline int countLeadingZeros(unsigned long long x) noexcept
 {
     return __builtin_clzll(x);
 }
@@ -160,27 +160,27 @@ constexpr int countLeadingZeros(unsigned long long x) noexcept
 #if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_ctz) && VXIO_HAS_BUILTIN(__builtin_ctzl) && \
     VXIO_HAS_BUILTIN(__builtin_ctzll)
 #define VXIO_HAS_BUILTIN_CTZ
-constexpr int countTrailingZeros(unsigned char x) noexcept
+inline int countTrailingZeros(unsigned char x) noexcept
 {
     return __builtin_ctz(x);
 }
 
-constexpr int countTrailingZeros(unsigned short x) noexcept
+inline int countTrailingZeros(unsigned short x) noexcept
 {
     return __builtin_ctz(x);
 }
 
-constexpr int countTrailingZeros(unsigned int x) noexcept
+inline int countTrailingZeros(unsigned int x) noexcept
 {
     return __builtin_ctz(x);
 }
 
-constexpr int countTrailingZeros(unsigned long x) noexcept
+inline int countTrailingZeros(unsigned long x) noexcept
 {
     return __builtin_ctzl(x);
 }
 
-constexpr int countTrailingZeros(unsigned long long x) noexcept
+inline int countTrailingZeros(unsigned long long x) noexcept
 {
     return __builtin_ctzll(x);
 }
@@ -192,27 +192,27 @@ constexpr int countTrailingZeros(unsigned long long x) noexcept
 #if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_ffs) && VXIO_HAS_BUILTIN(__builtin_ffsl) && \
     VXIO_HAS_BUILTIN(__builtin_ffsll)
 #define VXIO_HAS_BUILTIN_FFS
-constexpr int findFirstSet(unsigned char x) noexcept
+inline int findFirstSet(unsigned char x) noexcept
 {
     return __builtin_ffs(x);
 }
 
-constexpr int findFirstSet(unsigned short x) noexcept
+inline int findFirstSet(unsigned short x) noexcept
 {
     return __builtin_ffs(x);
 }
 
-constexpr int findFirstSet(unsigned int x) noexcept
+inline int findFirstSet(unsigned int x) noexcept
 {
     return __builtin_ffs(static_cast<int>(x));
 }
 
-constexpr int findFirstSet(unsigned long x) noexcept
+inline int findFirstSet(unsigned long x) noexcept
 {
     return __builtin_ffsl(static_cast<long>(x));
 }
 
-constexpr int findFirstSet(unsigned long long x) noexcept
+inline int findFirstSet(unsigned long long x) noexcept
 {
     return __builtin_ffsll(static_cast<long long>(x));
 }
@@ -225,27 +225,27 @@ constexpr int findFirstSet(unsigned long long x) noexcept
 #if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_parity) && VXIO_HAS_BUILTIN(__builtin_parityl) && \
     VXIO_HAS_BUILTIN(__builtin_parityll)
 #define VXIO_HAS_BUILTIN_PARITY
-constexpr bool parity(unsigned char x) noexcept
+inline bool parity(unsigned char x) noexcept
 {
     return __builtin_parity(x);
 }
 
-constexpr int parity(unsigned short x) noexcept
+inline int parity(unsigned short x) noexcept
 {
     return __builtin_parity(x);
 }
 
-constexpr int parity(unsigned int x) noexcept
+inline int parity(unsigned int x) noexcept
 {
     return __builtin_parity(x);
 }
 
-constexpr int parity(unsigned long x) noexcept
+inline int parity(unsigned long x) noexcept
 {
     return __builtin_parityl(x);
 }
 
-constexpr int parity(unsigned long long x) noexcept
+inline int parity(unsigned long long x) noexcept
 {
     return __builtin_parityll(x);
 }
@@ -256,27 +256,27 @@ constexpr int parity(unsigned long long x) noexcept
 #if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_popcount) && VXIO_HAS_BUILTIN(__builtin_popcountl) && \
     VXIO_HAS_BUILTIN(__builtin_popcountll)
 #define VXIO_HAS_BUILTIN_POPCOUNT
-constexpr int popCount(unsigned char x) noexcept
+inline int popCount(unsigned char x) noexcept
 {
     return __builtin_popcount(x);
 }
 
-constexpr int popCount(unsigned short x) noexcept
+inline int popCount(unsigned short x) noexcept
 {
     return __builtin_popcount(x);
 }
 
-constexpr int popCount(unsigned int x) noexcept
+inline int popCount(unsigned int x) noexcept
 {
     return __builtin_popcount(x);
 }
 
-constexpr int popCount(unsigned long x) noexcept
+inline int popCount(unsigned long x) noexcept
 {
     return __builtin_popcountl(x);
 }
 
-constexpr int popCount(unsigned long long x) noexcept
+inline int popCount(unsigned long long x) noexcept
 {
     return __builtin_popcountll(x);
 }
@@ -359,22 +359,22 @@ inline uint64_t rotl(uint64_t x, unsigned char rot) noexcept
 #if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_bswap16) && VXIO_HAS_BUILTIN(__builtin_bswap32) && \
     VXIO_HAS_BUILTIN(__builtin_bswap64)
 #define VXIO_HAS_BUILTIN_BSWAP
-constexpr uint8_t byteSwap(uint8_t x) noexcept
+inline uint8_t byteSwap(uint8_t x) noexcept
 {
     return x;
 }
 
-constexpr uint16_t byteSwap(uint16_t x) noexcept
+inline uint16_t byteSwap(uint16_t x) noexcept
 {
     return __builtin_bswap16(x);
 }
 
-constexpr uint32_t byteSwap(uint32_t x) noexcept
+inline uint32_t byteSwap(uint32_t x) noexcept
 {
     return __builtin_bswap32(x);
 }
 
-constexpr uint64_t byteSwap(uint64_t x) noexcept
+inline uint64_t byteSwap(uint64_t x) noexcept
 {
     return __builtin_bswap64(x);
 }
