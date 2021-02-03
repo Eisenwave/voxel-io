@@ -88,6 +88,7 @@ inline float repeat(float x) noexcept
 {
     float integral;
     float fraction = std::modf(x, &integral);
+    fraction += fraction < 0;
     return fraction == 0 ? 1 : fraction;
 }
 }
@@ -109,8 +110,8 @@ private:
     detail::UvFunction uvFunction = nullptr;
 
 public:
-    Image(usize w, usize h, ColorFormat format, std::unique_ptr<u8[]> content);
-    Image(usize w, usize h, ColorFormat format);
+    Image(usize w, usize h, ColorFormat format, std::unique_ptr<u8[]> content, WrapMode = WrapMode::REPEAT);
+    Image(usize w, usize h, ColorFormat format, WrapMode = WrapMode::REPEAT);
 
     Image(const Image &) = delete;
     Image(Image &&) = default;

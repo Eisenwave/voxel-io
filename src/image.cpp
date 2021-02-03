@@ -119,7 +119,7 @@ usize Image::contentSizeOf(usize w, usize h, ColorFormat format)
     return divCeil(w * h * bitSizeOf(format), 8u);
 }
 
-Image::Image(usize w, usize h, ColorFormat format, std::unique_ptr<u8[]> content)
+Image::Image(usize w, usize h, ColorFormat format, std::unique_ptr<u8[]> content, WrapMode wrapMode)
     : contentSize{contentSizeOf(w, h, format)}
     , content{std::move(content)}
     , w{w}
@@ -129,13 +129,13 @@ Image::Image(usize w, usize h, ColorFormat format, std::unique_ptr<u8[]> content
     , encoder{encoderOf(format)}
     , decoder{decoderOf(format)}
 {
-    setWrapMode(WrapMode::CLAMP);
+    setWrapMode(wrapMode);
 }
 
-Image::Image(usize w, usize h, ColorFormat format)
+Image::Image(usize w, usize h, ColorFormat format, WrapMode wrapMode)
     : Image(w, h, format, std::make_unique<u8[]>(contentSizeOf(w, h, format)))
 {
-    setWrapMode(WrapMode::CLAMP);
+    setWrapMode(wrapMode);
 }
 
 }  // namespace voxelio
