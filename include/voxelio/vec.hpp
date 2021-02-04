@@ -295,6 +295,17 @@ constexpr bool operator>=(const Vec<L, N> &a, const Vec<R, N> &b)
 
 // ARITHMETIC ==========================================================================================================
 
+// negation
+template <typename T, usize N>
+constexpr Vec<T, N> operator-(const Vec<T, N> &v)
+{
+    Vec<T, N> result{};
+    for (usize i = 0; i < N; i++) {
+        result[i] = -v[i];
+    }
+    return result;
+}
+
 // addition
 template <typename L, typename R, usize N>
 constexpr Vec<std::common_type_t<L, R>, N> operator+(const Vec<L, N> &a, const Vec<R, N> &b)
