@@ -83,14 +83,16 @@ enum class FileType : unsigned {
     /** Zoxel voxel model. */
     ZOXEL = 32,
     /** Free lossless voxel compression. */
-    FLVC = 33
+    FLVC = 33,
+    /** XYZ RGB point cloud format. */
+    XYZRGB = 34
 };
 
 enum class FileTypeCategory : unsigned { VOXEL, MESH, IMAGE, TEXT, ARCHIVE, POINT_CLOUD };
 
 enum class FileTypeStructure : unsigned { BINARY, TEXT, BINARY_WITH_TEXT_HEADER, MIXED };
 
-constexpr std::array<FileType, 34> FILE_TYPE_VALUES{FileType::BINVOX,
+constexpr std::array<FileType, 35> FILE_TYPE_VALUES{FileType::BINVOX,
                                                     FileType::MICROSOFT_BITMAP,
                                                     FileType::GRAPHICS_INTERCHANGE,
                                                     FileType::JPEG_IMAGE,
@@ -123,7 +125,8 @@ constexpr std::array<FileType, 34> FILE_TYPE_VALUES{FileType::BINVOX,
                                                     FileType::SLABSPRI_VOX,
                                                     FileType::PAINT3D_3MP,
                                                     FileType::ZOXEL,
-                                                    FileType::FLVC};
+                                                    FileType::FLVC,
+                                                    FileType::XYZRGB};
 
 constexpr std::array<FileTypeCategory, 6> FILE_TYPE_CATEGORY_VALUES{FileTypeCategory::VOXEL,
                                                                     FileTypeCategory::MESH,
@@ -176,6 +179,7 @@ constexpr const char *nameOf(FileType fileType)
         VXIO_REGISTER(PAINT3D_3MP);
         VXIO_REGISTER(ZOXEL);
         VXIO_REGISTER(FLVC);
+        VXIO_REGISTER(XYZRGB);
     }
     return "";
 #undef VXIO_REGISTER
@@ -242,6 +246,7 @@ constexpr const char *extensionOf(FileType fileType)
     case FileType::PAINT3D_3MP: return "3mp";
     case FileType::ZOXEL: return "zox";
     case FileType::FLVC: return "flvc";
+    case FileType::XYZRGB: return "xyzrgb";
     }
     return "";
 }
@@ -291,6 +296,7 @@ constexpr const char *displayNameOf(FileType fileType)
     case FileType::PAINT3D_3MP: return "Paint3D 3MP";
     case FileType::ZOXEL: return "Zoxel";
     case FileType::FLVC: return "Free Lossless Voxel Compression";
+    case FileType::XYZRGB: return "XYZ RGB Point Cloud";
     }
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
@@ -332,6 +338,7 @@ constexpr const char *mediaTypeOf(FileType fileType)
     case FileType::PAINT3D_3MP: return "model/x-3mp";
     case FileType::ZOXEL: return "model/x-zoxel";
     case FileType::FLVC: return "model/x-flvc";
+    case FileType::XYZRGB: return "model/x-xyzrgb";
     }
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
@@ -377,6 +384,8 @@ constexpr FileTypeCategory categoryOf(FileType type)
 
     case FileType::PKWARE_ZIP: return FileTypeCategory::ARCHIVE;
 
+    case FileType::XYZRGB: return FileTypeCategory::POINT_CLOUD;
+
     default: return FileTypeCategory::VOXEL;
     }
     VXIO_DEBUG_ASSERT_UNREACHABLE();
@@ -396,7 +405,8 @@ constexpr FileTypeStructure structureOf(FileType type)
     case FileType::MARKDOWN:
     case FileType::JSON:
     case FileType::JAVA_PROPERTIES:
-    case FileType::PLAINTEXT: return FileTypeStructure::TEXT;
+    case FileType::PLAINTEXT:
+    case FileType::XYZRGB: return FileTypeStructure::TEXT;
 
     default: return FileTypeStructure::BINARY;
     }
@@ -413,7 +423,8 @@ constexpr bool isReadableByDefault(FileType fileType)
     case FileType::MVE_VOBJ:
     case FileType::MAGICA_VOX:
     case FileType::VL32:
-    case FileType::CUBEWORLD_CUB: return true;
+    case FileType::CUBEWORLD_CUB:
+    case FileType::XYZRGB: return true;
     default: return false;
     }
 }
