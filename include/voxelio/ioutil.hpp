@@ -82,7 +82,7 @@ public:
     {
         auto result = flush();
         if (isError(result)) {
-            ALWAYS_ASSERTM(false, std::string{"flush() in destructor produced bad result code: "} + nameOf(result));
+            VXIO_ASSERTM(false, std::string{"flush() in destructor produced bad result code: "} + nameOf(result));
         }
     }
 

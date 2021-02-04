@@ -165,11 +165,27 @@ std::string stringifyBin(T num) noexcept
 
 // UNIVERSAL STRINGIFICATION ===========================================================================================
 
+/**
+ * @brief Stringifies any type.
+ * - bools are stringified as "true" or "false"
+ * - std::nullptr_t is stringified as "nullptr"
+ * - integers are stringified in decimal
+ * - floats are stringified in decimal
+ * - enums are stringified like their underlying type
+ * - const char*, std::string and std::string_view are returned directly
+ * - pointer types are stringified in hexadecimal
+ * - everything else is stringified using stream operator
+ * @tparam the type
+ * @param the value to stringify
+ */
 template <typename T>
 std::string stringify(const T &t) noexcept
 {
     if constexpr (std::is_same_v<bool, T>) {
         return t ? "true" : "false";
+    }
+    else if constexpr (std::is_same_v<T, std::nullptr_t>) {
+        return "nullptr";
     }
     else if constexpr (std::is_integral_v<T>) {
         return std::to_string(t);

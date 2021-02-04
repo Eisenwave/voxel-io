@@ -16,20 +16,34 @@ namespace voxelio {
 // IN-PLACE CONVERSIONS ================================================================================================
 
 /**
- * @brief Converts a string to upper case.
+ * @brief Converts a string to upper case in-place.
  * @param str the string
  */
 void toUpperCase(std::string &str);
 
 /**
- * @brief Converts a string to lower case.
+ * @brief Converts a string to lower case in-place.
  * @param str the string
  */
 void toLowerCase(std::string &str);
 
-void ltrim(std::string &s);
-void rtrim(std::string &s);
-void trim(std::string &s);
+/**
+ * @brief Left-trims whitespace in a string in-place.
+ * @param str the string
+ */
+void ltrim(std::string &str);
+
+/**
+ * @brief Right-trims whitespace in a string in-place.
+ * @param str the string
+ */
+void rtrim(std::string &str);
+
+/**
+ * @brief Trims whitespace left and right in a string in-place.
+ * @param str the string
+ */
+void trim(std::string &str);
 
 // COPYING CONVERSIONS =================================================================================================
 

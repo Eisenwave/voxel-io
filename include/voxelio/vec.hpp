@@ -256,40 +256,40 @@ constexpr bool operator!=(const Vec<L, N> &a, const Vec<R, N> &b)
     return false;
 }
 
-template <typename L, typename R, size_t N>
-constexpr size_t indexOfFirstMismatch(const Vec<L, N> &a, const Vec<R, N> &b)
+template <typename L, typename R, usize N>
+constexpr usize indexOfFirstMismatch(const Vec<L, N> &a, const Vec<R, N> &b)
 {
-    size_t index = 0;
+    usize index = 0;
     for (; index < N && a[index] == b[index]; ++index)
         ;
     return index;
 }
 
-template <typename L, typename R, size_t N>
+template <typename L, typename R, usize N>
 constexpr bool operator<(const Vec<L, N> &a, const Vec<R, N> &b)
 {
-    size_t index = indexOfFirstMismatch(a, b);
+    usize index = indexOfFirstMismatch(a, b);
     return index != N && a[index] < b[index];
 }
 
-template <typename L, typename R, size_t N>
+template <typename L, typename R, usize N>
 constexpr bool operator>(const Vec<L, N> &a, const Vec<R, N> &b)
 {
-    size_t index = indexOfFirstMismatch(a, b);
+    usize index = indexOfFirstMismatch(a, b);
     return index != N && a[index] > b[index];
 }
 
-template <typename L, typename R, size_t N>
+template <typename L, typename R, usize N>
 constexpr bool operator<=(const Vec<L, N> &a, const Vec<R, N> &b)
 {
-    size_t index = indexOfFirstMismatch(a, b);
+    usize index = indexOfFirstMismatch(a, b);
     return index == N || a[index] <= b[index];
 }
 
-template <typename L, typename R, size_t N>
+template <typename L, typename R, usize N>
 constexpr bool operator>=(const Vec<L, N> &a, const Vec<R, N> &b)
 {
-    size_t index = indexOfFirstMismatch(a, b);
+    usize index = indexOfFirstMismatch(a, b);
     return index == N || a[index] >= b[index];
 }
 
@@ -358,7 +358,7 @@ constexpr std::common_type_t<L, R> dot(const Vec<L, N> &a, const Vec<R, N> &b)
 }
 
 // cross product
-template <typename L, typename R, size_t N, std::enable_if_t<N == 3, int> = 0>
+template <typename L, typename R, usize N, std::enable_if_t<N == 3, int> = 0>
 constexpr Vec<std::common_type_t<L, R>, N> cross(const Vec<L, N> &a, const Vec<R, N> &b)
 {
     VXIO_DEBUG_ASSERT_EQ(N, 3);
