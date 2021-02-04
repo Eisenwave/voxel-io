@@ -46,7 +46,7 @@ public:
 #ifdef VXIO_MSVC
 private:
     template <typename... Args>
-    static constexpr bool areValidConstructorArgs = (std::is_arithmetic_v<Args> && ...) && sizeof...(Args) <= N;
+    static constexpr bool areValidConstructorArgs = sizeof...(Args) <= N;
 
 public:
     template <typename... Args, std::enable_if_t<areValidConstructorArgs<Args...>, int> = 0>

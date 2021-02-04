@@ -3,12 +3,11 @@
 /*
  * bits.hpp
  * -----------
- * Provides various constexpr bit operations such as popCount (bit counting) or left/right rotation.
+ * Provides various constexpr bit operations such as left/right rotation.
  */
 
 #include "bitcount.hpp"
 #include "intdiv.hpp"
-#include "intlog.hpp"
 #include "util.hpp"
 
 #include <cstddef>
@@ -136,21 +135,35 @@ template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 
 }  // namespace detail
 
+/**
+ * @brief Rotates an integer to the left by a given amount of bits.
+ * This is similar to a leftshift, but the bits shifted out of the integer are inserted on the low side of the
+ * integer.
+ * @param n the number to shift
+ * @param rot bit count
+ */
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 [[nodiscard]] constexpr Uint leftRot(Uint n, unsigned char rot = 1)
 {
 #ifdef VXIO_HAS_BUILTIN_ROTL
-    return voxelio::isConstantEvaluated() ? detail::rotl_impl(n, rot) : voxelio::builtin::rotl(n, rot);
+    return isConstantEvaluated() ? detail::rotl_impl(n, rot) : builtin::rotl(n, rot);
 #else
     return detail::rotl_impl(n, rot);
 #endif
 }
 
+/**
+ * @brief Rotates an integer to the right by a given amount of bits.
+ * This is similar to a leftshift, but the bits shifted out of the integer are inserted on the high side of the
+ * integer.
+ * @param n the number to shift
+ * @param rot bit count
+ */
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 [[nodiscard]] constexpr Uint rightRot(Uint n, unsigned char rot = 1)
 {
 #ifdef VXIO_HAS_BUILTIN_ROTL
-    return voxelio::isConstantEvaluated() ? detail::rotr_impl(n, rot) : voxelio::builtin::rotr(n, rot);
+    return isConstantEvaluated() ? detail::rotr_impl(n, rot) : builtin::rotr(n, rot);
 #else
     return detail::rotr_impl(n, rot);
 #endif
