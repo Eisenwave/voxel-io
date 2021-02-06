@@ -69,6 +69,21 @@ constexpr bool operator<=(LogLevel x, LogLevel y)
     return static_cast<unsigned>(x) <= static_cast<unsigned>(y);
 }
 
+constexpr bool operator<(LogLevel x, LogLevel y)
+{
+    return static_cast<unsigned>(x) < static_cast<unsigned>(y);
+}
+
+constexpr bool operator>=(LogLevel x, LogLevel y)
+{
+    return static_cast<unsigned>(x) >= static_cast<unsigned>(y);
+}
+
+constexpr bool operator>(LogLevel x, LogLevel y)
+{
+    return static_cast<unsigned>(x) > static_cast<unsigned>(y);
+}
+
 void logRaw(const char *msg);
 void logRaw(const std::string &msg);
 
