@@ -33,7 +33,7 @@ std::string stringifyUsingStream(const T &t) noexcept
     // Henceforth, optimizing its includes is very important to avoid including <iostream> in the whole project.
 
     std::stringstream *stream = detail::stringstream_make();
-    *reinterpret_cast<std::ostream *>(stream) << t;
+    *detail::stringstream_to_ostream(stream) << t;
     std::string result = detail::stringstream_to_string(stream);
     detail::stringstream_free(stream);
     return result;

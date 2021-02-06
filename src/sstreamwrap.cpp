@@ -14,6 +14,16 @@ std::stringstream *stringstream_make(std::string contents)
     return new std::stringstream{contents};
 }
 
+std::istream *stringstream_to_istream(std::stringstream *stream)
+{
+    return static_cast<std::istream *>(stream);
+}
+
+std::ostream *stringstream_to_ostream(std::stringstream *stream)
+{
+    return static_cast<std::ostream *>(stream);
+}
+
 void stringstream_precision(std::stringstream *stream, std::streamsize precision)
 {
     stream->precision(precision);
