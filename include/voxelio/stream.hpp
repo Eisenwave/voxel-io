@@ -711,7 +711,7 @@ struct OpenMode {
  * @brief A special input stream that simulates an infinite file filled with zero-bytes.
  * It only keeps track of the position so that relative and absolute seeking is consistent.
  */
-class NullInputStream : public InputStream {
+class NullInputStream final : public InputStream {
 private:
     u64 pos = 0;
 
@@ -754,7 +754,7 @@ public:
  * @brief A special output stream that simulates an infinite sink for bytes.
  * It only keeps track of the position so that relative and absolute seeking is consistent.
  */
-class NullOutputStream : public OutputStream {
+class NullOutputStream final : public OutputStream {
 private:
     u64 pos = 0;
 
@@ -792,7 +792,7 @@ public:
 
 // BYTE STREAMS ========================================================================================================
 
-class ByteArrayInputStream : public InputStream {
+class ByteArrayInputStream final : public InputStream {
 private:
     const u8 *data_;
     usize size_;
@@ -844,7 +844,7 @@ public:
     }
 };
 
-class ByteArrayOutputStream : public OutputStream {
+class ByteArrayOutputStream final : public OutputStream {
 public:
     static constexpr usize DEFAULT_INITIAL_SIZE = 8192;
 
@@ -927,7 +927,7 @@ inline ByteArrayInputStream::ByteArrayInputStream(const ByteArrayOutputStream &o
 /**
  * @brief Implementation of InputStream using the C-File-API.
  */
-class FileInputStream : public InputStream {
+class FileInputStream final : public InputStream {
 public:
     static std::optional<FileInputStream> open(const char *path, OpenMode::Value mode = OpenMode::READ);
 
@@ -969,7 +969,7 @@ private:
 /**
  * @brief Implementation of OutputStream using the C-File-API.
  */
-class FileOutputStream : public OutputStream {
+class FileOutputStream final : public OutputStream {
 public:
     static std::optional<FileOutputStream> open(const char *path, OpenMode::Value mode = OpenMode::WRITE);
 
@@ -1033,7 +1033,7 @@ inline std::optional<FileOutputStream> openForWrite(const std::string &path, Ope
 /**
  * @brief Adapter which allows using std::istream as a voxelio::InputStream.
  */
-class StdInputStream : public InputStream {
+class StdInputStream final : public InputStream {
 private:
     std::istream *stream;
 
@@ -1055,7 +1055,7 @@ private:
 /**
  * @brief Adapter which allows using std::ostream as a voxelio::OutputStream.
  */
-class StdOutputStream : public OutputStream {
+class StdOutputStream final : public OutputStream {
 private:
     std::ostream *stream;
 
