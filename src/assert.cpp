@@ -34,9 +34,8 @@ void popAssertHandler() noexcept
                              const char *function,
                              const std::string_view msg) noexcept(false)
 {
-    std::string logMsg = std::string{file} + std::string{':'} + stringify(line) + std::string{": assertion error in "} +
-                         std::string{function} + std::string{"(): "} + std::string{msg};
-    VXIO_LOG(FAILURE, logMsg);
+    std::string logMsg = "assertion error in " + std::string{function} + std::string{"(): "} + std::string{msg};
+    VXIO_LOG_IMPL(FAILURE, logMsg, file, function, line);
     assertHandlerStack.back()();
     VXIO_UNREACHABLE();
 }

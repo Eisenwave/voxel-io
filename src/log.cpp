@@ -110,8 +110,10 @@ void log(const std::string &msg, LogLevel level, const char *file, const char *,
 {
 #ifdef VXIO_UNIX
 #define VXIO_IF_UNIX(code) code
+#define VXIO_IF_WINDOWS(code)
 #else
 #define VXIO_IF_UNIX(code)
+#define VXIO_IF_WINDOWS(code) code
 #endif
 
     std::string output;
@@ -125,7 +127,7 @@ void log(const std::string &msg, LogLevel level, const char *file, const char *,
     VXIO_IF_UNIX(output += ansi::RESET);
     output += "] ";
     VXIO_IF_UNIX(output += ansi::FG_16C_BRI_GRA);
-    output += basename(file);
+    output += basename(file, VXIO_IF_WINDOWS('\\') VXIO_IF_UNIX('/'));
     output += '@';
     output += voxelio::stringify(line);
     output += ": ";
