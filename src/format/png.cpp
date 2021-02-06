@@ -54,7 +54,7 @@ ResultCode encode(const Image &image, OutputStream &out)
 
 static u8 BUFFER[8192];
 
-std::optional<Image> decode(InputStream &in, usize desiredChannels)
+std::optional<Image> decode(InputStream &in, usize desiredChannels, std::string &outError)
 {
     // read stream fully
     ByteArrayOutputStream byteStream;
@@ -71,7 +71,7 @@ std::optional<Image> decode(InputStream &in, usize desiredChannels)
         byteStream.data(), static_cast<int>(byteStream.size()), &w, &h, &channels, static_cast<int>(desiredChannels));
 
     if (image == nullptr) {
-        VXIO_LOG(ERROR, std::string{"STB failed to load image: "} + stbi_failure_reason());
+        outError = stbi_failure_reason();
         return std::nullopt;
     }
 
