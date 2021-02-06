@@ -43,26 +43,11 @@ public:
         std::copy(data, data + N, begin());
     }
 
-#ifdef VXIO_MSVC
-private:
-    template <typename... Args>
-    static constexpr bool areValidConstructorArgs = sizeof...(Args) <= N;
-
-public:
-    template <typename... Args, std::enable_if_t<areValidConstructorArgs<Args...>, int> = 0>
-    constexpr Vec(Args... args) : content{static_cast<T>(std::move(args))...}
-    {
-    }
-#else
-public:
     template <typename... Args,
-              std::enable_if_t<(((std::is_same_v<T, Args> && ...) ||
-                                 std::is_same_v<T, std::common_type_t<T, Args...>>) &&sizeof...(Args) <= N),
-                               int> = 0>
+              std::enable_if_t<(std::is_same_v<T, std::common_type_t<T, Args...>> && sizeof...(Args) <= N), int> = 0>
     constexpr Vec(Args... args) : content{static_cast<T>(std::move(args))...}
     {
     }
-#endif
 
     template <typename To>
     constexpr auto cast() const;
@@ -256,6 +241,8 @@ constexpr bool operator!=(const Vec<L, N> &a, const Vec<R, N> &b)
     return false;
 }
 
+namespace detail {
+
 template <typename L, typename R, usize N>
 constexpr usize indexOfFirstMismatch(const Vec<L, N> &a, const Vec<R, N> &b)
 {
@@ -265,31 +252,33 @@ constexpr usize indexOfFirstMismatch(const Vec<L, N> &a, const Vec<R, N> &b)
     return index;
 }
 
+}  // namespace detail
+
 template <typename L, typename R, usize N>
 constexpr bool operator<(const Vec<L, N> &a, const Vec<R, N> &b)
 {
-    usize index = indexOfFirstMismatch(a, b);
+    usize index = detail::indexOfFirstMismatch(a, b);
     return index != N && a[index] < b[index];
 }
 
 template <typename L, typename R, usize N>
 constexpr bool operator>(const Vec<L, N> &a, const Vec<R, N> &b)
 {
-    usize index = indexOfFirstMismatch(a, b);
+    usize index = detail::indexOfFirstMismatch(a, b);
     return index != N && a[index] > b[index];
 }
 
 template <typename L, typename R, usize N>
 constexpr bool operator<=(const Vec<L, N> &a, const Vec<R, N> &b)
 {
-    usize index = indexOfFirstMismatch(a, b);
+    usize index = detail::indexOfFirstMismatch(a, b);
     return index == N || a[index] <= b[index];
 }
 
 template <typename L, typename R, usize N>
 constexpr bool operator>=(const Vec<L, N> &a, const Vec<R, N> &b)
 {
-    usize index = indexOfFirstMismatch(a, b);
+    usize index = detail::indexOfFirstMismatch(a, b);
     return index == N || a[index] >= b[index];
 }
 
@@ -306,7 +295,7 @@ constexpr Vec<T, N> operator-(const Vec<T, N> &v)
     return result;
 }
 
-// addition
+// component-wise addition
 template <typename L, typename R, usize N>
 constexpr Vec<std::common_type_t<L, R>, N> operator+(const Vec<L, N> &a, const Vec<R, N> &b)
 {
@@ -317,13 +306,35 @@ constexpr Vec<std::common_type_t<L, R>, N> operator+(const Vec<L, N> &a, const V
     return result;
 }
 
-// subtraction
+// component-wise subtraction
 template <typename L, typename R, usize N>
 constexpr Vec<std::common_type_t<L, R>, N> operator-(const Vec<L, N> &a, const Vec<R, N> &b)
 {
     Vec<std::common_type_t<L, R>, N> result{};
     for (usize i = 0; i < N; i++) {
         result[i] = a[i] - b[i];
+    }
+    return result;
+}
+
+// component-wise multiplication
+template <typename L, typename R, usize N>
+constexpr Vec<std::common_type_t<L, R>, N> mul(const Vec<L, N> &a, const Vec<R, N> &b)
+{
+    Vec<std::common_type_t<L, R>, N> result{};
+    for (usize i = 0; i < N; i++) {
+        result[i] = a[i] * b[i];
+    }
+    return result;
+}
+
+// component-wise division
+template <typename L, typename R, usize N>
+constexpr Vec<std::common_type_t<L, R>, N> div(const Vec<L, N> &a, const Vec<R, N> &b)
+{
+    Vec<std::common_type_t<L, R>, N> result{};
+    for (usize i = 0; i < N; i++) {
+        result[i] = a[i] / b[i];
     }
     return result;
 }
@@ -382,18 +393,7 @@ constexpr Vec<std::common_type_t<L, R>, N> cross(const Vec<L, N> &a, const Vec<R
     // clang-format on
 }
 
-// component-wise product
-template <typename L, typename R, usize N>
-constexpr Vec<std::common_type_t<L, R>, N> mul(const Vec<L, N> &a, const Vec<R, N> &b)
-{
-    Vec<std::common_type_t<L, R>, N> result;
-    for (usize i = 0; i < N; i++) {
-        result[i] = a[i] * b[i];
-    }
-    return result;
-}
-
-// addition
+// assignment addition
 template <typename T, usize N>
 constexpr Vec<T, N> &Vec<T, N>::operator+=(const Vec<T, N> &a)
 {
@@ -403,7 +403,7 @@ constexpr Vec<T, N> &Vec<T, N>::operator+=(const Vec<T, N> &a)
     return *this;
 }
 
-// subtraction
+// assignment subtraction
 template <typename T, usize N>
 constexpr Vec<T, N> &Vec<T, N>::operator-=(const Vec<T, N> &a)
 {
@@ -413,7 +413,7 @@ constexpr Vec<T, N> &Vec<T, N>::operator-=(const Vec<T, N> &a)
     return *this;
 }
 
-// subtraction
+// assignment scalar multiplication
 template <typename T, usize N>
 constexpr Vec<T, N> &Vec<T, N>::operator*=(T s)
 {
@@ -423,7 +423,7 @@ constexpr Vec<T, N> &Vec<T, N>::operator*=(T s)
     return *this;
 }
 
-// division
+// assignment scalar division
 template <typename T, usize N>
 constexpr Vec<T, N> &Vec<T, N>::operator/=(T s)
 {
