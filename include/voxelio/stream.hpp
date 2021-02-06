@@ -929,9 +929,9 @@ inline ByteArrayInputStream::ByteArrayInputStream(const ByteArrayOutputStream &o
  */
 class FileInputStream : public InputStream {
 public:
-    static std::optional<FileInputStream> open(const char *path, unsigned mode = OpenMode::READ);
+    static std::optional<FileInputStream> open(const char *path, OpenMode::Value mode = OpenMode::READ);
 
-    static std::optional<FileInputStream> open(const std::string &path, unsigned mode = OpenMode::READ)
+    static std::optional<FileInputStream> open(const std::string &path, OpenMode::Value mode = OpenMode::READ)
     {
         return open(path.c_str(), mode);
     }
@@ -971,9 +971,9 @@ private:
  */
 class FileOutputStream : public OutputStream {
 public:
-    static std::optional<FileOutputStream> open(const char *path, unsigned mode = OpenMode::WRITE);
+    static std::optional<FileOutputStream> open(const char *path, OpenMode::Value mode = OpenMode::WRITE);
 
-    static std::optional<FileOutputStream> open(const std::string &path, unsigned mode = OpenMode::WRITE)
+    static std::optional<FileOutputStream> open(const std::string &path, OpenMode::Value mode = OpenMode::WRITE)
     {
         return open(path.c_str(), mode);
     }
@@ -1008,22 +1008,22 @@ private:
     void updateErrorFlags();
 };
 
-inline std::optional<FileInputStream> openForRead(const char *path, unsigned mode = OpenMode::READ)
+inline std::optional<FileInputStream> openForRead(const char *path, OpenMode::Value mode = OpenMode::READ)
 {
     return FileInputStream::open(path, mode);
 }
 
-inline std::optional<FileInputStream> openForRead(const std::string &path, unsigned mode = OpenMode::READ)
+inline std::optional<FileInputStream> openForRead(const std::string &path, OpenMode::Value mode = OpenMode::READ)
 {
     return FileInputStream::open(path, mode);
 }
 
-inline std::optional<FileOutputStream> openForWrite(const char *path, unsigned mode = OpenMode::WRITE)
+inline std::optional<FileOutputStream> openForWrite(const char *path, OpenMode::Value mode = OpenMode::WRITE)
 {
     return FileOutputStream::open(path, mode);
 }
 
-inline std::optional<FileOutputStream> openForWrite(const std::string &path, unsigned mode = OpenMode::WRITE)
+inline std::optional<FileOutputStream> openForWrite(const std::string &path, OpenMode::Value mode = OpenMode::WRITE)
 {
     return FileOutputStream::open(path, mode);
 }

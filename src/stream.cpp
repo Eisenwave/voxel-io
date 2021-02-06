@@ -159,7 +159,7 @@ size_t ByteArrayOutputStream::size() const
 
 // =====================================================================================================================
 
-std::optional<FileInputStream> FileInputStream::open(const char *path, unsigned mode)
+std::optional<FileInputStream> FileInputStream::open(const char *path, OpenMode::Value mode)
 {
     bool bin;
     std::string modeStr = openModeStringForReadOf(mode, bin);
@@ -258,7 +258,7 @@ void FileInputStream::updateErrorFlags()
 }
 
 // =====================================================================================================================
-std::optional<FileOutputStream> FileOutputStream::open(const char *path, unsigned mode)
+std::optional<FileOutputStream> FileOutputStream::open(const char *path, OpenMode::Value mode)
 {
     bool bin;
     std::string modeStr = openModeStringForWriteOf(mode, bin);
