@@ -8,6 +8,10 @@
 #include <numeric>
 #include <type_traits>
 
+#ifndef VXIO_HAS_BUILTIN_POPCOUNT
+#include <bitset>
+#endif
+
 namespace voxelio {
 
 // CLZ AND CTZ =========================================================================================================
