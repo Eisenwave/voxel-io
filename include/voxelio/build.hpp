@@ -112,6 +112,12 @@ constexpr bool RELEASE = !DEBUG;
 #define VXIO_X64
 #endif
 
+// OS DETECTION ========================================================================================================
+
+#ifdef __unix__
+#define VXIO_UNIX
+#endif
+
 // ENDIANNES DETECTION =================================================================================================
 /*
  * In this section, the bool constant NATIVE_ENDIAN_LITTLE is defined.
