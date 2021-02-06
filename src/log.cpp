@@ -1,5 +1,6 @@
 #include "voxelio/log.hpp"
 
+#include "voxelio/build.hpp"
 #include "voxelio/stringmanip.hpp"
 
 #include <ctime>
@@ -107,30 +108,28 @@ void logRaw(const std::string &msg)
 
 void log(const std::string &msg, LogLevel level, const char *file, const char *, size_t line)
 {
+#ifdef VXIO_UNIX
+#define VXIO_IF_UNIX(code) code
+#else
+#define VXIO_IF_UNIX(code)
+#endif
+
     std::string output;
     output.reserve(msg.size() + 64);
 
     output += "[";
     output += currentIso8601Time();
     output += "] [";
-#ifdef __unix__
-    output += prefixOf(level);
+    VXIO_IF_UNIX(output += prefixOf(level));
     output += fixedWidthNameOf(level);
-    output += ansi::RESET;
-#else
-    std::cout << fixedWidthNameOf(level);
-#endif
+    VXIO_IF_UNIX(output += ansi::RESET);
     output += "] ";
-#ifdef __unix__
-    output += ansi::FG_16C_BRI_GRA;
+    VXIO_IF_UNIX(output += ansi::FG_16C_BRI_GRA);
     output += basename(file);
     output += '@';
     output += voxelio::stringify(line);
     output += ": ";
-    output += ansi::RESET;
-#else
-    std::cout << basename(file) << '@' << line << ": ";
-#endif
+    VXIO_IF_UNIX(output += ansi::RESET);
     output += msg;
     output += '\n';
 
