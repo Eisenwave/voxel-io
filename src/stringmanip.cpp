@@ -39,6 +39,11 @@ void trim(std::string &s)
     rtrim(s);
 }
 
+void replaceChar(std::string &s, char old, char nue)
+{
+    std::replace(s.begin(), s.end(), old, nue);
+}
+
 std::string lpad(const std::string &str, size_t length, char c)
 {
     std::stringstream stream;

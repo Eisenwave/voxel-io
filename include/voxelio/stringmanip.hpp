@@ -45,6 +45,14 @@ void rtrim(std::string &str);
  */
 void trim(std::string &str);
 
+/**
+ * @brief Replaces all instances of one char in the string with a different char.
+ * @param str the string
+ * @param old the old char
+ * @param nue the new char
+ */
+void replaceChar(std::string &str, char old, char nue);
+
 // COPYING CONVERSIONS =================================================================================================
 
 std::string lpad(const std::string &str, usize length, char c = ' ');
