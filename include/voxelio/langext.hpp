@@ -3,6 +3,10 @@
 
 #include "builtin.hpp"
 
+#ifdef VXIO_CPP20_LEAST
+#include <type_traits>
+#endif
+
 namespace voxelio {
 
 /**
@@ -21,6 +25,7 @@ constexpr bool isConstantEvaluated()
 #elif defined(VXIO_CPP20_LEAST)
     return std::is_constant_evaluated();
 #else
+#pragma message "isConstantEvaluated() is dummy-implemented because no builtin function is available"
     return true;
 #endif
 }
