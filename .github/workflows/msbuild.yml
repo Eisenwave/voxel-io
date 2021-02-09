@@ -23,9 +23,5 @@ jobs:
     - name: MSBuild
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-        pwd
-        ls
         cd build
-        pwd
-        ls
-        msbuild ALL_BUILD.vxproj
+        msbuild ALL_BUILD.vcxproj
