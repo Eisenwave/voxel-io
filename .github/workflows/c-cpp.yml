@@ -22,4 +22,4 @@ jobs:
       
     - name: Make
       shell: bash
-      run: "make -C build -j $(nproc)"
+      run: make -C build
