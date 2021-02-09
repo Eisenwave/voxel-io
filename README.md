@@ -8,7 +8,8 @@ No third party dependencies exist, only single-header libraries (**lodepng**, **
 
 ## Top-Level Structure
 
-All sources and headers can be found in `src/`.
+All sources can be found in `src/`.
+Headers can be found in `include`.
 `src/format` contains the readers/writers for various voxel formats.
 
 `src/3rd_party` contains third-party libraries.
