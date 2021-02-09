@@ -8,11 +8,21 @@ on:
 
 jobs:
   build:
-
+    strategy:
+      matrix:
+        compiler: [gcc, clang++]
+    
     runs-on: ubuntu-latest
+    env:
+      CXX: ${{ matrix.compiler }}
 
     steps:
     - uses: actions/checkout@v2
+      
+    - name: Install dependencies
+      run: |
+        sudo apt install gcc
+        sudo apt install clang
       
     - name: Check environment
       run: |
@@ -25,7 +35,7 @@ jobs:
       run: cmake -E make_directory build
       
     - name: CMake
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=$CXX
       
     - name: Make
       shell: bash
