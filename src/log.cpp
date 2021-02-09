@@ -5,9 +5,11 @@
 
 #include <ctime>
 #include <iostream>
+#include <mutex>
 
 namespace voxelio {
 
+namespace {
 namespace ansi {
 
 #define ASCII_ESC "\x1b"
@@ -17,7 +19,7 @@ constexpr const char *RESET = ASCII_ESC "[0m";
 constexpr const char *FG_16C_BLK = ASCII_ESC "[38;5;0m";
 // constexpr const char *FG_16C_RED = ASCII_ESC "[38;5;1m";
 // constexpr const char *FG_16C_GRN = ASCII_ESC "[38;5;2m";
-// constexpr const char *FG_16C_ORG = ASCII_ESC "[38;5;3m";
+constexpr const char *FG_16C_ORG = ASCII_ESC "[38;5;3m";
 // constexpr const char *FG_16C_BLU = ASCII_ESC "[38;5;4m";
 constexpr const char *FG_16C_MAG = ASCII_ESC "[38;5;5m";
 // constexpr const char *FG_16C_CYA = ASCII_ESC "[38;5;6m";
@@ -54,21 +56,21 @@ constexpr const char *FG_16C_BRI_MAG = ASCII_ESC "[38;5;13m";
 // constexpr const char* ISO8601_DATETIME = "%Y-%m-%d %H:%M:%S";
 constexpr const char *ISO8601_TIME = "%H:%M:%S";
 
-static std::time_t time()
+std::time_t time()
 {
     std::time_t rawTime;
     VXIO_ASSERTM(std::time(&rawTime) != -1, "Failed to get system time");
     return rawTime;
 }
 
-static std::tm *localtime(std::time_t time)
+std::tm *localtime(std::time_t time)
 {
     std::tm *timeInfo = std::localtime(&time);
     VXIO_ASSERT_NOTNULL(timeInfo);
     return timeInfo;
 }
 
-static std::string currentIso8601Time()
+std::string currentIso8601Time()
 {
     constexpr size_t resultLength = 8;
 
@@ -82,7 +84,8 @@ static std::string currentIso8601Time()
 constexpr const char *prefixOf(LogLevel level)
 {
     switch (level) {
-    case LogLevel::FAILURE:
+    case LogLevel::NONE: return ansi::FG_16C_ORG;
+    case LogLevel::FAILURE: return ansi::FG_16C_BRI_RED;
     case LogLevel::ERROR: return ansi::FG_16C_BRI_RED;
     case LogLevel::WARNING: return ansi::FG_16C_YLW;
     case LogLevel::INFO: return ansi::FG_16C_BRI_BLU;
@@ -94,16 +97,46 @@ constexpr const char *prefixOf(LogLevel level)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-void logRaw(const char *msg)
+void logToCout(const std::string &msg)
 {
     std::cout << msg;
     std::cout.flush();
+};
+
+static void (*logCallback)(const std::string &) = &logToCout;
+static void (*asyncLogCallback)(const std::string &) = nullptr;
+static std::mutex asyncLogMutex;
+
+void logToAsyncCallback(const std::string &msg)
+{
+    std::lock_guard<std::mutex> lock{asyncLogMutex};
+    asyncLogCallback(msg);
+}
+
+}  // namespace
+
+void setLogCallback(LogCallback callback, bool async)
+{
+    if (callback == nullptr) {
+        callback = &logToCout;
+    }
+    if (not async) {
+        logCallback = callback;
+    }
+    else {
+        asyncLogCallback = callback;
+        logCallback = &logToAsyncCallback;
+    }
+}
+
+void logRaw(const char *msg)
+{
+    logCallback(msg);
 }
 
 void logRaw(const std::string &msg)
 {
-    std::cout << msg;
-    std::cout.flush();
+    logCallback(msg);
 }
 
 void log(const std::string &msg, LogLevel level, const char *file, const char *, size_t line)
