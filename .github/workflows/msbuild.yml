@@ -1,0 +1,29 @@
+name: MSBuild
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1
+
+    - name: Restore NuGet packages
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+      
+    - name: Make build directory
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: cmake -E make_directory build
+      
+    - name: CMake
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=$CXX
+
+    - name: MSBuild
+      working-directory: ${{env.GITHUB_WORKSPACE}}/build
+      run: msbuild /m .
