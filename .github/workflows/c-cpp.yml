@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        compiler: [gcc, clang++]
+        compiler: [gcc-9, clang-10]
     
     runs-on: ubuntu-latest
     env:
@@ -28,8 +28,8 @@ jobs:
       
     - name: Check environment
       run: |
-        gcc --version
-        clang++ --version
+        gcc-9 --version
+        clang-10 --version
         cmake --version
         make --version
         
