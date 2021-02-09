@@ -22,4 +22,4 @@ jobs:
 
     - name: MSBuild
       working-directory: ${{env.GITHUB_WORKSPACE}}/build
-      run: msbuild /m .
+      run: msbuild ALL_BUILD.vxproj
