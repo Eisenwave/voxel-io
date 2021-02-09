@@ -25,7 +25,16 @@ constexpr bool isConstantEvaluated()
 #elif defined(VXIO_CPP20_LEAST)
     return std::is_constant_evaluated();
 #else
-#pragma message "isConstantEvaluated() is dummy-implemented because no builtin function is available"
+
+#ifdef VXIO_CLANG
+#pragma message "isConstantEvaluated() is dummy-implemented because no builtin function is available (clang)"
+#endif
+#ifdef VXIO_GNU
+#pragma message "isConstantEvaluated() is dummy-implemented because no builtin function is available (gcc)"
+#endif
+#ifdef VXIO_MSVC
+#pragma message "isConstantEvaluated() is dummy-implemented because no builtin function is available (msvc)"
+#endif
     return true;
 #endif
 }
