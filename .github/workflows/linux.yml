@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Linux
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
     
     runs-on: ubuntu-latest
     env:
-      CXX: ${{ matrix.compiler }}
+      CXX: ${{matrix.compiler}}
 
     steps:
     - uses: actions/checkout@v2
