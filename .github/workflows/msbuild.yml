@@ -21,5 +21,7 @@ jobs:
       run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=$CXX
 
     - name: MSBuild
-      working-directory: ${{env.GITHUB_WORKSPACE}}/build
-      run: msbuild ALL_BUILD.vxproj
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        cd build
+        msbuild ALL_BUILD.vxproj
