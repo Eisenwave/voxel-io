@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        compiler: [gcc-9, clang-10]
+        compiler: [gcc-10, clang-10]
     
     runs-on: ubuntu-latest
     env:
@@ -19,16 +19,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       
-    - name: Install dependencies
-      run: |
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        sudo apt update
-        sudo apt install gcc-9
-        sudo apt install clang-10
-      
     - name: Check environment
       run: |
-        gcc-9 --version
+        gcc-10 --version
         clang-10 --version
         cmake --version
         make --version
