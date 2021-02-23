@@ -23,6 +23,12 @@ static std::unordered_map<std::string, FileType> buildSuffixMap()
 
 static const auto SUFFIX_MAP = buildSuffixMap();
 
+std::optional<FileType> fileTypeOfExtension(const std::string &lowerCaseSuffix)
+{
+    auto type = SUFFIX_MAP.find(lowerCaseSuffix);
+    return type == SUFFIX_MAP.end() ? std::nullopt : std::optional<FileType>{type->second};
+}
+
 std::optional<FileType> detectFileType(const std::string &path)
 {
     auto result = detectFileTypeUsingName(path);
@@ -39,10 +45,7 @@ std::optional<FileType> detectFileTypeUsingName(const std::string &path)
     std::string lowerCaseSuffix = path.substr(separatorIndex + 1);
     toLowerCase(lowerCaseSuffix);
 
-    auto type = SUFFIX_MAP.find(lowerCaseSuffix);
-    if (type == SUFFIX_MAP.end()) return std::nullopt;
-
-    return type->second;
+    return fileTypeOfExtension(lowerCaseSuffix);
 }
 
 std::optional<FileType> detectFileTypeUsingMagic(const std::string &)
@@ -51,9 +54,9 @@ std::optional<FileType> detectFileTypeUsingMagic(const std::string &)
     return std::nullopt;
 }
 
-std::ostream &operator<<(std::ostream &stream, voxelio::FileType fileType)
+std::ostream &operator<<(std::ostream &stream, FileType fileType)
 {
-    return stream << voxelio::nameOf(fileType);
+    return stream << nameOf(fileType);
 }
 
 }  // namespace voxelio

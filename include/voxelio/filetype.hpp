@@ -140,7 +140,7 @@ constexpr std::array<FileTypeStructure, 4> FILE_TYPE_STRUCTURE_VALUES{FileTypeSt
                                                                       FileTypeStructure::BINARY_WITH_TEXT_HEADER,
                                                                       FileTypeStructure::MIXED};
 
-constexpr const char *nameOf(FileType fileType)
+[[nodiscard]] constexpr const char *nameOf(FileType fileType)
 {
 #define VXIO_REGISTER(name) \
     case FileType::name: return #name
@@ -185,7 +185,7 @@ constexpr const char *nameOf(FileType fileType)
 #undef VXIO_REGISTER
 }
 
-constexpr const char *nameOf(FileTypeCategory fileType)
+[[nodiscard]] constexpr const char *nameOf(FileTypeCategory fileType)
 {
     switch (fileType) {
     case FileTypeCategory::VOXEL: return "VOXEL";
@@ -198,7 +198,7 @@ constexpr const char *nameOf(FileTypeCategory fileType)
     return "";
 }
 
-constexpr const char *nameOf(FileTypeStructure fileType)
+[[nodiscard]] constexpr const char *nameOf(FileTypeStructure fileType)
 {
     switch (fileType) {
     case FileTypeStructure::BINARY: return "BINARY";
@@ -209,7 +209,7 @@ constexpr const char *nameOf(FileTypeStructure fileType)
     return "";
 }
 
-constexpr const char *extensionOf(FileType fileType)
+[[nodiscard]] constexpr const char *extensionOf(FileType fileType)
 {
     switch (fileType) {
     case FileType::BINVOX: return "binvox";
@@ -251,7 +251,7 @@ constexpr const char *extensionOf(FileType fileType)
     return "";
 }
 
-constexpr const char *alternativeExtensionOf(FileType fileType)
+[[nodiscard]] constexpr const char *alternativeExtensionOf(FileType fileType)
 {
     switch (fileType) {
     case FileType::JPEG_IMAGE: return "jpg";
@@ -259,7 +259,7 @@ constexpr const char *alternativeExtensionOf(FileType fileType)
     }
 }
 
-constexpr const char *displayNameOf(FileType fileType)
+[[nodiscard]] constexpr const char *displayNameOf(FileType fileType)
 {
     switch (fileType) {
     case FileType::BINVOX: return "Binvox";
@@ -301,7 +301,7 @@ constexpr const char *displayNameOf(FileType fileType)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-constexpr const char *mediaTypeOf(FileType fileType)
+[[nodiscard]] constexpr const char *mediaTypeOf(FileType fileType)
 {
     switch (fileType) {
     case FileType::BINVOX: return "model/x-binvox";
@@ -343,7 +343,7 @@ constexpr const char *mediaTypeOf(FileType fileType)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-constexpr const char *magicOf(FileType fileType)
+[[nodiscard]] constexpr const char *magicOf(FileType fileType)
 {
     switch (fileType) {
     case FileType::BINVOX: return "#binvox";
@@ -364,7 +364,7 @@ constexpr const char *magicOf(FileType fileType)
     }
 }
 
-constexpr FileTypeCategory categoryOf(FileType type)
+[[nodiscard]] constexpr FileTypeCategory categoryOf(FileType type)
 {
     switch (type) {
     case FileType::MICROSOFT_BITMAP:
@@ -391,7 +391,7 @@ constexpr FileTypeCategory categoryOf(FileType type)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-constexpr FileTypeStructure structureOf(FileType type)
+[[nodiscard]] constexpr FileTypeStructure structureOf(FileType type)
 {
     switch (type) {
     case FileType::BINVOX:
@@ -414,7 +414,7 @@ constexpr FileTypeStructure structureOf(FileType type)
 }
 
 /** Returns whether voxelio provides readers for the given file type by default. */
-constexpr bool isReadableByDefault(FileType fileType)
+[[nodiscard]] constexpr bool isReadableByDefault(FileType fileType)
 {
     switch (fileType) {
     case FileType::BINVOX:
@@ -430,7 +430,7 @@ constexpr bool isReadableByDefault(FileType fileType)
 }
 
 /** Returns whether voxelio provides writers for the given file type by default. */
-constexpr bool isWritableByDefault(FileType fileType)
+[[nodiscard]] constexpr bool isWritableByDefault(FileType fileType)
 {
     switch (fileType) {
     case FileType::QUBICLE_BINARY:
@@ -448,7 +448,7 @@ constexpr bool isWritableByDefault(FileType fileType)
  * @param fileType the file type
  * @return whether the type supports palettes
  */
-constexpr bool supportsPalette(FileType fileType)
+[[nodiscard]] constexpr bool supportsPalette(FileType fileType)
 {
     switch (fileType) {
     case FileType::QUBICLE_EXCHANGE:
@@ -468,7 +468,7 @@ constexpr bool supportsPalette(FileType fileType)
  * @param fileType the file type
  * @return whether the type requires palettes
  */
-constexpr bool requiresPalette(FileType fileType)
+[[nodiscard]] constexpr bool requiresPalette(FileType fileType)
 {
     switch (fileType) {
     case FileType::QUBICLE_EXCHANGE:
@@ -516,10 +516,20 @@ struct FileTypeInfo {
     FileTypeInfo &operator=(const FileTypeInfo &) = default;
 };
 
-constexpr FileTypeInfo infoOf(FileType fileType)
+[[nodiscard]] constexpr FileTypeInfo infoOf(FileType fileType)
 {
     return FileTypeInfo{fileType};
 }
+
+// STRING TO FILE TYPE =================================================================================================
+
+/**
+ * @brief Returns the file type of a given extension without a dot.
+ * Example: "qef" -> FileType::QUBICLE_EXCHANGE
+ * @param the lower case suffix i.e. extension of the file
+ * @return the file type of std::nullopt if it could not be detected
+ */
+[[nodiscard]] std::optional<FileType> fileTypeOfExtension(const std::string &lowerCaseSuffix);
 
 /**
  * Tries to detect the type of a file using both its name and magic bytes.
@@ -528,14 +538,14 @@ constexpr FileTypeInfo infoOf(FileType fileType)
  * @param out the file type output
  * @return whether the file type could be detected
  */
-std::optional<FileType> detectFileType(const std::string &path);
+[[nodiscard]] std::optional<FileType> detectFileType(const std::string &path);
 
-std::optional<FileType> detectFileTypeUsingName(const std::string &path);
+[[nodiscard]] std::optional<FileType> detectFileTypeUsingName(const std::string &path);
 
-std::optional<FileType> detectFileTypeUsingMagic(const std::string &path);
+[[nodiscard]] std::optional<FileType> detectFileTypeUsingMagic(const std::string &path);
+
+std::ostream &operator<<(std::ostream &stream, FileType fileType);
 
 }  // namespace voxelio
-
-std::ostream &operator<<(std::ostream &stream, voxelio::FileType fileType);
 
 #endif  // VXIO_CONSTANTS_HPP
