@@ -89,11 +89,29 @@ constexpr bool operator>(LogLevel x, LogLevel y)
     return static_cast<unsigned>(x) > static_cast<unsigned>(y);
 }
 
+struct SourceLocation {
+    const char *file;
+    const char *function;
+    usize line;
+};
+
+// CONFIGURATION =======================================================================================================
+
 /// The function pointer type of the logging callback.
-using LogCallback = void (*)(const std::string &msg);
+using LogCallback = void (*)(const char *msg);
+/// The function pointer type of the logging formatter.
+using LogFormatter = void (*)(const char *msg, LogLevel level, SourceLocation location);
+
+namespace detail {
+
+extern LogLevel logLevel;
+extern LogCallback logBackend;
+extern LogFormatter logFormatter;
+
+}  // namespace detail
 
 /**
- * @brief Sets the logging callback for voxelio.
+ * @brief Sets the logging backend callback for voxelio.
  * By default, voxelio logs to std::cout.
  * This behavior can be changed using this function.
  *
@@ -103,31 +121,68 @@ using LogCallback = void (*)(const std::string &msg);
  * @param callback the callback or nullptr if the behavior should be reset to default
  * @param async true if voxelio should automatically ensure thread-safety using a mutex
  */
-void setLogCallback(LogCallback callback, bool async = false);
+void setLogBackend(LogCallback callback, bool async = false);
+
+/**
+ * @brief Sets the logging formatter to the given function or resets it to default if the pointer is nullptr.
+ * The formatter should format messages and metadata and then pass it on to the backend using logRaw().
+ * @param formatter the formatter
+ */
+void setLogFormatter(LogFormatter formatter);
+
+inline LogLevel getLogLevel()
+{
+    return detail::logLevel;
+}
+
+inline void setLogLevel(LogLevel level)
+{
+    detail::logLevel = level;
+}
+
+inline bool isLoggable(LogLevel level)
+{
+    return level <= detail::logLevel;
+}
+
+// LOGGING FUNCTIONS ===================================================================================================
 
 /// Directly invokes the logging callback.
-void logRaw(const char *msg);
+inline void logRaw(const char *msg)
+{
+    detail::logBackend(msg);
+}
+
 /// Directly invokes the logging callback.
-void logRaw(const std::string &msg);
+inline void logRaw(const std::string &msg)
+{
+    detail::logBackend(msg.c_str());
+}
 
-/// Do not use directly.
-void log(const char *msg, LogLevel level, const char *file, const char *function, usize line);
-/// Do not use directly.
-void log(const std::string &msg, LogLevel level, const char *file, const char *function, usize line);
+inline void log(const char *msg, LogLevel level, SourceLocation location)
+{
+    detail::logFormatter(msg, level, location);
+}
 
-extern thread_local LogLevel logLevel;
+inline void log(const std::string &msg, LogLevel level, SourceLocation location)
+{
+    detail::logFormatter(msg.c_str(), level, location);
+}
+
+/// The default format function. Invoking this bypasses the logFormatter and goes straight to the backend.
+void defaultFormat(const char *msg, LogLevel level, SourceLocation location);
 
 #ifdef VXIO_DEBUG
-#define VXIO_LOG_IMPL(level, msg, file, function, line)                                \
-    if (::voxelio::LogLevel::level <= ::voxelio::logLevel) {                           \
-        ::voxelio::log((msg), ::voxelio::LogLevel::level, (file), (function), (line)); \
+#define VXIO_LOG_IMPL(level, msg, file, function, line)                                  \
+    if (::voxelio::isLoggable(::voxelio::LogLevel::level)) {                             \
+        ::voxelio::log((msg), ::voxelio::LogLevel::level, {(file), (function), (line)}); \
     }
 #else
-#define VXIO_LOG_IMPL(level, msg, file, function, line)                                    \
-    if constexpr (::voxelio::LogLevel::level < ::voxelio::LogLevel::SPAM) {                \
-        if (::voxelio::LogLevel::level <= ::voxelio::logLevel) {                           \
-            ::voxelio::log((msg), ::voxelio::LogLevel::level, (file), (function), (line)); \
-        }                                                                                  \
+#define VXIO_LOG_IMPL(level, msg, file, function, line)                                      \
+    if constexpr (::voxelio::LogLevel::level < ::voxelio::LogLevel::SPAM) {                  \
+        if (::voxelio::isLoggable(::voxelio::LogLevel::level)) {                             \
+            ::voxelio::log((msg), ::voxelio::LogLevel::level, {(file), (function), (line)}); \
+        }                                                                                    \
     }
 #endif
 

@@ -97,17 +97,16 @@ constexpr const char *prefixOf(LogLevel level)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-void logToCout(const std::string &msg)
+void logToCout(const char *msg)
 {
     std::cout << msg;
     std::cout.flush();
 };
 
-static void (*logCallback)(const std::string &) = &logToCout;
-static void (*asyncLogCallback)(const std::string &) = nullptr;
+static LogCallback asyncLogCallback = nullptr;
 static std::mutex asyncLogMutex;
 
-void logToAsyncCallback(const std::string &msg)
+void logToAsyncCallback(const char *msg)
 {
     std::lock_guard<std::mutex> lock{asyncLogMutex};
     asyncLogCallback(msg);
@@ -115,31 +114,11 @@ void logToAsyncCallback(const std::string &msg)
 
 }  // namespace
 
-void setLogCallback(LogCallback callback, bool async)
-{
-    if (callback == nullptr) {
-        callback = &logToCout;
-    }
-    if (not async) {
-        logCallback = callback;
-    }
-    else {
-        asyncLogCallback = callback;
-        logCallback = &logToAsyncCallback;
-    }
-}
+LogLevel detail::logLevel = LogLevel::INFO;
+LogCallback detail::logBackend = &logToCout;
+LogFormatter detail::logFormatter = &defaultFormat;
 
-void logRaw(const char *msg)
-{
-    logCallback(msg);
-}
-
-void logRaw(const std::string &msg)
-{
-    logCallback(msg);
-}
-
-void log(const std::string &msg, LogLevel level, const char *file, const char *, size_t line)
+void defaultFormat(const char *msg, LogLevel level, SourceLocation location)
 {
 #ifdef VXIO_UNIX
 #define VXIO_IF_UNIX(code) code
@@ -150,7 +129,6 @@ void log(const std::string &msg, LogLevel level, const char *file, const char *,
 #endif
 
     std::string output;
-    output.reserve(msg.size() + 64);
 
     output += "[";
     output += currentIso8601Time();
@@ -160,9 +138,9 @@ void log(const std::string &msg, LogLevel level, const char *file, const char *,
     VXIO_IF_UNIX(output += ansi::RESET);
     output += "] ";
     VXIO_IF_UNIX(output += ansi::FG_16C_BRI_GRA);
-    output += basename(file, VXIO_IF_WINDOWS('\\') VXIO_IF_UNIX('/'));
+    output += basename(location.file, VXIO_IF_WINDOWS('\\') VXIO_IF_UNIX('/'));
     output += '@';
-    output += voxelio::stringify(line);
+    output += voxelio::stringify(location.line);
     output += ": ";
     VXIO_IF_UNIX(output += ansi::RESET);
     output += msg;
@@ -171,11 +149,23 @@ void log(const std::string &msg, LogLevel level, const char *file, const char *,
     logRaw(output);
 }
 
-void log(const char *msg, LogLevel level, const char *file, const char *function, size_t line)
+void setLogBackend(LogCallback callback, bool async)
 {
-    log(std::string{msg}, level, file, function, line);
+    if (callback == nullptr) {
+        callback = &logToCout;
+    }
+    if (not async) {
+        detail::logBackend = callback;
+    }
+    else {
+        asyncLogCallback = callback;
+        detail::logBackend = &logToAsyncCallback;
+    }
 }
 
-thread_local LogLevel logLevel = LogLevel::INFO;
+void setLogFormatter(LogFormatter callback)
+{
+    detail::logFormatter = callback == nullptr ? &defaultFormat : callback;
+}
 
 }  // namespace voxelio
