@@ -23,7 +23,7 @@ static std::string join_path(const std::vector<std::string> &parts)
 {
     std::string joined;
     std::size_t i = 0;
-    for(auto part : parts)
+    for(const auto &part : parts)
     {
         joined.append(part);
 
