@@ -61,7 +61,7 @@ ResultCode Writer::init() noexcept
     }
     initialized = true;
 
-    return ResultCode::OK_INITIALIZED;
+    return ResultCode::OK;
 }
 
 ResultCode Writer::write(Voxel32 buffer[], size_t bufferLength) noexcept
@@ -74,7 +74,7 @@ ResultCode Writer::write(Voxel32 buffer[], size_t bufferLength) noexcept
     for (size_t i = 0; i < bufferLength; ++i) {
         VXIO_FORWARD_ERROR(writeVoxel(buffer[i]));
     }
-    return ResultCode::WRITE_OK;
+    return ResultCode::OK;
 }
 
 ResultCode Writer::writeVoxel(Voxel32 v) noexcept

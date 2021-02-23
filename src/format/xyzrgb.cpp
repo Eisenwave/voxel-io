@@ -25,7 +25,7 @@ ResultCode Writer::write(Voxel32 buffer[], usize bufferLength) noexcept
     for (usize i = 0; i < bufferLength; ++i) {
         VXIO_FORWARD_ERROR(writeVoxel(buffer[i]));
     }
-    return ResultCode::WRITE_OK;
+    return ResultCode::OK;
 }
 
 ResultCode Writer::writeVoxel(Voxel32 v) noexcept

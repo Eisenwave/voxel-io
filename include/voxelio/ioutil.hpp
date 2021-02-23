@@ -93,7 +93,7 @@ public:
                 return result;
             }
         }
-        return ResultCode::WRITE_OK;
+        return ResultCode::OK;
     }
 
     [[nodiscard]] ResultCode write(Voxel voxel)

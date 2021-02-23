@@ -14,12 +14,8 @@ enum class ResultCode : unsigned char {
 
     /** Generic good result. */
     OK = 0x00,
-    /** Returned after a successful initialization of the reader or writer. */
-    OK_INITIALIZED = 0x01,
 
     // GOOD READ RESULTS
-    /** Generic good read result. */
-    READ_OK = 0x10,
     /** Some voxels were read but reading had to be interrupted. */
     READ_BUFFER_FULL = 0x11,
     /** Some amount of voxels was read, but the end of the object has been reached. */
@@ -28,8 +24,6 @@ enum class ResultCode : unsigned char {
     READ_END = 0x1f,
 
     // GOOD WRITE RESULTS
-    /** Generic good write result. */
-    WRITE_OK = 0x20,
     /** A buffer needs to be filled with more voxels before the results get written through. */
     WRITE_BUFFER_UNDERFULL = 0x21,
     /** The end of the data structure has been reached. */
@@ -67,6 +61,10 @@ enum class ResultCode : unsigned char {
     USER_ERROR_INVALID_FORMAT = 0x94,
     /** An invalid color format was chosen. */
     USER_ERROR_INVALID_COLOR_FORMAT = 0x95,
+    /** An init() attempt was made after a writer was already finalized. */
+    USER_ERROR_INIT_AFTER_FINALIZE = 0x96,
+    /** A write attempt was made after a writer was already finalized. */
+    USER_ERROR_WRITE_AFTER_FINALIZE = 0x97,
 
     // READ ERRORS (0xa0..0xcf)
 
@@ -155,14 +153,11 @@ constexpr std::array<const char *, 256> makeResultCodeNameTable()
 #define VXIO_REGISTER_RESULT_CODE(value) result[static_cast<usize>(ResultCode::value)] = #value
 
     VXIO_REGISTER_RESULT_CODE(OK);
-    VXIO_REGISTER_RESULT_CODE(OK_INITIALIZED);
 
-    VXIO_REGISTER_RESULT_CODE(READ_OK);
     VXIO_REGISTER_RESULT_CODE(READ_BUFFER_FULL);
     VXIO_REGISTER_RESULT_CODE(READ_OBJECT_END);
     VXIO_REGISTER_RESULT_CODE(READ_END);
 
-    VXIO_REGISTER_RESULT_CODE(WRITE_OK);
     VXIO_REGISTER_RESULT_CODE(WRITE_BUFFER_UNDERFULL);
     VXIO_REGISTER_RESULT_CODE(WRITE_OBJECT_END);
     VXIO_REGISTER_RESULT_CODE(WRITE_END);
@@ -181,6 +176,8 @@ constexpr std::array<const char *, 256> makeResultCodeNameTable()
     VXIO_REGISTER_RESULT_CODE(USER_ERROR_MISSING_BOUNDARIES);
     VXIO_REGISTER_RESULT_CODE(USER_ERROR_INVALID_FORMAT);
     VXIO_REGISTER_RESULT_CODE(USER_ERROR_INVALID_COLOR_FORMAT);
+    VXIO_REGISTER_RESULT_CODE(USER_ERROR_INIT_AFTER_FINALIZE);
+    VXIO_REGISTER_RESULT_CODE(USER_ERROR_WRITE_AFTER_FINALIZE);
 
     VXIO_REGISTER_RESULT_CODE(READ_ERROR);
     VXIO_REGISTER_RESULT_CODE(READ_ERROR_UNEXPECTED_EOF);
@@ -272,8 +269,6 @@ constexpr bool isInternalError(ResultCode code)
 std::string informativeNameOf(ResultCode code);
 
 static_assert(isGood(ResultCode::OK));
-static_assert(isGood(ResultCode::READ_OK));
-static_assert(isGood(ResultCode::WRITE_OK));
 
 struct Error {
     u64 location;

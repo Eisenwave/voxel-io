@@ -225,7 +225,7 @@ ResultCode Writer::init() noexcept
     VXIO_FORWARD_ERROR(writeString(vecToStringLine(*canvasDims)));
     VXIO_FORWARD_ERROR(writePalette());
 
-    return ResultCode::OK_INITIALIZED;
+    return ResultCode::OK;
 }
 
 ResultCode Writer::writePalette() noexcept
@@ -240,7 +240,7 @@ ResultCode Writer::writePalette() noexcept
         VXIO_FORWARD_ERROR(writeColorLine(paletteContent[i]));
     }
 
-    return ResultCode::WRITE_OK;
+    return ResultCode::OK;
 }
 
 ResultCode Writer::write(Voxel32 buffer[], usize bufferLength) noexcept
@@ -258,13 +258,13 @@ ResultCode Writer::write(Voxel32 buffer[], usize bufferLength) noexcept
     for (size_t i = 0; i < bufferLength; ++i) {
         VXIO_FORWARD_ERROR(writeVoxelLine(buffer[i]));
     }
-    return ResultCode::WRITE_OK;
+    return ResultCode::OK;
 }
 
 ResultCode Writer::writeString(std::string line) noexcept
 {
     stream.writeString(line);
-    return stream.good() ? ResultCode::WRITE_OK : ResultCode::WRITE_ERROR_IO_FAIL;
+    return stream.good() ? ResultCode::OK : ResultCode::WRITE_ERROR_IO_FAIL;
 }
 
 ResultCode Writer::writeColorLine(Color32 color) noexcept
@@ -279,7 +279,7 @@ ResultCode Writer::writeColorLine(Color32 color) noexcept
     stream.writeString(stringifyChannel(color.r) + ' ');
     stream.writeString(stringifyChannel(color.g) + ' ');
     stream.writeString(stringifyChannel(color.b) + '\n');
-    return stream.good() ? ResultCode::WRITE_OK : ResultCode::WRITE_ERROR_IO_FAIL;
+    return stream.good() ? ResultCode::OK : ResultCode::WRITE_ERROR_IO_FAIL;
 }
 
 ResultCode Writer::writeVoxelLine(Voxel32 v) noexcept
@@ -288,7 +288,7 @@ ResultCode Writer::writeVoxelLine(Voxel32 v) noexcept
 
     stream.writeString(stringify(v.pos[0]) + ' ' + stringify(v.pos[1]) + ' ' + stringify(v.pos[2]) + ' ' +
                        stringify(v.index) + '\n');
-    return stream.good() ? ResultCode::WRITE_OK : ResultCode::WRITE_ERROR_IO_FAIL;
+    return stream.good() ? ResultCode::OK : ResultCode::WRITE_ERROR_IO_FAIL;
 }
 
 ResultCode Writer::verifyVoxel(Voxel32 voxel) noexcept
@@ -312,7 +312,7 @@ ResultCode Writer::verifyVoxel(Voxel32 voxel) noexcept
         return ResultCode::WRITE_ERROR_INDEX_OUT_OF_BOUNDS;
     }
 
-    return ResultCode::WRITE_OK;
+    return ResultCode::OK;
 }
 
 //======================================================================================================================
