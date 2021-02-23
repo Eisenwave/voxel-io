@@ -72,6 +72,7 @@ protected:
 
 public:
     AbstractListWriter(OutputStream &stream) noexcept;
+
     virtual ~AbstractListWriter() noexcept = default;
 
     /**
@@ -95,6 +96,18 @@ public:
     [[nodiscard]] virtual ResultCode write(Voxel32 voxel) noexcept
     {
         return write(&voxel, 1);
+    }
+
+    /**
+     * @brief Flushes the writer.
+     * This method writes through any remaining changes to the underlying stream.
+     * It is safe to invoke this method repeatedly and it must be invoked by the destructor if overridden.
+     * However, after finalize() is called, neither write() nor init() may be called.
+     * @return the result code
+     */
+    [[nodiscard]] virtual ResultCode finalize() noexcept
+    {
+        return ResultCode::OK;
     }
 
     // impl

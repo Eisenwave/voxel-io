@@ -14,7 +14,7 @@ float AbstractReader::progress() noexcept
     if (dataLength == DATA_LENGTH_UNKNOWN) {
         return std::numeric_limits<float>::signaling_NaN();
     }
-    return static_cast<float>(stream.position() + 1) / dataLength;
+    return static_cast<float>(stream.position() + 1) / float(dataLength);
 }
 
 AbstractListWriter::AbstractListWriter(OutputStream &stream) noexcept : stream{stream} {}

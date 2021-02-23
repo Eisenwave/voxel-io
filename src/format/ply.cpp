@@ -1,15 +1,19 @@
 #include "voxelio/format/ply.hpp"
 
+#include "voxelio/log.hpp"
 #include "voxelio/macro.hpp"
 
 namespace voxelio::ply {
 
 ResultCode Writer::init() noexcept
 {
-    if (initialized) {
+    if (state == State::FINALIZED) {
+        return ResultCode::USER_ERROR_INIT_AFTER_FINALIZE;
+    }
+    if (state == State::HEADER_WRITTEN) {
         return ResultCode::WARNING_DOUBLE_INIT;
     }
-    initialized = true;
+    state = State::HEADER_WRITTEN;
 
     // Note: our header is always exactly 300 bytes long.
     // When removing the header bytes, the format is 100% bit-identical to VL32
@@ -35,15 +39,17 @@ ResultCode Writer::init() noexcept
 
 ResultCode Writer::write(Voxel32 buffer[], size_t bufferLength) noexcept
 {
-    if (not initialized) {
+    if (state == State::UNINITIALIZED) {
         VXIO_FORWARD_ERROR(init());
     }
-    VXIO_DEBUG_ASSERT(initialized);
+    if (state == State::FINALIZED) {
+        return ResultCode::USER_ERROR_WRITE_AFTER_FINALIZE;
+    }
 
     for (size_t i = 0; i < bufferLength; ++i) {
         VXIO_FORWARD_ERROR(writeVoxel(buffer[i]));
     }
-    return ResultCode::WRITE_OK;
+    return ResultCode::OK;
 }
 
 ResultCode Writer::writeVoxel(Voxel32 v) noexcept
@@ -54,16 +60,25 @@ ResultCode Writer::writeVoxel(Voxel32 v) noexcept
     return stream.good() ? ResultCode::OK : ResultCode::WRITE_ERROR_IO_FAIL;
 }
 
-Writer::~Writer()
+ResultCode Writer::finalize() noexcept
 {
-    // TODO do this in a flush() function instead of a destructor
-
+    if (state == State::FINALIZED) {
+        return ResultCode::OK;
+    }
     stream.seekAbsolute(vertexCountOffset);
 
     std::string str = stringifyDec(voxelCount) + "\r\ncomment ";
     stream.writeString(str);
 
-    VXIO_ASSERT(stream.good());
+    return stream.good() ? ResultCode::OK : ResultCode::WRITE_ERROR_IO_FAIL;
+}
+
+Writer::~Writer() noexcept
+{
+    ResultCode result = finalize();
+    if (not isGood(result)) {
+        VXIO_LOG(WARNING, "Silenced failure of finalize() call");
+    }
 }
 
 }  // namespace voxelio::ply
