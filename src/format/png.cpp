@@ -52,20 +52,8 @@ ResultCode encode(const Image &image, OutputStream &out)
     return ResultCode::OK;
 }
 
-static u8 BUFFER[8192];
-
-std::optional<Image> decode(InputStream &in, usize desiredChannels, std::string &outError)
+static std::optional<Image> decode(ByteArrayInputStream &byteStream, usize desiredChannels, std::string &outError)
 {
-    // read stream fully
-    ByteArrayOutputStream byteStream;
-    while (in.good()) {
-        usize bytesRead = in.read(BUFFER, sizeof(BUFFER));
-        byteStream.write(BUFFER, bytesRead);
-    }
-    if (in.err()) {
-        return std::nullopt;
-    }
-
     int w, h, channels;
     u8 *image = stbi_load_from_memory(
         byteStream.data(), static_cast<int>(byteStream.size()), &w, &h, &channels, static_cast<int>(desiredChannels));
@@ -88,6 +76,31 @@ std::optional<Image> decode(InputStream &in, usize desiredChannels, std::string 
     stbi_image_free(image);
 
     return Image{width, height, colorFormat, std::move(imageUptr)};
+}
+
+static u8 BUFFER[8192];
+
+[[nodiscard]] std::optional<Image> decode(const u8 data[], usize size, usize desiredChannels, std::string &outError)
+{
+    ByteArrayInputStream byteInputStream{data, size};
+
+    return decode(byteInputStream, desiredChannels, outError);
+}
+
+std::optional<Image> decode(InputStream &in, usize desiredChannels, std::string &outError)
+{
+    // read stream fully
+    ByteArrayOutputStream byteStream;
+    while (in.good()) {
+        usize bytesRead = in.read(BUFFER, sizeof(BUFFER));
+        byteStream.write(BUFFER, bytesRead);
+    }
+    if (in.err()) {
+        return std::nullopt;
+    }
+    ByteArrayInputStream byteInputStream{byteStream};
+
+    return decode(byteInputStream, desiredChannels, outError);
 }
 
 }  // namespace voxelio::png

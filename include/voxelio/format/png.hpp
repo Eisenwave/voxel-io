@@ -15,6 +15,8 @@ namespace voxelio::png {
  */
 [[nodiscard]] ResultCode encode(const Image &image, OutputStream &out);
 
+[[nodiscard]] std::optional<Image> decode(const u8 data[], usize size, usize desiredChannels, std::string &outError);
+
 [[nodiscard]] std::optional<Image> decode(InputStream &in, usize desiredChannels, std::string &outError);
 
 }  // namespace voxelio::png
