@@ -60,6 +60,14 @@ public:
         colorToIndexMap.reserve(capacity);
     }
 
+    /**
+     * @brief Finds a reduction in size for this palette.
+     * @param desiredSize the desired size of the output palette
+     * @param outSize the actual output size (may be lower if this palette does not have enough colors)
+     * @return a table mapping from palette indices in this palette to representative indices
+     */
+    std::unique_ptr<usize[]> reduce(usize desiredSize, usize &outSize) const;
+
     usize size() const
     {
         return colorToIndexMap.size();

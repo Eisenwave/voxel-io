@@ -69,6 +69,41 @@ struct Voxel32 {
     };
 };
 
+// NUMERIC UTILITIES ===================================================================================================
+
+/**
+ * @brief A simple struct which helps computing moving averages with constant complexity.
+ * @tparam Number the numeric type which's average is to be computed
+ * @tparam N the number of numbers to consider in the average
+ */
+template <typename Number, usize N, std::enable_if_t<N != 0, int> = 0>
+struct MovingAverage {
+    Number ringBuffer[N]{};
+    Number sum = 0;
+    usize index = 0;
+
+    /// Adds a new number to the average.
+    constexpr MovingAverage &operator+=(Number n)
+    {
+        const usize ringIndex = index++ % N;
+
+        sum -= ringBuffer[ringIndex];
+        sum += n;
+
+        ringBuffer[ringIndex] = std::move(n);
+
+        return *this;
+    }
+
+    /// Returns the current average.
+    /// This will always produce the correct average of inserted numbers, even if fewer than N numbers were added.
+    constexpr Number operator*() const
+    {
+        VXIO_DEBUG_ASSERT_NE(index, 0);
+        return sum / std::min(index, N);
+    }
+};
+
 // VOXEL UTILITIES =====================================================================================================
 
 template <typename T>
