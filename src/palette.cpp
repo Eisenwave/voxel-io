@@ -85,12 +85,48 @@ constexpr u32 distanceSqr(Vec4u8 p, Vec4u8 boxMin, Vec4u8 boxMax)
 
 // HEX TREE ============================================================================================================
 
+namespace detail {
+
+constexpr usize HEX_TREE_BRANCHING_FACTOR = 16;
+using hex_tree_value_type = u32;
+
+struct HexTreeNodeBase {
+    u16 childMask = 0;
+
+    bool has(usize i) const
+    {
+        return getBit(childMask, i);
+    }
+
+    void add(usize i)
+    {
+        childMask = setBit(childMask, i);
+    }
+};
+
+template <usize LEVEL>
+struct HexTreeNode : public HexTreeNodeBase {
+    static_assert(LEVEL != 0);
+
+    std::unique_ptr<HexTreeNode<LEVEL - 1>> children[HEX_TREE_BRANCHING_FACTOR];
+};
+
+template <>
+struct HexTreeNode<1> : public HexTreeNodeBase {
+    hex_tree_value_type values[HEX_TREE_BRANCHING_FACTOR];
+};
+
+}  // namespace detail
+
 struct HexTree {
 private:
     constexpr static usize DEPTH = 8;
-    constexpr static usize BRANCHING_FACTOR = 16;
+    constexpr static usize BRANCHING_FACTOR = detail::HEX_TREE_BRANCHING_FACTOR;
 
-    using value_type = u32;
+    using value_type = detail::hex_tree_value_type;
+
+    template <usize N>
+    using Node = detail::HexTreeNode<N>;
 
     struct SearchEntry {
         union {
@@ -102,36 +138,10 @@ private:
         u32 distance;
         u8 level;
 
-        constexpr bool operator<(const SearchEntry &rhs)
+        constexpr bool operator<(const SearchEntry &rhs) const
         {
             return this->distance < rhs.distance;
         }
-    };
-
-    struct NodeBase {
-        u16 childMask = 0;
-
-        bool has(usize i) const
-        {
-            return getBit(childMask, i);
-        }
-
-        void add(usize i)
-        {
-            childMask = setBit(childMask, i);
-        }
-    };
-
-    template <usize LEVEL>
-    struct Node : public NodeBase {
-        static_assert(LEVEL != 0);
-
-        std::unique_ptr<Node<LEVEL - 1>> children[BRANCHING_FACTOR];
-    };
-
-    template <>
-    struct Node<1> : public NodeBase {
-        value_type values[BRANCHING_FACTOR];
     };
 
     Node<DEPTH> root;
@@ -163,10 +173,10 @@ public:
         return find(color) != nullptr;
     }
 
-    template <typename F>
+    template <typename F, std::enable_if_t<std::is_invocable_r_v<void, F, Vec4u8, value_type>, int> = 0>
     void forEach(F action)
     {
-        forEach_impl(0, &root, std::move(action));
+        forEach_impl(0, root, std::move(action));
     }
 
     /**
@@ -261,11 +271,11 @@ void HexTree::forEach_impl(u32 morton, Node<LEVEL> &node, F action)
         }
         const u32 childMorton = (morton << 4) | i;
         if constexpr (LEVEL > 1) {
-            forEach_impl<LEVEL - 1>(childMorton, *node.children[i], action);
+            forEach_impl(childMorton, *node.children[i], action);
         }
         else {
             u32 childPos = dileave4b(childMorton);
-            action(childPos, node.values[i]);
+            action(unpack4b(childPos), node.values[i]);
         }
     }
 }
