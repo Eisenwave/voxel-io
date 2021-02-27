@@ -7,6 +7,8 @@
 #include "voxelio/voxelarray.hpp"
 #include "voxelio/voxelio.hpp"
 
+#include <vector>
+
 namespace voxelio {
 namespace qef {
 
