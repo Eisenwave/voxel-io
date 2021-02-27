@@ -335,10 +335,10 @@ constexpr u64 dileaveBytes_const(u64 ileaved)
     u64 result = 0;
     // use if-constexpr to avoid instantiation of rem_ileaved_bits
     if constexpr (COUNT != 0) {
-        for (usize i = 0; i < COUNT; ++i) {
+        for (usize i = COUNT; i != 0; --i) {
             // if we also masked the result with 0xff, then this would be safe for a hi-polluted ileaved number
-            result |= remIleavedBits_const<COUNT - 1>(ileaved >> i);
             result <<= 8;
+            result |= remIleavedBits_const<COUNT - 1>(ileaved >> (i - 1));
         }
     }
     return result;
