@@ -4,7 +4,6 @@
 #include "color.hpp"
 #include "types.hpp"
 
-#include <functional>
 #include <memory>
 
 namespace voxelio {
@@ -58,6 +57,7 @@ public:
         return Voxel32{pos.cast<i32>(), parent->voxels[index]};
     }
 };
+
 }  // namespace detail
 
 /**
@@ -239,7 +239,14 @@ public:
 
     // ITERATIONS
 
-    void forEachPosition(const std::function<void(Vec3size)> &consumer) const;
+    template <typename F, std::enable_if_t<std::is_invocable_v<F, Vec3size>, int> = 0>
+    void forEachPosition(const F &action) const
+    {
+        for (usize z = 0; z < size.z(); z++)
+            for (usize y = 0; y < size.y(); y++)
+                for (usize x = 0; x < size.x(); x++)
+                    action(Vec3size{x, y, z});
+    }
 
     iterator begin()
     {
@@ -259,10 +266,6 @@ public:
         return {*this};
     }
 };
-
-bool operator==(const VoxelArray::iterator &a, const VoxelArray::iterator &b);
-
-bool operator!=(const VoxelArray::iterator &a, const VoxelArray::iterator &b);
 
 }  // namespace voxelio
 

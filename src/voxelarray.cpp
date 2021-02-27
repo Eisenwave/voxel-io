@@ -1,5 +1,7 @@
 #include "voxelio/voxelarray.hpp"
 
+#include <algorithm>
+
 namespace voxelio {
 
 std::unique_ptr<Color32[]> VoxelArray::copyContents(Color32 source[], size_t size)
@@ -60,14 +62,6 @@ void VoxelArray::fill(Color32 color)
     for (size_t i = 0; i < _volume; ++i) {
         voxels[i] = color;
     }
-}
-
-void VoxelArray::forEachPosition(const std::function<void(Vec3size)> &action) const
-{
-    for (size_t z = 0; z < size.z(); z++)
-        for (size_t y = 0; y < size.y(); y++)
-            for (size_t x = 0; x < size.x(); x++)
-                action({x, y, z});
 }
 
 }  // namespace voxelio
