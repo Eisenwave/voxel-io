@@ -9,6 +9,7 @@ set(SOURCES
     builtin.cpp
     deflate.cpp
     filetype.cpp
+    hextree_.cpp
     image.cpp
     ioutil.cpp
     log.cpp
@@ -29,6 +30,7 @@ set(SOURCES
     "${VOXELIO_INCLUDE_DIR}/deflate.hpp"
     "${VOXELIO_INCLUDE_DIR}/endian.hpp"
     "${VOXELIO_INCLUDE_DIR}/filetype.hpp"
+    "${VOXELIO_INCLUDE_DIR}/hextree_.hpp"
     "${VOXELIO_INCLUDE_DIR}/ileave.hpp"
     "${VOXELIO_INCLUDE_DIR}/image.hpp"
     "${VOXELIO_INCLUDE_DIR}/intdiv.hpp"

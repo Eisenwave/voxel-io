@@ -25,6 +25,7 @@ SOURCES +=  \
     src/filetype.cpp \
     src/format/cubeworld.cpp \
     src/format/png.cpp \
+    src/hextree_.cpp \
     src/image.cpp \
     src/ioutil.cpp \
     src/log.cpp \
@@ -60,6 +61,7 @@ HEADERS +=  \
     include/voxelio/filetype.hpp \
     include/voxelio/format/cubeworld.hpp \
     include/voxelio/format/png.hpp \
+    include/voxelio/hextree_.hpp \
     include/voxelio/ileave.hpp \
     include/voxelio/image.hpp \
     include/voxelio/intdiv.hpp \
