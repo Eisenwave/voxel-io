@@ -61,7 +61,7 @@ public:
 };
 
 /**
- * A generic writer for voxel list based formats like QEF or BINVOX or VOBJ with LIST data format.
+ * @brief A generic writer for voxel list based formats like QEF or BINVOX or VOBJ with LIST data format.
  */
 class AbstractListWriter {
 protected:
@@ -145,6 +145,7 @@ public:
     bool setCanvasDimensions(Vec3u32 dims);
 };
 
+/// Generic serializer class which writes all voxels to a stream at once.
 class AbstractSerializer {
 protected:
     OutputStream &streamWrapper;
@@ -159,6 +160,7 @@ public:
     }
 };
 
+/// Generic deserializer class which reads all voxels from a stream at once.
 class AbstractDeserializer {
 protected:
     InputStream &streamWrapper;
