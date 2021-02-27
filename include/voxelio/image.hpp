@@ -89,7 +89,9 @@ inline float repeat(float x) noexcept
     float integral;
     float fraction = std::modf(x, &integral);
     fraction += fraction < 0;
-    return fraction == 0 ? 1 : fraction;
+    // TODO investigate why are we doing this, is it necessary?
+    fraction += fraction == 0;
+    return fraction;
 }
 }  // namespace detail
 
@@ -154,7 +156,7 @@ public:
         uvFunction = mode == WrapMode::CLAMP ? detail::clamp01<float> : detail::repeat;
     }
 
-    Vec<usize, 2> uvToXy(Vec2f uv) const
+    Vec2size uvToXy(Vec2f uv) const
     {
         usize x = static_cast<usize>(uvFunction(uv.x()) * float(w - 1));
         usize y = static_cast<usize>(uvFunction(uv.y()) * float(h - 1));
@@ -187,7 +189,7 @@ public:
 
     Color32 getPixel(Vec2f uv) const
     {
-        Vec<usize, 2> xy = uvToXy(uv);
+        Vec2size xy = uvToXy(uv);
         return getPixel(xy.x(), xy.y());
     }
 
