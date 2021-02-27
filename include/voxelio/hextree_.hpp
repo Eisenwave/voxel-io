@@ -48,6 +48,16 @@ struct HexTreeNode<1> : public HexTreeNodeBase {
     hex_tree_value_type values[HEX_TREE_BRANCHING_FACTOR];
 };
 
+constexpr u32 lengthSqr(Vec<int, 4> v)
+{
+    return static_cast<u32>(dot(v, v));
+}
+
+constexpr u32 distanceSqr(Vec4u8 p0, Vec4u8 p1)
+{
+    return lengthSqr(p0.cast<int>() - p1.cast<int>());
+}
+
 constexpr u32 ileave4b(u32 bytes)
 {
     return static_cast<u32>(ileaveBytes_const<4>(bytes));
@@ -73,28 +83,14 @@ constexpr Vec4u8 unpack4b(u32 b)
 // HEX TREE ============================================================================================================
 
 struct HexTree {
-private:
-    using Vec4u8 = detail::Vec4u8;
+public:
     using value_type = detail::hex_tree_value_type;
 
     template <usize N>
     using Node = detail::HexTreeNode<N>;
 
-    struct SearchEntry {
-        union {
-            const void *node;
-            value_type value;
-        };
-
-        u32 morton;
-        u32 distance;
-        u8 level;
-
-        constexpr bool operator<(const SearchEntry &rhs) const
-        {
-            return this->distance < rhs.distance;
-        }
-    };
+private:
+    using Vec4u8 = detail::Vec4u8;
 
     constexpr static usize DEPTH = 8;
     constexpr static usize BRANCHING_FACTOR = detail::HEX_TREE_BRANCHING_FACTOR;
@@ -117,7 +113,7 @@ public:
     }
 
     template <typename F, std::enable_if_t<std::is_invocable_v<F, Vec4u8, value_type>, int> = 0>
-    void forEach(F action)
+    void forEach(const F &action)
     {
         forEach_impl(0, root, std::move(action));
     }
@@ -139,7 +135,7 @@ public:
 
 private:
     template <typename F, usize LEVEL>
-    void forEach_impl(u32 morton, Node<LEVEL> &node, F action)
+    void forEach_impl(u32 morton, Node<LEVEL> &node, const F &action)
     {
         for (u8 i = 0; i < BRANCHING_FACTOR; ++i) {
             if (not node.has(i)) {
@@ -161,11 +157,6 @@ private:
 
     template <usize LEVEL>
     value_type *findOrCreate_impl(u32 morton, Node<LEVEL> &node, value_type paletteIndex);
-
-    static bool childSearchEntry(Vec4u8 p, const SearchEntry &entry, u8 i, SearchEntry &outChild);
-
-    template <usize LEVEL>
-    static bool childSearchEntry_impl(Vec4u8 p, const SearchEntry &entry, u8 i, SearchEntry &outChild);
 };
 
 }  // namespace voxelio

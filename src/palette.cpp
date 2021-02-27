@@ -96,7 +96,7 @@ struct Accumulator {
 
 std::unique_ptr<usize[]> Palette32::reduce(usize desiredSize, usize &outSize) const
 {
-    VXIO_LOG(DEBUG, "Starting palette reduction");
+    VXIO_LOG(DETAIL, "Starting palette reduction");
     const usize clusterCount = std::min(this->size(), desiredSize);
     const usize colorCount = size();
     outSize = clusterCount;
@@ -123,8 +123,13 @@ std::unique_ptr<usize[]> Palette32::reduce(usize desiredSize, usize &outSize) co
         clusterAccumulators[index].previousCenter = center;
     });
 
-    while (true) {
-        bool anyChange = false;
+    usize iterations = 0;
+    bool anyChange;
+
+    do {
+        u64 totalChange = 0;
+        anyChange = false;
+        ++iterations;
 
         // 1. Find all closest clusters, accumulate sums of points belonging to clusters for new center computation
         for (usize i = 0; i < colorCount; ++i) {
@@ -142,24 +147,36 @@ std::unique_ptr<usize[]> Palette32::reduce(usize desiredSize, usize &outSize) co
         HexTree newCenters;
         for (u32 clusterIndex = 0; clusterIndex < clusterCount; ++clusterIndex) {
             Accumulator &acc = clusterAccumulators[clusterIndex];
+            if (acc.count == 0) {
+                // Degenerate situation where a cluster center has no points closest to it.
+                // Not even sure if this case can ever occur; it didn't ever happen in my tests.
+                // We handle it anyways to make sure.
+                VXIO_DEBUG_ASSERT_EQ(detail::lengthSqr(acc.sum.cast<int>()), 0);
+                VXIO_LOG(WARNING, "Rare degenerate case in k-means clustering occured (isolated cluster center)");
+                newCenters.insert(pack4b(acc.previousCenter), clusterIndex);
+                continue;
+            }
+
             const Vec<u32, 4> center = acc.sum / acc.count;
+            const Vec4u8 center8 = center.cast<u8>();
             if constexpr (build::DEBUG) {
                 for (usize i = 0; i < 4; ++i) {
                     VXIO_DEBUG_ASSERT_LT(center[i], 256);
                 }
             }
-            const Vec4u8 center8 = center.cast<u8>();
+
             newCenters.insert(pack4b(center8), clusterIndex);
             anyChange |= center8 != acc.previousCenter;
+            totalChange += detail::distanceSqr(center8, acc.previousCenter);
             acc = {center8, {}, 0};
         }
         clusterCenters = std::move(newCenters);
 
         // 3. Repeat until convergence
-        if (not anyChange) {
-            break;
-        }
-    }
+        VXIO_LOG(DETAIL, "Iteration " + stringify(iterations) + ": total distance change = " + stringify(totalChange));
+    } while (anyChange);
+
+    VXIO_LOG(DETAIL, "Performed k-means clustering in " + stringify(iterations) + " iterations");
 
     HexTree points;
     for (u32 i = 0; i < colorCount; ++i) {

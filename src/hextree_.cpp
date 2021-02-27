@@ -13,26 +13,105 @@ namespace {
 using Vec4u8 = detail::Vec4u8;
 
 using detail::dileave4b;
+using detail::distanceSqr;
 using detail::ileave4b;
+using detail::lengthSqr;
 using detail::pack4b;
 using detail::unpack4b;
 
-constexpr u32 distanceSqr(Vec4u8 p0, Vec4u8 p1)
-{
-    Vec<i32, 4> distance = p0.cast<i32>() - p1;
-    return static_cast<u32>(dot(distance, distance));
-}
-
 constexpr u32 distanceSqr(Vec4u8 p, Vec4u8 boxMin, Vec4u8 boxMax)
 {
-    Vec<u32, 4> distance{};
+    /// Buffer which is first used for point coordinates cast to int, then for the distance on each axis.
+    Vec<int, 4> buffer = p.cast<int>();
+
     for (usize i = 0; i < 4; ++i) {
-        int d = std::max(int{boxMin.x()} - p.x(), int{p.x()} - boxMax.x());
-        d = std::max(d, 0);
+        const int d = std::max(boxMin[i] - buffer[i], buffer[i] - boxMax[i]);
+        VXIO_DEBUG_ASSERT_LE(boxMin[i], boxMax[i]);
         VXIO_DEBUG_ASSERT_LT(d, 256);
-        distance[i] = static_cast<u32>(d);
+        // negative distances may occur when the point is inside the box
+        buffer[i] = std::max(d, 0);
     }
-    return dot(distance, distance);
+
+    return lengthSqr(buffer);
+}
+
+}  // namespace
+
+// CLOSEST POINT SEARCH DETAILS ========================================================================================
+
+namespace {
+
+struct SearchEntry {
+    union {
+        const void *node;
+        HexTree::value_type value;
+    };
+
+    SearchEntry (*childSearchEntryFunction)(const SearchEntry &, Vec4u8, u8);
+    u32 morton;
+    u32 distance;
+    detail::HexTreeNodeBase nodeBase;
+    u8 level;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-member-function"
+    constexpr bool operator<(const SearchEntry &rhs) const
+    {
+        return this->distance < rhs.distance;
+    }
+
+    constexpr bool operator>(const SearchEntry &rhs) const
+    {
+        return this->distance > rhs.distance;
+    }
+#pragma clang diagnostic pop
+
+    SearchEntry childSearchEntry(Vec4u8 p, u8 i) const
+    {
+        VXIO_DEBUG_ASSERT_NOTNULL(childSearchEntryFunction);
+        return childSearchEntryFunction(*this, p, i);
+    }
+};
+
+template <usize LEVEL>
+SearchEntry childSearchEntry_impl(const SearchEntry &entry, Vec4u8 p, u8 i)
+{
+    constexpr usize childLevel = LEVEL - 1;
+    VXIO_DEBUG_ASSERT_EQ(LEVEL, entry.level);
+    VXIO_DEBUG_ASSERT_LT(i, detail::HEX_TREE_BRANCHING_FACTOR);
+
+    const auto *node = reinterpret_cast<const HexTree::Node<LEVEL> *>(entry.node);
+    VXIO_DEBUG_ASSERT(node->has(i));
+
+    SearchEntry outChild;
+    outChild.morton = (entry.morton << 4) | i;
+    outChild.level = childLevel;
+
+    const u32 min = dileave4b(outChild.morton << (childLevel * 4));
+    const Vec4u8 minVec = unpack4b(min);
+
+    if constexpr (LEVEL > 1) {
+        const Vec4u8 size = Vec4u8::filledWith(1 << childLevel);
+        const Vec4u8 maxVec = minVec + size - Vec4u8::one();
+
+        VXIO_DEBUG_ASSERTM(maxVec == (minVec.cast<u32>() + size - Vec<u32, 4>::one()), "Overflow");
+        VXIO_DEBUG_ASSERT_NOTNULL(entry.node);
+
+        const std::unique_ptr<HexTree::Node<childLevel>> &child = node->children[i];
+        outChild.childSearchEntryFunction = &childSearchEntry_impl<childLevel>;
+        outChild.nodeBase = *child;
+        outChild.node = child.get();
+        outChild.distance = voxelio::distanceSqr(p, minVec, maxVec);
+    }
+    else {
+        static_assert(LEVEL != 0);
+        outChild.childSearchEntryFunction = nullptr;
+        // nodeBase is not assigned because there is no meaningful value for individual voxels
+        outChild.value = node->values[i];
+        outChild.distance = voxelio::distanceSqr(p, minVec);
+    }
+
+    return outChild;
 }
 
 }  // namespace
@@ -109,8 +188,11 @@ HexTree::value_type *HexTree::findOrCreate_impl(u32 morton, Node<LEVEL> &node, v
 
 std::pair<Vec4u8, HexTree::value_type> HexTree::closest(Vec4u8 point) const
 {
-    std::priority_queue<SearchEntry> queue;
-    queue.push({{&root}, 0, 0, 0});  // root node
+    constexpr u32 rootMorton = 0;
+    constexpr u32 rootDistance = 0;
+
+    std::priority_queue<SearchEntry, std::vector<SearchEntry>, std::greater<SearchEntry>> queue;
+    queue.push({{&root}, &childSearchEntry_impl<DEPTH>, rootMorton, rootDistance, root, DEPTH});
 
     SearchEntry closest{};
     closest.distance = ~u32{0};
@@ -119,19 +201,32 @@ std::pair<Vec4u8, HexTree::value_type> HexTree::closest(Vec4u8 point) const
         SearchEntry entry = queue.top();
         queue.pop();
 
+        VXIO_DEBUG_ASSERT_NE(entry.level, 0);
+
         if (entry.distance >= closest.distance) {
             break;
         }
 
-        if (entry.level == 0) {
-            closest = entry;
-            continue;
+        if (entry.level > 1) {
+            for (u8 i = 0; i < BRANCHING_FACTOR; ++i) {
+                if (entry.nodeBase.has(i)) {
+                    SearchEntry &&child = entry.childSearchEntry(point, i);
+                    if (child.distance < closest.distance) {
+                        queue.push(std::move(child));
+                    }
+                }
+            }
         }
+        else {
+            for (u8 i = 0; i < BRANCHING_FACTOR; ++i) {
+                if (entry.nodeBase.has(i)) {
+                    SearchEntry child = childSearchEntry_impl<1>(entry, point, i);
+                    VXIO_DEBUG_ASSERT_EQ(child.level, 0);
 
-        SearchEntry child;
-        for (u8 i = 0; i < BRANCHING_FACTOR; ++i) {
-            if (bool hasChild = childSearchEntry(point, entry, i, child); hasChild) {
-                queue.push(child);
+                    if (child.distance < closest.distance) {
+                        closest = child;
+                    }
+                }
             }
         }
 
@@ -141,63 +236,6 @@ std::pair<Vec4u8, HexTree::value_type> HexTree::closest(Vec4u8 point) const
 
     u32 closestPos = dileave4b(closest.morton);
     return {unpack4b(closestPos), closest.value};
-}
-
-bool HexTree::childSearchEntry(Vec4u8 p, const HexTree::SearchEntry &entry, u8 i, HexTree::SearchEntry &outChild)
-{
-    using ImplFunction = decltype(&HexTree::childSearchEntry);
-    VXIO_DEBUG_ASSERT_NE(entry.level, 0);
-    VXIO_DEBUG_ASSERT_LE(entry.level, DEPTH);
-
-    constexpr ImplFunction functions[DEPTH]{
-        &HexTree::childSearchEntry_impl<1>,
-        &HexTree::childSearchEntry_impl<2>,
-        &HexTree::childSearchEntry_impl<3>,
-        &HexTree::childSearchEntry_impl<4>,
-        &HexTree::childSearchEntry_impl<5>,
-        &HexTree::childSearchEntry_impl<6>,
-        &HexTree::childSearchEntry_impl<7>,
-        &HexTree::childSearchEntry_impl<8>,
-    };
-
-    return functions[entry.level - 1](p, entry, i, outChild);
-}
-
-template <usize LEVEL>
-bool HexTree::childSearchEntry_impl(Vec4u8 p, const HexTree::SearchEntry &entry, u8 i, HexTree::SearchEntry &outChild)
-{
-    constexpr usize childLevel = LEVEL - 1;
-    VXIO_DEBUG_ASSERT_EQ(LEVEL, entry.level);
-    VXIO_DEBUG_ASSERT_LT(i, BRANCHING_FACTOR);
-
-    const auto *node = reinterpret_cast<const Node<LEVEL> *>(entry.node);
-    if (not node->has(i)) {
-        return false;
-    }
-
-    outChild.morton = (entry.morton << 4) | i;
-    outChild.level = childLevel;
-
-    const u32 min = dileave4b(outChild.morton << (childLevel * 4));
-    const Vec4u8 minVec = unpack4b(min);
-
-    if constexpr (LEVEL > 1) {
-        const Vec4u8 size = Vec4u8::filledWith(1 << childLevel);
-        const Vec4u8 maxVec = minVec + size - Vec4u8::one();
-        VXIO_DEBUG_ASSERTM(maxVec == minVec.cast<u32>() + size, "Overflow");
-
-        VXIO_DEBUG_ASSERT_NOTNULL(entry.node);
-
-        outChild.node = node->children[i].get();
-        outChild.distance = voxelio::distanceSqr(p, minVec, maxVec);
-    }
-    else {
-        static_assert(LEVEL != 0);
-        outChild.value = node->values[i];
-        outChild.distance = voxelio::distanceSqr(p, minVec);
-    }
-
-    return true;
 }
 
 }  // namespace voxelio
