@@ -112,19 +112,22 @@ constexpr static const char *voxNameOf(NodeType type)
 }
 
 constexpr const char *MAGIC = magicOf(FileType::MAGICA_VOX);
-constexpr size_t MAGIC_LENGTH = CHUNK_NAME_LENGTH;
+constexpr usize MAGIC_LENGTH = CHUNK_NAME_LENGTH;
 
 constexpr u32 CURRENT_VERSION = 150;
 
 constexpr const char *KEY_ROTATION = "_r";
 constexpr const char *KEY_TRANSLATION = "_t";
 
+constexpr bool WRITE_LAYER_CHUNK = false;
+constexpr bool WRITE_TRANSFORM_NODE_ATTRIBUTES = false;
+
 float Reader::progress() noexcept
 {
     if (dataLength == DATA_LENGTH_UNKNOWN || not initialized) {
         return std::numeric_limits<float>::signaling_NaN();
     }
-    return static_cast<float>(stream.position() + 1) / dataLength;
+    return static_cast<float>(stream.position() + 1) / float(dataLength);
 }
 
 ReadResult Reader::init() noexcept
@@ -177,7 +180,16 @@ ReadResult Reader::processSceneGraph() noexcept
     return ReadResult::ok();
 }
 
-ReadResult Reader::read(Voxel32 buffer[], size_t bufferLength)
+ReadResult Reader::emplaceSceneNode(u32 id, NodeType type, u32 contentId)
+{
+    auto [iter, success] = nodeMap.emplace(id, SceneNode{type, contentId});
+    if (not success) {
+        return ReadResult::parseError(stream.position(), "Duplicate node id: " + stringify(id));
+    }
+    return ReadResult::ok();
+}
+
+ReadResult Reader::read(Voxel32 buffer[], usize bufferLength)
 {
     if (not initialized) {
         VXIO_LOG(DEBUG, "calling voxelio::vox::Reader::init()");
@@ -189,7 +201,7 @@ ReadResult Reader::read(Voxel32 buffer[], size_t bufferLength)
     return doRead();
 }
 
-ReadResult Reader::read(Voxel64 buffer[], size_t bufferLength) noexcept
+ReadResult Reader::read(Voxel64 buffer[], usize bufferLength) noexcept
 {
     if (not initialized) {
         VXIO_LOG(DEBUG, "calling voxelio::vox::Reader::init()");
@@ -201,13 +213,13 @@ ReadResult Reader::read(Voxel64 buffer[], size_t bufferLength) noexcept
     return doRead();
 }
 
-Vec3i8 Transformation::row(size_t index) const
+Vec3i8 Transformation::row(usize index) const
 {
     VXIO_DEBUG_ASSERT_LT(index, 3);
     return matrix[index];
 }
 
-Vec3i8 Transformation::col(size_t index) const
+Vec3i8 Transformation::col(usize index) const
 {
     VXIO_DEBUG_ASSERT_LT(index, 3);
     return {matrix[0][index], matrix[1][index], matrix[2][index]};
@@ -217,9 +229,9 @@ Transformation Transformation::concat(const Transformation &lhs, const Transform
 {
     Vec3i32 resultTranslation = lhs.translation;
     std::array<Vec3i8, 3> resultMatrix;
-    for (size_t row = 0; row < 3; ++row) {
+    for (usize row = 0; row < 3; ++row) {
         const auto lhsRow = lhs.row(row);
-        for (size_t col = 0; col < 3; ++col) {
+        for (usize col = 0; col < 3; ++col) {
             resultMatrix[row][col] = dot(lhsRow, rhs.col(col));
         }
         resultTranslation[row] += dot(lhsRow, rhs.translation);
@@ -232,7 +244,7 @@ Vec3i32 Transformation::apply(const Vec3u32 &pointInModel, const Vec3u32 &double
 {
     Vec3i32 doublePointRelToCenter = (pointInModel * 2).cast<i32>() - doublePivot.cast<i32>();
     Vec3i32 rotated{};
-    for (size_t row = 0; row < matrix.size(); ++row) {
+    for (usize row = 0; row < matrix.size(); ++row) {
         rotated[row] = divFloor(dot(matrix[row], doublePointRelToCenter), 2u);
     }
     return rotated + translation;
@@ -245,7 +257,7 @@ Vec3i32 Transformation::apply(const Vec3u32 &pointInChunk, const Vec3u32 &chunkS
 {
     Vec3i32 pRelToCenter = static_vec_cast<i32>(pointInChunk) - static_vec_cast<i32>(chunkSize / 2);
     Vec3i32 rotated{};
-    for (size_t row = 0; row < matrix.size(); ++row) {
+    for (usize row = 0; row < matrix.size(); ++row) {
         rotated[row] = matrix[row] * pRelToCenter;
     }
     return rotated + translation;
@@ -256,7 +268,7 @@ std::string Transformation::toString() const
 {
     std::stringstream stream;
     stream << "Transformation{r={";
-    for (size_t i = 0; i < 3; ++i) {
+    for (usize i = 0; i < 3; ++i) {
         const auto &row = matrix[i];
         stream << stringify(row[0]) << " " << stringify(row[1]) << " " << stringify(row[2]);
         if (i != 2) stream << "; ";
@@ -311,9 +323,12 @@ void Reader::updateTransformForCurrentShape()
     VXIO_NO_EOF();
 
     Vec3i32 pos = state.transform.apply(Vec3u32{xyzi[0], xyzi[1], xyzi[2]}, doublePivot);
-    // swap necessary because gravity axis is z for magica and y for us
-    std::swap(pos[1], pos[2]);
-    pos[2] = -pos[2];
+
+    if (fixGravity) {
+        // swap necessary because gravity axis is z for magica and y for us
+        std::swap(pos[1], pos[2]);
+        pos[2] = -pos[2];
+    }
 
     auto rgb = palette[xyzi[3]];
     writeHelper.write(Voxel32{pos, {rgb}});
@@ -379,7 +394,7 @@ ReadResult Reader::expectChars(const char name[CHUNK_NAME_LENGTH]) noexcept
 {
     char buffer[MAGIC_LENGTH];
     stream.read(reinterpret_cast<u8 *>(buffer), MAGIC_LENGTH);
-    for (size_t i = 0; i < MAGIC_LENGTH; ++i) {
+    for (usize i = 0; i < MAGIC_LENGTH; ++i) {
         if (buffer[i] != name[i]) {
             Error error = {stream.position(), std::string{"expected magic \""} + MAGIC + '"'};
             return {0, ResultCode::READ_ERROR_UNEXPECTED_SYMBOL, std::move(error)};
@@ -392,7 +407,7 @@ ReadResult Reader::expectChars(const char name[CHUNK_NAME_LENGTH]) noexcept
 {
     u32 size = stream.readLittle<u32>();
     VXIO_NO_EOF();
-    stream.readStringTo(out, static_cast<size_t>(size));
+    stream.readStringTo(out, static_cast<usize>(size));
     VXIO_NO_EOF();
 
     return ReadResult::ok();
@@ -405,7 +420,7 @@ ReadResult Reader::expectChars(const char name[CHUNK_NAME_LENGTH]) noexcept
 
     u32 size = stream.readLittle<u32>();
     VXIO_NO_EOF();
-    for (size_t i = 0; i < size; ++i) {
+    for (usize i = 0; i < size; ++i) {
         VXIO_FORWARD_ERROR(readString(key));
         VXIO_FORWARD_ERROR(readString(value));
         out.emplace(key, value);
@@ -436,7 +451,7 @@ ReadResult Reader::expectChars(const char name[CHUNK_NAME_LENGTH]) noexcept
 {
     u32 size = stream.readLittle<u32>();
     VXIO_NO_EOF();
-    for (size_t i = 0; i < size * 2; ++i) {
+    for (usize i = 0; i < size * 2; ++i) {
         VXIO_FORWARD_ERROR(skipString());
     }
     return ReadResult::ok();
@@ -587,9 +602,10 @@ ReadResult Reader::readChunkContent_main() noexcept
 
 ReadResult Reader::readChunkContent_rgba() noexcept
 {
-    for (size_t i = 0; i < PALETTE_SIZE; ++i) {
+    for (usize i = 0; i < PALETTE_SIZE; ++i) {
         u32 rgba = stream.readBig<u32>();
         VXIO_NO_EOF();
+        // The last color stored in RGBA chunks, which is mapped to palette index 0 is not usable.
         this->palette[(i + 1) % PALETTE_SIZE] = reorderColor<RGBA, ARGB>(rgba);
     }
     return ReadResult::ok();
@@ -638,15 +654,17 @@ ReadResult Reader::readChunkContent_nodeTransform() noexcept
              "decoded transform " + transform.toString() + " for node " + stringify(nodeId) + " as transform " +
                  stringify(transformId));
 
-    u32 parentNodeId;
     auto parentIter = nodeParentMap.find(nodeId);
     if (parentIter == nodeParentMap.end()) {
-        this->rootNodeId = parentNodeId = nodeId;
+        if (not rootNodeFound) {
+            this->rootNodeId = nodeId;
+            this->rootNodeFound = true;
+        }
+        else {
+            return ReadResult::parseError(stream.position(), "Duplicate root nTRN: " + stringify(nodeId));
+        }
     }
-    else {
-        parentNodeId = parentIter->second;
-    }
-    nodeMap.emplace(nodeId, SceneNode{NodeType::TRANSFORM, transformId});
+    VXIO_FORWARD_ERROR(emplaceSceneNode(nodeId, NodeType::TRANSFORM, transformId));
     nodeParentMap.emplace(childNodeId, nodeId);
 
     return ReadResult::ok();
@@ -661,7 +679,7 @@ ReadResult Reader::readChunkContent_nodeGroup() noexcept
     VXIO_NO_EOF();
 
     std::vector<u32> children;
-    for (size_t i = 0; i < numOfChildNodes; ++i) {
+    for (usize i = 0; i < numOfChildNodes; ++i) {
         children.push_back(stream.readLittle<u32>());
     }
     VXIO_NO_EOF();
@@ -670,7 +688,7 @@ ReadResult Reader::readChunkContent_nodeGroup() noexcept
         return ReadResult::parseError(stream.position(), "nGRP without parent found");
     }
 
-    nodeMap.emplace(nodeId, SceneNode{NodeType::GROUP, 0});
+    VXIO_FORWARD_ERROR(emplaceSceneNode(nodeId, NodeType::GROUP, 0));
     for (u32 childNodeId : children) {
         nodeParentMap.emplace(childNodeId, nodeId);
     }
@@ -702,8 +720,7 @@ ReadResult Reader::readChunkContent_nodeShape() noexcept
         return ReadResult::parseError(stream.position(), "nSHP without parents found");
     }
 
-    const auto &[iter, success] = nodeMap.emplace(nodeId, SceneNode{NodeType::SHAPE, modelId});
-    VXIO_DEBUG_ASSERT(success);
+    VXIO_FORWARD_ERROR(emplaceSceneNode(nodeId, NodeType::SHAPE, modelId));
     shapeNodeIds.push_back(nodeId);
 
     return ReadResult::ok();
@@ -732,14 +749,15 @@ ReadResult Reader::decodeRotation(u8 bits, Transformation &out) noexcept
     //  2 - 3 : index of the non-zero entry in the second row
     // index in last row the needs to be in the remaining column, chosen via lookup table
     //  4 - 6 : sign bits of rows, 0 is positive
-    u32 indicesOfOnesPerRow[3]{(bits >> 0) & 0b11u,
-                               (bits >> 2) & 0b11u,
-                               row2IndexTable[(1 << indicesOfOnesPerRow[0]) | (1 << indicesOfOnesPerRow[1])]};
+    u32 indicesOfOnesPerRow[3]{(bits >> 0) & 0b11u, (bits >> 2) & 0b11u};
+    // last index is initialized outside array to avoid use of undefined values
+    indicesOfOnesPerRow[2] = row2IndexTable[(1 << indicesOfOnesPerRow[0]) | (1 << indicesOfOnesPerRow[1])];
+
     if (indicesOfOnesPerRow[2] == UINT32_MAX) {
         return ReadResult::unexpectedSymbol(stream.position(), "invalid rotation: 0b" + stringifyBin(bits));
     }
 
-    for (size_t i = 0; i < 3; ++i) {
+    for (usize i = 0; i < 3; ++i) {
         const u8 sign = (bits >> (i + 4)) & 1;
         const auto indexOfOne = indicesOfOnesPerRow[i];
         out.matrix[i][indexOfOne] = 1 - static_cast<i8>(2 * sign);
@@ -759,7 +777,7 @@ ReadResult Reader::decodeRotation(u8 bits, Transformation &out) noexcept
         return {0, ResultCode::READ_ERROR_ILLEGAL_DATA_LENGTH, error};
     }
 
-    for (size_t i = 0; i < 3; ++i) {
+    for (usize i = 0; i < 3; ++i) {
         if (not parse(splits[i], out[i])) {
             Error error = {
                 pos, "Failed to parse translation integer " + splits[i] + " at index " + stringify(i) + " in " + str};
@@ -795,6 +813,274 @@ ReadResult Reader::readTransformationDict(Transformation &out) noexcept
     }
 
     return ReadResult::ok();
+}
+
+// WRITER ==============================================================================================================
+
+Writer::~Writer()
+{
+    ResultCode result = finalize();
+    if (not isGood(result)) {
+        VXIO_LOG(ERROR, "Silenced failure of finalize() call: " + informativeNameOf(result));
+    }
+}
+
+ResultCode Writer::init() noexcept
+{
+    if (state == State::HEADER_WRITTEN) {
+        return ResultCode::WARNING_DOUBLE_INIT;
+    }
+    if (state == State::FINALIZED) {
+        return ResultCode::USER_ERROR_INIT_AFTER_FINALIZE;
+    }
+    if (palette().empty()) {
+        return ResultCode::USER_ERROR_MISSING_PALETTE;
+    }
+
+    state = State::HEADER_WRITTEN;
+    VXIO_LOG(
+        DEBUG,
+        "Reducing palette from " + stringify(palette().size()) + " to " + stringify(PALETTE_SIZE - 1) + " colors ...");
+    paletteColors = palette().build();
+    paletteReduction = palette().reduce(PALETTE_SIZE - 1, paletteReductionSize);
+
+    const usize rawPaletteSize = palette().size();
+
+    for (usize rawIndex = 0; rawIndex < rawPaletteSize; ++rawIndex) {
+        usize representativeIndex = paletteReduction[rawIndex];
+        argb32 representativeColor = paletteColors[representativeIndex];
+        usize reducedIndex = representativePalette.insert(representativeColor);
+
+        VXIO_DEBUG_ASSERT_LT(reducedIndex, PALETTE_SIZE - 1);
+        usize byteOffset = reducedIndex % PALETTE_SIZE * sizeof(argb32);
+        u8 *colorLocation = representativePaletteColors + byteOffset;
+        colorLocation[0] = static_cast<u8>(representativeColor >> 16);
+        colorLocation[1] = static_cast<u8>(representativeColor >> 8);
+        colorLocation[2] = static_cast<u8>(representativeColor >> 0);
+        colorLocation[3] = static_cast<u8>(representativeColor >> 24);
+    }
+    VXIO_DEBUG_ASSERT_LE(representativePalette.size(), PALETTE_SIZE);
+
+    stream.write(magicOf(FileType::MAGICA_VOX));
+    stream.writeLittle<u32>(CURRENT_VERSION);
+    VXIO_DEBUG_ASSERT_EQ(stream.position(), 8);
+
+    return streamBasedResultCode();
+}
+
+ResultCode Writer::write(Voxel32 buffer[], usize bufferLength) noexcept
+{
+    if (state == State::UNINITIALIZED) {
+        VXIO_FORWARD_ERROR(init());
+    }
+    if (state == State::FINALIZED) {
+        return ResultCode::USER_ERROR_WRITE_AFTER_FINALIZE;
+    }
+
+    for (usize i = 0; i < bufferLength; ++i) {
+        storeVoxel(buffer[i]);
+    }
+
+    return ResultCode::OK;
+}
+
+ResultCode Writer::finalize() noexcept
+{
+    if (state == State::UNINITIALIZED) {
+        VXIO_FORWARD_ERROR(init());
+    }
+    if (state == State::FINALIZED) {
+        return ResultCode::OK;
+    }
+    state = State::FINALIZED;
+
+    VXIO_DEBUG_ASSERT_EQ(stream.position(), 8);
+    writeChunkHeader(ChunkType::MAIN, 0, 0);
+    VXIO_DEBUG_ASSERT_EQ(stream.position(), 20);
+
+    writeModels();
+    VXIO_FORWARD_ERROR(streamBasedResultCode());
+    writeSceneGraph();
+    VXIO_FORWARD_ERROR(streamBasedResultCode());
+
+    if constexpr (WRITE_LAYER_CHUNK) {
+        writeChunk_layer(0, "layer");
+        VXIO_FORWARD_ERROR(streamBasedResultCode());
+    }
+
+    writeChunk_rgba();
+    VXIO_FORWARD_ERROR(streamBasedResultCode());
+
+    const u32 mainBytes = static_cast<u32>(stream.position() - 20);
+    stream.seekAbsolute(16);
+    stream.writeLittle<u32>(mainBytes);
+
+    return ResultCode::OK;
+}
+
+void Writer::storeVoxel(Voxel32 voxel) noexcept
+{
+    Vec3i32 chunkPos = voxel.pos;
+    for (usize i = 0; i < 3; ++i) {
+        chunkPos[i] = divFloor(chunkPos[i], i32{chunkSize});
+    }
+
+    const Vec3i32 chunkMin = chunkPos * chunkSize;
+    const Vec3i32 localPos = voxel.pos - chunkMin;
+    const Vec3u8 localPos8 = localPos.cast<u8>();
+    const u32 xyz = u32{localPos8[0]} << 24 | u32{localPos8[1]} << 16 | u32{localPos8[2]} << 8;
+
+    VXIO_DEBUG_ASSERT(localPos == localPos8);
+
+    const usize representativeIndex = paletteReduction[voxel.index];
+    const argb32 representativeColor = paletteColors[representativeIndex];
+    const usize reducedIndex = representativePalette.indexOf(representativeColor);
+    // We increment by 1 to avoid use of the illegal palette index 0
+    const u8 index8 = static_cast<u8>((reducedIndex + 1) % PALETTE_SIZE);
+    VXIO_DEBUG_ASSERT_LT(reducedIndex, PALETTE_SIZE - 1);
+    VXIO_DEBUG_ASSERT_NE(index8, 0);
+
+    // TODO this increment might not be necessary or might be in the wrong direction.
+    this->chunks[chunkPos].voxels.insert(xyz | index8);
+}
+
+void Writer::writeModels() noexcept
+{
+    const Vec3u32 size = Vec3u32::filledWith(chunkSize);
+
+    for (const auto &[pos, chunk] : chunks) {
+        writeChunkHeader(ChunkType::SIZE, 12);
+        stream.writeLittle<3>(size.data());
+
+        const u32 voxelCount = static_cast<u32>(chunk.voxels.size());
+        const u32 selfSize = (voxelCount + 1) * sizeof(u32);
+        writeChunkHeader(ChunkType::XYZI, selfSize);
+        stream.writeLittle(voxelCount);
+        for (u32 xyzi : chunk.voxels) {
+            stream.writeBig<u32>(xyzi);
+        }
+    }
+}
+
+void Writer::writeSceneGraph() noexcept
+{
+    constexpr u32 rootId = 0;
+    constexpr u32 groupId = 1;
+    constexpr u32 firstTransformId = 2;
+
+    const u32 shapeCount = static_cast<u32>(chunks.size());
+    const Vec3i32 toCenterTranslation = Vec3i32::filledWith(chunkSize / 2);
+
+    writeChunk_nodeTransform(rootId, groupId, Vec3i32::zero());
+    writeChunk_nodeGroup(groupId, firstTransformId, shapeCount, 2);
+
+    u32 modelId = 0;
+    u32 nodeId = firstTransformId;
+
+    for (const auto &[pos, chunk] : chunks) {
+        writeChunk_nodeTransform(nodeId, nodeId + 1, pos * chunkSize + toCenterTranslation);
+        writeChunk_nodeShape(nodeId + 1, modelId++);
+        nodeId += 2;
+    }
+
+    VXIO_DEBUG_ASSERT_EQ(modelId, shapeCount);
+}
+
+void Writer::writeChunkHeader(ChunkType type, u32 selfSize, u32 childSize) noexcept
+{
+    stream.writeBig(static_cast<u32>(type));
+    stream.writeLittle<u32>(selfSize);
+    stream.writeLittle<u32>(childSize);
+}
+
+void Writer::writeString(const std::string &str) noexcept
+{
+    stream.writeLittle(static_cast<u32>(str.size()));
+    stream.writeString(str);
+}
+
+void Writer::writeChunk_rgba() noexcept
+{
+    writeChunkHeader(ChunkType::RGBA, sizeof(representativePaletteColors));
+
+    stream.write(representativePaletteColors, PALETTE_SIZE * 4);
+}
+
+void Writer::writeChunk_layer(u32 id, const std::string &name) noexcept
+{
+    const u32 selfSize = static_cast<u32>(7 * sizeof(u32) + 5 + name.size() + 7 + 1);
+
+    writeChunkHeader(ChunkType::LAYR, selfSize);
+    VXIO_IF_DEBUG(u64 startPos = stream.position());
+    stream.writeLittle<u32>(id);
+    stream.writeLittle<u32>(2);  // dict size
+    writeString("_name");
+    writeString(name);
+    writeString("_hidden");
+    writeString("0");
+    stream.writeLittle<i32>(-1);
+    VXIO_DEBUG_ASSERT_EQ(selfSize, stream.position() - startPos);
+}
+
+void Writer::writeChunk_nodeGroup(u32 id, u32 startIndex, u32 count, u32 stepSize) noexcept
+{
+    VXIO_ASSERT_NE(stepSize, 0);
+
+    writeChunkHeader(ChunkType::nGRP, (3 + count) * sizeof(u32));
+    stream.writeLittle<u32>(id);
+    stream.writeNative<u32>(0);  // empty note attributes dict
+    stream.writeLittle<u32>(count);
+
+    for (u32 i = 0; i < count; ++i) {
+        stream.writeLittle<u32>(startIndex + i * stepSize);
+    }
+}
+
+void Writer::writeChunk_nodeTransform(u32 id, u32 childId, Vec3i32 translation) noexcept
+{
+    // See https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt#L24
+    constexpr const char *identityRotation = "4";
+    const std::string t = stringify(translation[0]) + ' ' + stringify(translation[1]) + ' ' + stringify(translation[2]);
+    // 11 ints + "_r" + r + "_t" + t
+    u32 selfSize = 11 * sizeof(u32) + 2 + 1 + 2 + static_cast<u32>(t.size());
+    // node attributes dict content
+    selfSize += WRITE_TRANSFORM_NODE_ATTRIBUTES * (4 * sizeof(u32) + 5 + 4 + 7 + 1);
+
+    writeChunkHeader(ChunkType::nTRN, selfSize);
+    VXIO_IF_DEBUG(u64 startPos = stream.position());
+    stream.writeLittle<u32>(id);
+
+    stream.writeLittle<u32>(WRITE_TRANSFORM_NODE_ATTRIBUTES * 2);
+    if constexpr (WRITE_TRANSFORM_NODE_ATTRIBUTES) {
+        writeString("_name");
+        std::string name = id == 0 ? "root" : lpad(stringifyHex(id & 0xffff), 4, '0');
+        VXIO_DEBUG_ASSERT_EQ(name.size(), 4);
+        writeString(name);
+        writeString("_hidden");
+        writeString("0");
+    }
+
+    stream.writeLittle<u32>(childId);
+    stream.writeLittle<i32>(-1);  // reserved id (must be -1)
+    stream.writeLittle<u32>(0);   // layer id
+    stream.writeLittle<u32>(1);   // num of frames (must be 1)
+
+    stream.writeLittle<u32>(2);
+    writeString("_r");
+    writeString(identityRotation);
+    writeString("_t");
+    writeString(t);
+    VXIO_DEBUG_ASSERT_EQ(selfSize, stream.position() - startPos);
+}
+
+void Writer::writeChunk_nodeShape(u32 id, u32 shape) noexcept
+{
+    writeChunkHeader(ChunkType::nSHP, 5 * sizeof(u32));
+    stream.writeLittle<u32>(id);
+    stream.writeNative<u32>(0);  // empty node attributes dict
+    stream.writeLittle<u32>(1);  // num of models (must be 1)
+    stream.writeLittle<u32>(shape);
+    stream.writeNative<u32>(0);  // empty model attributes dict (reserved)
 }
 
 }  // namespace voxelio::vox

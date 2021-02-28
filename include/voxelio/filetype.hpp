@@ -433,6 +433,7 @@ constexpr std::array<FileTypeStructure, 4> FILE_TYPE_STRUCTURE_VALUES{FileTypeSt
 [[nodiscard]] constexpr bool isWritableByDefault(FileType fileType)
 {
     switch (fileType) {
+    case FileType::MAGICA_VOX:
     case FileType::QUBICLE_BINARY:
     case FileType::QUBICLE_EXCHANGE:
     case FileType::VL32:
