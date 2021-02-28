@@ -62,6 +62,9 @@ ResultCode Writer::writeVoxel(Voxel32 v) noexcept
 
 ResultCode Writer::finalize() noexcept
 {
+    if (state == State::UNINITIALIZED) {
+        VXIO_FORWARD_ERROR(init());
+    }
     if (state == State::FINALIZED) {
         return ResultCode::OK;
     }
@@ -77,7 +80,7 @@ Writer::~Writer() noexcept
 {
     ResultCode result = finalize();
     if (not isGood(result)) {
-        VXIO_LOG(WARNING, "Silenced failure of finalize() call");
+        VXIO_LOG(ERROR, "Silenced failure of finalize() call: " + informativeNameOf(result));
     }
 }
 
