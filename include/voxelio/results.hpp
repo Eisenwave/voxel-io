@@ -65,6 +65,10 @@ enum class ResultCode : unsigned char {
     USER_ERROR_INIT_AFTER_FINALIZE = 0x96,
     /** A write attempt was made after a writer was already finalized. */
     USER_ERROR_WRITE_AFTER_FINALIZE = 0x97,
+    /** The chunk size is outside the accepted range [1, 256]. */
+    USER_ERROR_ILLEGAL_CHUNK_SIZE = 0x98,
+    /** The chunk size was changed after the writer was initialized. */
+    USER_ERROR_SETTING_CHUNK_SIZE_AFTER_INIT = 0x99,
 
     // READ ERRORS (0xa0..0xcf)
 
@@ -178,6 +182,8 @@ constexpr std::array<const char *, 256> makeResultCodeNameTable()
     VXIO_REGISTER_RESULT_CODE(USER_ERROR_INVALID_COLOR_FORMAT);
     VXIO_REGISTER_RESULT_CODE(USER_ERROR_INIT_AFTER_FINALIZE);
     VXIO_REGISTER_RESULT_CODE(USER_ERROR_WRITE_AFTER_FINALIZE);
+    VXIO_REGISTER_RESULT_CODE(USER_ERROR_ILLEGAL_CHUNK_SIZE);
+    VXIO_REGISTER_RESULT_CODE(USER_ERROR_SETTING_CHUNK_SIZE_AFTER_INIT);
 
     VXIO_REGISTER_RESULT_CODE(READ_ERROR);
     VXIO_REGISTER_RESULT_CODE(READ_ERROR_UNEXPECTED_EOF);
