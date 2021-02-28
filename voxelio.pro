@@ -38,6 +38,7 @@ SOURCES +=  \
     src/format/binvox.cpp \
     src/stringify.cpp \
     src/palette.cpp \
+    src/format/ply.cpp \
     src/format/qb.cpp \
     src/format/qef.cpp \
     src/format/vl32.cpp \
@@ -83,6 +84,7 @@ HEADERS +=  \
     include/voxelio/voxelio.hpp \
     include/voxelio/format/binvox.hpp \
     include/voxelio/palette.hpp \
+    include/voxelio/format/ply.hpp \
     include/voxelio/format/qb.hpp \
     include/voxelio/format/qbt.hpp \
     include/voxelio/format/qef.hpp \
