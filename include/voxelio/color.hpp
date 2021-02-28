@@ -222,14 +222,15 @@ constexpr ChannelOffsets operator*(ChannelOffsets offsets, unsigned scalar)
 }  // namespace detail
 
 /**
- * Converts the given rgb32_t integer to an array containing the alpha, red, green and blue components of the integer in
- * that order.
- * The order in which the source bytes are taken from the integer depends on the given format
+ * @brief Converts the given rgb32_t integer to an array containing the alpha, red, green and blue components of the
+ * integer in that order. The order in which the source bytes are taken from the integer depends on the given format
+ *
  * I.e. RGBA means that the least significant octet becomes the alpha component and the most significant octet becomes
  * the red component.
+ * @tparam ArgbOrder the format of the provided integer
  */
 template <ArgbOrder format = ArgbOrder::ARGB>
-void encodeArgb(argb32 argb, u8 out[4])
+constexpr void encodeArgb(argb32 argb, u8 out[4])
 {
     constexpr detail::ChannelOffsets shifts = detail::byteShiftAmountsOf(format) * 8;
     out[0] = static_cast<u8>(argb >> shifts.a);
@@ -239,10 +240,10 @@ void encodeArgb(argb32 argb, u8 out[4])
 }
 
 /**
- * Converts an array of {alpha, red, green, blue} channels to an integer in the given format.
+ * @brief Converts an array of {alpha, red, green, blue} channels to an integer in the given format.
  */
 template <ArgbOrder format = ArgbOrder::ARGB>
-argb32 decodeArgb(u8 argb[4])
+constexpr argb32 decodeArgb(u8 argb[4])
 {
     constexpr detail::ChannelOffsets shifts = detail::byteShiftAmountsOf(format) * 8;
     argb32 result = 0;
@@ -254,13 +255,13 @@ argb32 decodeArgb(u8 argb[4])
 }
 
 template <ArgbOrder FROM, ArgbOrder TO>
-argb32 reorderColor(argb32 rgb)
+constexpr argb32 reorderColor(argb32 rgb)
 {
     if constexpr (FROM == TO) {
         return rgb;
     }
     else {
-        u8 buffer[4];
+        u8 buffer[4]{};
         encodeArgb<FROM>(rgb, buffer);
         return decodeArgb<TO>(buffer);
     }
