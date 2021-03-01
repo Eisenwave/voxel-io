@@ -211,18 +211,21 @@ ReadResult Reader::parseVoxelDefinition(u64 num, const std::string &line) noexce
 
 ResultCode Writer::init() noexcept
 {
-    if (initialized) {
+    if (isInitialized()) {
         return ResultCode::WARNING_DOUBLE_INIT;
     }
-    initialized = true;
+    if (isFinalized()) {
+        return ResultCode::USER_ERROR_INIT_AFTER_FINALIZE;
+    }
+    state = IoState::INITIALIZED;
 
-    if (canvasDims == std::nullopt) {
+    if (globalDims == std::nullopt) {
         this->err = {0, "canvas dimensions must be set"};
         return ResultCode::USER_ERROR_MISSING_BOUNDARIES;
     }
 
     VXIO_FORWARD_ERROR(writeString(PREAMBLE));
-    VXIO_FORWARD_ERROR(writeString(vecToStringLine(*canvasDims)));
+    VXIO_FORWARD_ERROR(writeString(vecToStringLine(*globalDims)));
     VXIO_FORWARD_ERROR(writePalette());
 
     return ResultCode::OK;
@@ -245,10 +248,10 @@ ResultCode Writer::writePalette() noexcept
 
 ResultCode Writer::write(Voxel32 buffer[], usize bufferLength) noexcept
 {
-    if (not initialized) {
+    if (not isInitialized()) {
         VXIO_FORWARD_ERROR(init());
     }
-    VXIO_DEBUG_ASSERT(initialized);
+    VXIO_DEBUG_ASSERT(isInitialized());
 
     if (bufferLength != 0 && palette().empty()) {
         this->err = {0, "can't write qef without a palette (palette is empty)"};
@@ -293,15 +296,15 @@ ResultCode Writer::writeVoxelLine(Voxel32 v) noexcept
 
 ResultCode Writer::verifyVoxel(Voxel32 voxel) noexcept
 {
-    const auto &canvasDimsValue = *canvasDims;
-    const auto &pos = voxel.pos;
+    Vec3u32 globalDimsValue = *globalDims;
+    Vec3i32 pos = voxel.pos;
 
     for (size_t i = 0; i < 3; ++i) {
-        if (pos[i] < 0 || static_cast<u32>(pos[i]) > canvasDimsValue[i]) {
+        if (pos[i] < 0 || static_cast<u32>(pos[i]) > globalDimsValue[i]) {
             // TODO use line number
             this->err = {0,
                          "the given voxel " + pos.toString() +
-                             " is outside the given canvas boundaries: " + canvasDimsValue.toString()};
+                             " is outside the given canvas boundaries: " + globalDimsValue.toString()};
             return ResultCode::WRITE_ERROR_POSITION_OUT_OF_BOUNDS;
         }
     }

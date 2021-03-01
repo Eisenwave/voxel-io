@@ -8,9 +8,6 @@ namespace voxelio::ply {
 
 class Writer final : public AbstractListWriter {
 private:
-    enum class State : unsigned { UNINITIALIZED, HEADER_WRITTEN, FINALIZED };
-
-    State state = State::UNINITIALIZED;
     u32 voxelCount = 0;
     u64 vertexCountOffset;
 

@@ -30,20 +30,4 @@ std::string informativeNameOf(ResultCode code)
     return stream.str();
 }
 
-Vec3u32 AbstractListWriter::getCanvasDimensions() const
-{
-    return canvasDims.value();
-}
-
-bool AbstractListWriter::setCanvasDimensions(Vec3u32 dims)
-{
-    if (dims[0] == 0 || dims[1] == 0 || dims[2] == 0) {
-        VXIO_LOG(WARNING, "zero canvas dimensions");
-        return false;
-    }
-    VXIO_LOG(SPAM, "canvas dimensions for writer set to " + dims.toString());
-    canvasDims = dims;
-    return true;
-}
-
 }  // namespace voxelio

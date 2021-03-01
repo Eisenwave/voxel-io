@@ -25,9 +25,6 @@ private:
 };
 
 class Writer : public AbstractListWriter {
-private:
-    bool initialized = false;
-
 public:
     Writer(OutputStream &ostream) : AbstractListWriter{ostream} {}
 

@@ -7,13 +7,13 @@ namespace voxelio::ply {
 
 ResultCode Writer::init() noexcept
 {
-    if (state == State::FINALIZED) {
+    if (state == IoState::FINALIZED) {
         return ResultCode::USER_ERROR_INIT_AFTER_FINALIZE;
     }
-    if (state == State::HEADER_WRITTEN) {
+    if (state == IoState::INITIALIZED) {
         return ResultCode::WARNING_DOUBLE_INIT;
     }
-    state = State::HEADER_WRITTEN;
+    state = IoState::INITIALIZED;
 
     // Note: our header is always exactly 300 bytes long.
     // When removing the header bytes, the format is 100% bit-identical to VL32
@@ -39,10 +39,10 @@ ResultCode Writer::init() noexcept
 
 ResultCode Writer::write(Voxel32 buffer[], size_t bufferLength) noexcept
 {
-    if (state == State::UNINITIALIZED) {
+    if (state == IoState::UNINITIALIZED) {
         VXIO_FORWARD_ERROR(init());
     }
-    if (state == State::FINALIZED) {
+    if (state == IoState::FINALIZED) {
         return ResultCode::USER_ERROR_WRITE_AFTER_FINALIZE;
     }
 
@@ -62,10 +62,10 @@ ResultCode Writer::writeVoxel(Voxel32 v) noexcept
 
 ResultCode Writer::finalize() noexcept
 {
-    if (state == State::UNINITIALIZED) {
+    if (state == IoState::UNINITIALIZED) {
         VXIO_FORWARD_ERROR(init());
     }
-    if (state == State::FINALIZED) {
+    if (state == IoState::FINALIZED) {
         return ResultCode::OK;
     }
     stream.seekAbsolute(vertexCountOffset);

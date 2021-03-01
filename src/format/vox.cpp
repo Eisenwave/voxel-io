@@ -827,17 +827,17 @@ Writer::~Writer()
 
 ResultCode Writer::init() noexcept
 {
-    if (state == State::HEADER_WRITTEN) {
+    if (state == IoState::INITIALIZED) {
         return ResultCode::WARNING_DOUBLE_INIT;
     }
-    if (state == State::FINALIZED) {
+    if (state == IoState::FINALIZED) {
         return ResultCode::USER_ERROR_INIT_AFTER_FINALIZE;
     }
     if (palette().empty()) {
         return ResultCode::USER_ERROR_MISSING_PALETTE;
     }
 
-    state = State::HEADER_WRITTEN;
+    state = IoState::INITIALIZED;
     VXIO_LOG(
         DEBUG,
         "Reducing palette from " + stringify(palette().size()) + " to " + stringify(PALETTE_SIZE - 1) + " colors ...");
@@ -870,10 +870,10 @@ ResultCode Writer::init() noexcept
 
 ResultCode Writer::write(Voxel32 buffer[], usize bufferLength) noexcept
 {
-    if (state == State::UNINITIALIZED) {
+    if (state == IoState::UNINITIALIZED) {
         VXIO_FORWARD_ERROR(init());
     }
-    if (state == State::FINALIZED) {
+    if (state == IoState::FINALIZED) {
         return ResultCode::USER_ERROR_WRITE_AFTER_FINALIZE;
     }
 
@@ -886,13 +886,13 @@ ResultCode Writer::write(Voxel32 buffer[], usize bufferLength) noexcept
 
 ResultCode Writer::finalize() noexcept
 {
-    if (state == State::UNINITIALIZED) {
+    if (state == IoState::UNINITIALIZED) {
         VXIO_FORWARD_ERROR(init());
     }
-    if (state == State::FINALIZED) {
+    if (state == IoState::FINALIZED) {
         return ResultCode::OK;
     }
-    state = State::FINALIZED;
+    state = IoState::FINALIZED;
 
     VXIO_DEBUG_ASSERT_EQ(stream.position(), 8);
     writeChunkHeader(ChunkType::MAIN, 0, 0);

@@ -56,20 +56,23 @@ ReadResult Reader::read_impl(Voxel buffer[], size_t bufferLength) noexcept
 
 ResultCode Writer::init() noexcept
 {
-    if (initialized) {
+    if (isInitialized()) {
         return ResultCode::WARNING_DOUBLE_INIT;
     }
-    initialized = true;
+    if (isFinalized()) {
+        return ResultCode::USER_ERROR_INIT_AFTER_FINALIZE;
+    }
+    state = IoState::INITIALIZED;
 
     return ResultCode::OK;
 }
 
 ResultCode Writer::write(Voxel32 buffer[], size_t bufferLength) noexcept
 {
-    if (not initialized) {
+    if (not isInitialized()) {
         VXIO_FORWARD_ERROR(init());
     }
-    VXIO_DEBUG_ASSERT(initialized);
+    VXIO_DEBUG_ASSERT(isInitialized());
 
     for (size_t i = 0; i < bufferLength; ++i) {
         VXIO_FORWARD_ERROR(writeVoxel(buffer[i]));

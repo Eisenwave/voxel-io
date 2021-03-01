@@ -60,6 +60,8 @@ public:
     [[nodiscard]] virtual float progress() noexcept;
 };
 
+enum class IoState : u8 { UNINITIALIZED, INITIALIZED, FINALIZED };
+
 /**
  * @brief A generic writer for voxel list based formats like QEF or BINVOX or VOBJ with LIST data format.
  */
@@ -68,7 +70,8 @@ protected:
     OutputStream &stream;
     Error err{};
     voxelio::Palette32 pal;
-    std::optional<Vec3u32> canvasDims;
+    std::optional<Vec3u32> globalDims = std::nullopt;
+    IoState state = IoState::UNINITIALIZED;
 
 public:
     AbstractListWriter(OutputStream &stream) noexcept;
@@ -93,11 +96,6 @@ public:
      */
     [[nodiscard]] virtual ResultCode write(Voxel32 buffer[], size_t bufferLength) noexcept = 0;
 
-    [[nodiscard]] virtual ResultCode write(Voxel32 voxel) noexcept
-    {
-        return write(&voxel, 1);
-    }
-
     /**
      * @brief Flushes the writer.
      * This method writes through any remaining changes to the underlying stream.
@@ -110,7 +108,50 @@ public:
         return ResultCode::OK;
     }
 
+    /**
+     * @brief Sets the current canvas dimensions.
+     * @param dims the dimensions (must not be zero)
+     * @return the result code
+     */
+    [[nodiscard]] virtual ResultCode setGlobalVolumeSize(Vec3u32 dims) noexcept
+    {
+        if (isInitialized()) {
+            return ResultCode::USER_ERROR_SETTING_VOLUME_SIZE_AFTER_INIT;
+        }
+        if (dims[0] == 0 || dims[1] == 0 || dims[2] == 0) {
+            return ResultCode::USER_ERROR_ILLEGAL_VOLUME_SIZE;
+        }
+        globalDims = dims;
+        return ResultCode::OK;
+    }
+
+    /**
+     * @brief Sets the dimensions of sub-volumes.
+     * Some formats such as VOX have a limited volume size and the voxels must be sorted into multiple independent
+     * volumes instead.
+     * Sub-volumes are cubical cells in a regular grid with the given size.
+     * @param size the sub-volume size in each dimension (must not be zero)
+     * @return true if the size is valid and compatible with the writer's format
+     */
+    [[nodiscard]] virtual ResultCode setSubVolumeSize(u32 size) noexcept
+    {
+        if (isInitialized()) {
+            return ResultCode::USER_ERROR_SETTING_VOLUME_SIZE_AFTER_INIT;
+        }
+        return size != 0 ? ResultCode::OK : ResultCode::USER_ERROR_ILLEGAL_VOLUME_SIZE;
+    }
+
     // impl
+
+    bool isInitialized() const
+    {
+        return state != IoState::UNINITIALIZED;
+    }
+
+    bool isFinalized() const
+    {
+        return state == IoState::FINALIZED;
+    }
 
     /**
      * Returns the last error result.
@@ -130,19 +171,6 @@ public:
     {
         return pal;
     }
-
-    /**
-     * @brief Returns the current canvas dimensions, if set. Fails otherwise.
-     * @return the canvas dimensions
-     */
-    Vec3u32 getCanvasDimensions() const;
-
-    /**
-     * @brief Sets the current canvas dimensions.
-     * @param dims the dimensions
-     * @return true if the canvas dimensions were valid and compatible with the writer's format
-     */
-    bool setCanvasDimensions(Vec3u32 dims);
 };
 
 /// Generic serializer class which writes all voxels to a stream at once.

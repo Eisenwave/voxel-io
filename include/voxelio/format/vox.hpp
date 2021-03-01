@@ -184,9 +184,6 @@ private:
         std::unordered_set<u32, XyziHash, XyziEqual> voxels;
     };
 
-    enum class State : unsigned { UNINITIALIZED, HEADER_WRITTEN, FINALIZED };
-
-    State state = State::UNINITIALIZED;
     std::unordered_map<Vec3i32, Chunk> chunks;
 
     std::unique_ptr<argb32[]> paletteColors;
@@ -205,13 +202,13 @@ public:
     [[nodiscard]] ResultCode write(Voxel32 buffer[], usize bufferLength) noexcept final;
     [[nodiscard]] ResultCode finalize() noexcept final;
 
-    [[nodiscard]] ResultCode setChunkSize(usize size)
+    [[nodiscard]] ResultCode setSubVolumeSize(u32 size) noexcept final
     {
-        if (state != State::UNINITIALIZED) {
-            return ResultCode::USER_ERROR_SETTING_CHUNK_SIZE_AFTER_INIT;
+        if (isInitialized()) {
+            return ResultCode::USER_ERROR_SETTING_VOLUME_SIZE_AFTER_INIT;
         }
         if (size == 0 || size > 256) {
-            return ResultCode::USER_ERROR_ILLEGAL_CHUNK_SIZE;
+            return ResultCode::USER_ERROR_ILLEGAL_VOLUME_SIZE;
         }
         chunkSize = static_cast<u16>(size);
         return ResultCode::OK;
