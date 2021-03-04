@@ -233,14 +233,14 @@ ResultCode Writer::init() noexcept
 
 ResultCode Writer::writePalette() noexcept
 {
-    auto paletteSize = palette().size();
-    auto paletteContent = palette().build();
+    const Palette32 &palette = this->palette();
+    const usize paletteSize = palette.size();
 
     VXIO_LOG(SPAM, "writing palette with " + stringify(paletteSize) + " entries");
     VXIO_FORWARD_ERROR(writeString(stringify(paletteSize) + '\n'));
 
-    for (size_t i = 0; i < paletteSize; ++i) {
-        VXIO_FORWARD_ERROR(writeColorLine(paletteContent[i]));
+    for (u32 i = 0; i < paletteSize; ++i) {
+        VXIO_FORWARD_ERROR(writeColorLine(palette.colorOf(i)));
     }
 
     return ResultCode::OK;

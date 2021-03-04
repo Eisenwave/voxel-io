@@ -12,40 +12,13 @@
 
 namespace voxelio {
 
-u32 Palette32::insert(argb32 color)
-{
-    auto iter = colorToIndexMap.find(color);
-    if (iter != colorToIndexMap.end()) {
-        return iter->second;
-    }
-    return insertUnsafe(color);
-}
-
-u32 Palette32::insertUnsafe(argb32 color)
-{
-    auto result = static_cast<u32>(size());
-    colorToIndexMap.emplace(color, result);
-    return result;
-}
-
-std::unique_ptr<argb32[]> Palette32::build() const
-{
-    auto size = colorToIndexMap.size();
-    auto result = std::make_unique<argb32[]>(size);
-    for (auto [color, index] : colorToIndexMap) {
-        VXIO_DEBUG_ASSERT_LT(index, size);
-        result[index] = color;
-    }
-    return result;
-}
-
 namespace {
 
 using Vec4u8 = Vec<u8, 4>;
 using detail::pack4b;
 using detail::unpack4b;
 
-HexTree seedClusterCenters(argb32 colors[], usize colorCount, usize clusterCount)
+HexTree seedClusterCenters(const argb32 colors[], usize colorCount, usize clusterCount) noexcept
 {
     HexTree clusterCenters;
     if (clusterCount == 0) {
@@ -86,6 +59,15 @@ HexTree seedClusterCenters(argb32 colors[], usize colorCount, usize clusterCount
     return clusterCenters;
 }
 
+std::unique_ptr<u32[]> identityReduction(usize colorCount)
+{
+    auto result = std::make_unique<u32[]>(colorCount);
+    for (u32 i = 0; i < colorCount; ++i) {
+        result[i] = i;
+    }
+    return result;
+}
+
 struct Accumulator {
     Vec4u8 previousCenter;
     Vec<u32, 4> sum = {};
@@ -94,31 +76,24 @@ struct Accumulator {
 
 }  // namespace
 
-std::unique_ptr<usize[]> Palette32::reduce(usize desiredSize, usize &outSize) const
+std::unique_ptr<u32[]> Palette32::reduce(usize desiredSize, usize &outSize) const
 {
     VXIO_LOG(DETAIL, "Starting palette reduction");
     const usize clusterCount = std::min(this->size(), desiredSize);
     const usize colorCount = size();
     outSize = clusterCount;
 
-    auto result = std::make_unique<usize[]>(colorCount);
-
     // Return identity mapping if no reduction is necessary.
     if (clusterCount == colorCount) {
-        for (usize i = 0; i < colorCount; ++i) {
-            result[i] = i;
-        }
-        return result;
+        return identityReduction(colorCount);
     }
 
-    const std::unique_ptr<argb32[]> colors = build();
+    auto result = std::make_unique<u32[]>(colorCount);
 
     /// Maps from cluster center points to a unique index of the center.
-    HexTree clusterCenters = seedClusterCenters(colors.get(), colorCount, clusterCount);
+    HexTree clusterCenters = seedClusterCenters(data(), colorCount, clusterCount);
 
-    // TODO change back after done debugging
-    // std::unique_ptr<Accumulator[]> clusterAccumulators{new Accumulator[clusterCount]{}};
-    std::vector<Accumulator> clusterAccumulators(clusterCount);
+    std::unique_ptr<Accumulator[]> clusterAccumulators{new Accumulator[clusterCount]{}};
     clusterCenters.forEach([&clusterAccumulators](Vec4u8 center, u32 index) -> void {
         clusterAccumulators[index].previousCenter = center;
     });
@@ -132,8 +107,8 @@ std::unique_ptr<usize[]> Palette32::reduce(usize desiredSize, usize &outSize) co
         ++iterations;
 
         // 1. Find all closest clusters, accumulate sums of points belonging to clusters for new center computation
-        for (usize i = 0; i < colorCount; ++i) {
-            argb32 color = colors[i];
+        for (u32 i = 0; i < colorCount; ++i) {
+            argb32 color = colorOf(i);
             Vec4u8 point = unpack4b(color);
             std::pair<Vec4u8, u32> closest = clusterCenters.closest(point);
             VXIO_DEBUG_ASSERT(clusterCenters.contains(pack4b(closest.first)));
@@ -180,11 +155,11 @@ std::unique_ptr<usize[]> Palette32::reduce(usize desiredSize, usize &outSize) co
 
     HexTree points;
     for (u32 i = 0; i < colorCount; ++i) {
-        points.insert(colors[i], i);
+        points.insert(colorOf(i), i);
     }
 
-    for (usize i = 0; i < colorCount; ++i) {
-        argb32 color = colors[i];
+    for (u32 i = 0; i < colorCount; ++i) {
+        argb32 color = colorOf(i);
         Vec4u8 point = unpack4b(color);
         std::pair<Vec4u8, u32> closestClusterCenter = clusterCenters.closest(point);
         // TODO consider caching the representative for each center instead of computing it here

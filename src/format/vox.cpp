@@ -841,14 +841,13 @@ ResultCode Writer::init() noexcept
     VXIO_LOG(
         DEBUG,
         "Reducing palette from " + stringify(palette().size()) + " to " + stringify(PALETTE_SIZE - 1) + " colors ...");
-    paletteColors = palette().build();
     paletteReduction = palette().reduce(PALETTE_SIZE - 1, paletteReductionSize);
 
     const usize rawPaletteSize = palette().size();
 
     for (usize rawIndex = 0; rawIndex < rawPaletteSize; ++rawIndex) {
-        usize representativeIndex = paletteReduction[rawIndex];
-        argb32 representativeColor = paletteColors[representativeIndex];
+        u32 representativeIndex = paletteReduction[rawIndex];
+        argb32 representativeColor = palette().colorOf(representativeIndex);
         usize reducedIndex = representativePalette.insert(representativeColor);
 
         VXIO_DEBUG_ASSERT_LT(reducedIndex, PALETTE_SIZE - 1);
@@ -932,9 +931,9 @@ void Writer::storeVoxel(Voxel32 voxel) noexcept
 
     VXIO_DEBUG_ASSERT(localPos == localPos8);
 
-    const usize representativeIndex = paletteReduction[voxel.index];
-    const argb32 representativeColor = paletteColors[representativeIndex];
-    const usize reducedIndex = representativePalette.indexOf(representativeColor);
+    const u32 representativeIndex = paletteReduction[voxel.index];
+    const argb32 representativeColor = palette().colorOf(representativeIndex);
+    const u32 reducedIndex = representativePalette.indexOf(representativeColor);
     // We increment by 1 to avoid use of the illegal palette index 0
     const u8 index8 = static_cast<u8>((reducedIndex + 1) % PALETTE_SIZE);
     VXIO_DEBUG_ASSERT_LT(reducedIndex, PALETTE_SIZE - 1);

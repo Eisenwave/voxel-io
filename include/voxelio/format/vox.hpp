@@ -186,8 +186,7 @@ private:
 
     std::unordered_map<Vec3i32, Chunk> chunks;
 
-    std::unique_ptr<argb32[]> paletteColors;
-    std::unique_ptr<usize[]> paletteReduction;
+    std::unique_ptr<u32[]> paletteReduction;
     Palette32 representativePalette;
     u8 representativePaletteColors[PALETTE_SIZE * sizeof(argb32)]{};
 
