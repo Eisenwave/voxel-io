@@ -40,11 +40,17 @@ template <usize LEVEL>
 struct HexTreeNode : public HexTreeNodeBase {
     static_assert(LEVEL != 0);
 
+    using child_type = HexTreeNode<LEVEL - 1>;
+    static constexpr usize level = LEVEL;
+
     std::unique_ptr<HexTreeNode<LEVEL - 1>> children[HEX_TREE_BRANCHING_FACTOR];
 };
 
 template <>
 struct HexTreeNode<1> : public HexTreeNodeBase {
+    using child_type = hex_tree_value_type;
+    static constexpr usize level = 1;
+
     hex_tree_value_type values[HEX_TREE_BRANCHING_FACTOR];
 };
 
@@ -107,35 +113,37 @@ public:
 
     value_type *find(argb32 color);
 
-    bool contains(argb32 color)
+    const value_type *find(argb32 color) const;
+
+    bool contains(argb32 color) const
     {
         return find(color) != nullptr;
     }
 
-    template <typename F, std::enable_if_t<std::is_invocable_v<F, Vec4u8, value_type>, int> = 0>
+    template <typename F, std::enable_if_t<std::is_invocable_v<F, argb32, value_type>, int> = 0>
     void forEach(const F &action)
     {
         forEach_impl(0, root, std::move(action));
     }
 
     /**
-     * @brief Finds the closest color and its value to a given point.
-     * @param point the query point
+     * @brief Finds the closest color and its value to a given color.
+     * @param color the query color
      * @return the closest color and its value
      */
-    std::pair<Vec4u8, value_type> closest(Vec4u8 point) const;
+    std::pair<argb32, value_type> closest(argb32 color) const;
 
     /**
-     * @brief Returns the distance of a given point to any point in the tree.
+     * @brief Returns the distance of a given color to any point in the tree.
      * This is equivalent to the distance to the closest point.
-     * @param point the query point
+     * @param color the query color
      * @return the distance to the closest point
      */
-    u32 distanceSqr(Vec4u8 point);
+    u32 distanceSqr(argb32 color);
 
 private:
     template <typename F, usize LEVEL>
-    void forEach_impl(u32 morton, Node<LEVEL> &node, const F &action)
+    static void forEach_impl(u32 morton, Node<LEVEL> &node, const F &action)
     {
         for (u8 i = 0; i < BRANCHING_FACTOR; ++i) {
             if (not node.has(i)) {
@@ -152,11 +160,11 @@ private:
         }
     }
 
-    template <usize LEVEL>
-    value_type *find_impl(u32 morton, Node<LEVEL> &node);
+    template <typename NodeType>
+    static const value_type *find_impl(u32 morton, NodeType &node);
 
     template <usize LEVEL>
-    value_type *findOrCreate_impl(u32 morton, Node<LEVEL> &node, value_type paletteIndex);
+    static value_type *findOrCreate_impl(u32 morton, Node<LEVEL> &node, value_type paletteIndex);
 };
 
 }  // namespace voxelio

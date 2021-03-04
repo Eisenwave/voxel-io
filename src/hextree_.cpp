@@ -131,28 +131,34 @@ HexTree::value_type *HexTree::find(argb32 color)
 {
     const u32 morton = ileave4b(color);
 
-    return find_impl<DEPTH>(morton, root);
+    /// This const_cast is safe because find_impl gets the pointer from a non-const array in a node.
+    return const_cast<value_type *>(find_impl(morton, root));
 }
 
-u32 HexTree::distanceSqr(Vec4u8 point)
+const HexTree::value_type *HexTree::find(argb32 color) const
 {
-    Vec4u8 closestPoint = closest(point).first;
-    return voxelio::distanceSqr(closestPoint, point);
+    const u32 morton = ileave4b(color);
+
+    return find_impl(morton, root);
 }
 
-template <usize LEVEL>
-HexTree::value_type *HexTree::find_impl(u32 morton, Node<LEVEL> &node)
+u32 HexTree::distanceSqr(argb32 color)
 {
-    static_assert(LEVEL != 0);
+    argb32 closestColor = closest(color).first;
+    return voxelio::distanceSqr(unpack4b(closestColor), unpack4b(color));
+}
 
+template <typename NodeType>
+const HexTree::value_type *HexTree::find_impl(u32 morton, NodeType &node)
+{
     const u8 highestDigit = (morton >> 28) & 0xf;
 
     if (not node.has(highestDigit)) {
         return nullptr;
     }
 
-    if constexpr (LEVEL > 1) {
-        std::unique_ptr<Node<LEVEL - 1>> &child = node.children[highestDigit];
+    if constexpr (NodeType::level > 1) {
+        const std::unique_ptr<Node<NodeType::level - 1>> &child = node.children[highestDigit];
         VXIO_DEBUG_ASSERT_NOTNULL(child);
 
         return find_impl(morton << 4, *child);
@@ -186,10 +192,12 @@ HexTree::value_type *HexTree::findOrCreate_impl(u32 morton, Node<LEVEL> &node, v
     }
 }
 
-std::pair<Vec4u8, HexTree::value_type> HexTree::closest(Vec4u8 point) const
+std::pair<argb32, HexTree::value_type> HexTree::closest(argb32 color) const
 {
     constexpr u32 rootMorton = 0;
     constexpr u32 rootDistance = 0;
+
+    const Vec4u8 point = unpack4b(color);
 
     std::priority_queue<SearchEntry, std::vector<SearchEntry>, std::greater<SearchEntry>> queue;
     queue.push({{&root}, &childSearchEntry_impl<DEPTH>, rootMorton, rootDistance, root, DEPTH});
@@ -234,8 +242,8 @@ std::pair<Vec4u8, HexTree::value_type> HexTree::closest(Vec4u8 point) const
 
     VXIO_DEBUG_ASSERT_NE(closest.distance, ~u32{0});
 
-    u32 closestPos = dileave4b(closest.morton);
-    return {unpack4b(closestPos), closest.value};
+    argb32 closestPos = dileave4b(closest.morton);
+    return {closestPos, closest.value};
 }
 
 }  // namespace voxelio
