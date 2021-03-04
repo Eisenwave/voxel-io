@@ -155,7 +155,7 @@ private:
             }
             else {
                 u32 childPos = detail::dileave4b(childMorton);
-                action(detail::unpack4b(childPos), node.values[i]);
+                action(childPos, node.values[i]);
             }
         }
     }
