@@ -10,7 +10,7 @@
 #include "assert.hpp"
 #include "build.hpp"
 
-#include VXIO_FWDHEADER(string)
+#include <string>
 
 namespace voxelio {
 
