@@ -40,12 +40,12 @@ std::string stringifyUsingStream(const T &t) noexcept
 }
 
 constexpr usize STRINGIFY_FACTOR = 3;
-static_assert (STRINGIFY_FACTOR != 0);
+static_assert(STRINGIFY_FACTOR != 0);
 
 template <usize BASE>
 constexpr detail::Table<char, powConst<BASE>(STRINGIFY_FACTOR) * STRINGIFY_FACTOR> makeSquashedDigitTable()
 {
-    using table_type = decltype (makeSquashedDigitTable<BASE>());
+    using table_type = decltype(makeSquashedDigitTable<BASE>());
     constexpr usize tableSize = table_type::size;
     constexpr const char *hexDigits = "0123456789abcdef";
 
@@ -280,88 +280,37 @@ std::string stringifyFractionRpad(uint64_t num, uint64_t den, unsigned precision
  * @param c the separator, comma by default
  * @return the human-readable string
  */
-template <typename Int, std::enable_if_t<std::is_integral_v<Int>, int> = 0>
-std::string stringifyLargeInt(Int num, char separator = ',')
-{
-    std::string result = stringifyDec(num);
-    for (usize n = result.length(); n > 3;) {
-        result.insert(n -= 3, {separator});
-    }
-    return result;
-}
+std::string stringifyLargeInt(uint64_t num, char separator = ',') noexcept;
 
 /**
  * @brief Creates a human-readable string from a file size given in bytes.
+ * Units are decimal units base 1000, i.e. kilobytes, megabytes, etc.
  * @param size the number of bytes
  * @param precision the maximum number of decimals to print
- * @tparam BASE either 1000 or 1024 depending on whether decimal units (KB) or digital units (KiB) should be used
- * @tparam SPACE true if a space should be inserted between the number and unit (true by default)
+ * @param separator a separator between the file size and the unit or null for no separator
  * @return a human-readable string representing the given file size
  */
-template <usize BASE = 1024, bool SPACE = true, std::enable_if_t<BASE == 1000 || BASE == 1024, usize> = BASE>
-std::string stringifyFileSize(uint64_t size, unsigned precision = 0) noexcept
-{
-    constexpr const char FILE_SIZE_UNITS[8][3]{"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB"};
+std::string stringifyFileSize1000(uint64_t size, unsigned precision = 0, char separator = ' ') noexcept;
 
-    uint64_t unit = logFloor<BASE>(size);
-
-    std::string result = voxelio::stringifyFraction(size, powConst<BASE>(unit), precision);
-    result.reserve(result.size() + 5);
-
-    if constexpr (SPACE) {
-        result.push_back(' ');
-    }
-    result.push_back(FILE_SIZE_UNITS[unit][0]);
-
-    if (unit != 0) {
-        if constexpr (BASE == 1024) {
-            result.push_back('i');
-        }
-        result.push_back(FILE_SIZE_UNITS[unit][1]);
-    }
-
-    return result;
-}
+/**
+ * @brief Creates a human-readable string from a file size given in bytes.
+ * Units are size units base 1024, i.e. kibibytes, mebibytes, etc.
+ * @param size the number of bytes
+ * @param precision the maximum number of decimals to print
+ * @param separator a separator between the file size and the unit or null for no separator
+ * @return a human-readable string representing the given file size
+ */
+std::string stringifyFileSize1024(uint64_t size, unsigned precision = 0, char separator = ' ') noexcept;
 
 /**
  * @brief Creates a human-readable string from a time given in nanoseconds. Example:
  * stringifyTime(10'500, 1) =  10.5 us
  * @param nanos the nanoseconds to stringify
  * @param precision the maximum number of decimals to print
- * @tparam SPACE true if a space should be inserted between the number and unit (true by default)
+ * @param separator a separator between the time and the unit or null for no separator
  * @return a human-readable string representing the given number of nanoseconds
  */
-template <bool SPACE = true>
-std::string stringifyTime(uint64_t nanos, unsigned precision = 0) noexcept
-{
-    // clang-format off
-    // TIME_FACTORS represents the factor to get to the next unit
-    // the last factor is 10 (century -> millenium)
-    constexpr usize UNITS = 10;
-    constexpr const char TIME_UNITS[UNITS][4]    {"ns", "us", "ms", "s", "min", "h", "d", "y", "dec", "cen"};
-    constexpr const unsigned TIME_FACTORS[UNITS] {1000, 1000, 1000,  60,   60,  24,  365,  10,    10,    10};
-    // clang-format on
-
-    usize unit = 0;
-    uint64_t divisor = 1;
-    for (; unit < 10; ++unit) {
-        uint64_t nextDivisor = divisor * TIME_FACTORS[unit];
-        if (nextDivisor >= nanos) {
-            break;
-        }
-        divisor = nextDivisor;
-    }
-
-    std::string result = voxelio::stringifyFraction(nanos, divisor, precision);
-    result.reserve(result.size() + 5);
-
-    if constexpr (SPACE) {
-        result.push_back(' ');
-    }
-    result.append(TIME_UNITS[unit]);
-
-    return result;
-}
+std::string stringifyTime(uint64_t nanos, unsigned precision = 0, char separator = ' ') noexcept;
 
 }  // namespace voxelio
 
