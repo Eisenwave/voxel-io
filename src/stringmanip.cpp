@@ -17,20 +17,18 @@ void toLowerCase(std::string &str)
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 }
 
+static constexpr const char *SPACE_CHARS = " \f\t\n\r";
+
 void ltrim(std::string &s)
 {
-    auto end = std::find_if(s.begin(), s.end(), [](int ch) {
-        return not std::isspace(ch);
-    });
-    s.erase(s.begin(), std::move(end));
+    usize i = s.find_first_not_of(SPACE_CHARS);
+    s.erase(0, i);
 }
 
 void rtrim(std::string &s)
 {
-    auto begin = std::find_if(s.rbegin(), s.rend(), [](int ch) {
-                     return !std::isspace(ch);
-                 }).base();
-    s.erase(begin, s.end());
+    usize i = s.find_last_not_of(SPACE_CHARS);
+    s.erase(i);
 }
 
 void trim(std::string &s)
