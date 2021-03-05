@@ -398,8 +398,8 @@ constexpr Uint log10floor(Uint val)
 /**
  * @brief Computes the number of digits required to represent a number with a given base.
  */
-template <usize BASE = 10, typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
-constexpr Int digitCount(Int val) noexcept
+template <usize BASE = 10, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+constexpr Uint digitCount(Uint val) noexcept
 {
     return logFloor<BASE>(val) + 1;
 }
