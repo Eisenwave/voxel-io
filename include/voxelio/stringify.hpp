@@ -39,20 +39,42 @@ std::string stringifyUsingStream(const T &t) noexcept
     return result;
 }
 
+constexpr usize STRINGIFY_FACTOR = 3;
+static_assert (STRINGIFY_FACTOR != 0);
+
+template <usize BASE>
+constexpr detail::Table<char, powConst<BASE>(STRINGIFY_FACTOR) * STRINGIFY_FACTOR> makeSquashedDigitTable()
+{
+    using table_type = decltype (makeSquashedDigitTable<BASE>());
+    constexpr usize tableSize = table_type::size;
+    constexpr const char *hexDigits = "0123456789abcdef";
+
+    table_type result{};
+    for (usize d = 0; d < tableSize / STRINGIFY_FACTOR; ++d) {
+        usize d2 = d;
+        for (usize i = 0; i < STRINGIFY_FACTOR; ++i) {
+            result.data[d * STRINGIFY_FACTOR + i] = hexDigits[d2 % BASE];
+            d2 /= BASE;
+        }
+    }
+
+    return result;
+}
+
 template <usize BASE, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 std::string stringifyUInt(const Uint n) noexcept
 {
     static_assert(BASE <= 16);
 
-    constexpr usize maxDigits = voxelio::digitCount<BASE>(std::numeric_limits<Uint>::max());
+    constexpr usize maxDigits = voxelio::digitCount<BASE>(std::numeric_limits<Uint>::max()) + STRINGIFY_FACTOR - 1;
     constexpr const char *hexDigits = "0123456789abcdef";
 
     char result[maxDigits];
     Uint x = n;
 
     if constexpr (isPow2(BASE)) {
-        constexpr usize bitsPerDigit = log2floor(BASE);
-        constexpr Uint digitMask = BASE - 1;
+        static constexpr usize bitsPerDigit = log2floor(BASE);
+        static constexpr Uint digitMask = BASE - 1;
 
         const usize digitCount = voxelio::digitCount<BASE>(n);
 
@@ -65,11 +87,23 @@ std::string stringifyUInt(const Uint n) noexcept
         return std::string(result, digitCount);
     }
     else {
+        static constexpr auto digitsTable = makeSquashedDigitTable<BASE>();
+        static constexpr usize div = powConst<BASE>(STRINGIFY_FACTOR);
+
         usize i = maxDigits;
         do {
-            result[--i] = hexDigits[x % BASE];
-            x /= BASE;
+            usize tableIndex = x % div * STRINGIFY_FACTOR;
+            x /= div;
+            for (usize j = 0; j < STRINGIFY_FACTOR; ++j) {
+                result[--i] = digitsTable.data[tableIndex++];
+            }
         } while (x != 0);
+
+        // If the first digit is zero, we go back one digit.
+        // This is also safe for stringifying zero, because then there are simply two zeros.
+        for (usize k = 1; k < STRINGIFY_FACTOR; ++k) {
+            i += result[i] == '0';
+        }
 
         return std::string(result + i, maxDigits - i);
     }
