@@ -53,18 +53,15 @@ struct SearchEntry {
     detail::HexTreeNodeBase nodeBase;
     u8 level;
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-member-function"
-    constexpr bool operator<(const SearchEntry &rhs) const
+    [[maybe_unused]] constexpr bool operator<(const SearchEntry &rhs) const
     {
         return this->distance < rhs.distance;
     }
 
-    constexpr bool operator>(const SearchEntry &rhs) const
+    [[maybe_unused]] constexpr bool operator>(const SearchEntry &rhs) const
     {
         return this->distance > rhs.distance;
     }
-#pragma clang diagnostic pop
 
     SearchEntry childSearchEntry(Vec4u8 p, u8 i) const
     {
