@@ -79,7 +79,7 @@ void accumulatePointsToClusters(const argb32 colors[],
                                 usize colorCount,
                                 const HexTree &clusterCenters,
                                 Accumulator accumulators[],
-                                usize clusterCount)
+                                [[maybe_unused]] usize clusterCount)
 {
     for (u32 i = 0; i < colorCount; ++i) {
         argb32 color = colors[i];
