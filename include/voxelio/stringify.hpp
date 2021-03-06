@@ -95,7 +95,7 @@ std::string stringifyUInt(const Uint n) noexcept
             usize tableIndex = x % div * STRINGIFY_FACTOR;
             x /= div;
             for (usize j = 0; j < STRINGIFY_FACTOR; ++j) {
-                result[--i] = digitsTable.data[tableIndex++];
+                result[--i] = digitsTable[tableIndex++];
             }
         } while (x != 0);
 
