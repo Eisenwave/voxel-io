@@ -147,6 +147,13 @@ constexpr Uint log2floor_fast(Uint v) noexcept
     return result;
 }
 
+namespace detail {
+
+constexpr u32 MultiplyDeBruijnBitPosition[32] = {0, 9,  1,  10, 13, 21, 2,  29, 11, 14, 16, 18, 22, 25, 3, 30,
+                                                 8, 12, 20, 28, 15, 17, 24, 7,  19, 27, 23, 6,  26, 5,  4, 31};
+
+}
+
 /**
  * @brief log2floor implementation using De Bruijn multiplication.
  * See https://graphics.stanford.edu/~seander/bithacks.html#IntegerLogDeBruijn.
@@ -155,14 +162,12 @@ constexpr Uint log2floor_fast(Uint v) noexcept
 constexpr u32 log2floor_debruijn(u32 val) noexcept
 {
     constexpr u32 magic = 0x07C4ACDD;
-    constexpr u32 MultiplyDeBruijnBitPosition[32] = {0, 9,  1,  10, 13, 21, 2,  29, 11, 14, 16, 18, 22, 25, 3, 30,
-                                                     8, 12, 20, 28, 15, 17, 24, 7,  19, 27, 23, 6,  26, 5,  4, 31};
 
     val = ceilPow2m1(val);
     val *= magic;
     val >>= 27;
 
-    return MultiplyDeBruijnBitPosition[val];
+    return detail::MultiplyDeBruijnBitPosition[val];
 }
 
 #ifdef VXIO_HAS_BUILTIN_CLZ
@@ -288,14 +293,29 @@ namespace detail {
 /**
  * @brief Tiny array implementation to avoid including <array>.
  */
-template <typename T, usize N>
+template <typename T, usize N, std::enable_if_t<N != 0, int> = 0>
 struct Table {
     static constexpr usize size = N;
     T data[N];
 
-    constexpr T back() const
+    constexpr T front() const noexcept
+    {
+        return data[0];
+    }
+
+    constexpr T back() const noexcept
     {
         return data[N - 1];
+    }
+
+    constexpr T &operator[](usize i) noexcept
+    {
+        return data[i];
+    }
+
+    constexpr const T &operator[](usize i) const noexcept
+    {
+        return data[i];
     }
 };
 
@@ -306,8 +326,8 @@ constexpr Table<uint8_t, bits_v<Uint>> makeGuessTable()
 
     resultType result{};
     for (usize i = 0; i < resultType::size; ++i) {
-        Uint pow2 = static_cast<Uint>(Uint{1} << i);
-        result.data[i] = logFloor_naive(pow2, BASE);
+        const Uint pow2 = static_cast<Uint>(Uint{1} << i);
+        result[i] = logFloor_naive(pow2, BASE);
     }
     return result;
 }
@@ -325,7 +345,7 @@ constexpr Table<TableUint, maxExp<Uint, BASE> + 2> makePowerTable()
     resultType result{};
     umax x = 1;
     for (usize i = 0; i < resultType::size; ++i, x *= BASE) {
-        result.data[i] = static_cast<TableUint>(x);
+        result[i] = static_cast<TableUint>(x);
     }
     return result;
 }
@@ -346,6 +366,18 @@ constexpr Uint powConst(Uint exponent)
         return static_cast<Uint>(powers.data[exponent]);
     }
 }
+
+namespace detail {
+
+// table that maps from log_2(val) -> approximate log_N(val)
+template <typename Uint, usize BASE>
+constexpr auto logFloor_guesses = detail::makeGuessTable<Uint, BASE>();
+
+// table that maps from log_N(val) -> pow(N, val + 1)
+template <typename Uint, usize BASE>
+constexpr auto logFloor_powers = detail::makePowerTable<Uint, BASE>();
+
+}  // namespace detail
 
 /**
  * @brief Computes the floored logarithm of a number with a given base.
@@ -370,18 +402,16 @@ constexpr Uint logFloor(Uint val) noexcept
         return log2floor(val) / log2floor(BASE);
     }
     else {
-        // table that maps from log_2(val) -> approximate log_N(val)
-        constexpr auto guesses = detail::makeGuessTable<Uint, BASE>();
-        // table that maps from log_N(val) -> pow(N, val + 1)
-        constexpr auto powers = detail::makePowerTable<Uint, BASE>();
+        constexpr auto &guesses = detail::logFloor_guesses<Uint, BASE>;
+        constexpr auto &powers = detail::logFloor_powers<Uint, BASE>;
 
-        uint8_t guess = guesses.data[log2floor(val)];
+        const u8 guess = guesses[log2floor(val)];
 
         if constexpr (sizeof(Uint) < sizeof(u64) || guesses.back() + 2 < powers.size) {
-            return guess + (val >= powers.data[guess + 1]);
+            return guess + (val >= powers[guess + 1]);
         }
         else {
-            return guess + (val / BASE >= powers.data[guess]);
+            return guess + (val / BASE >= powers[guess]);
         }
     }
 }
