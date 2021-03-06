@@ -1,16 +1,16 @@
 #include "voxelio/stringmanip.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdarg>
 #include <iomanip>
 #include <sstream>
-#include <cctype>
 
 namespace voxelio {
 
-static_assert (std::is_same_v<std::string::size_type, size_t>);
+static_assert(std::is_same_v<std::string::size_type, size_t>);
 
-static void transformEachChar(std::string &str, int(*transform)(int))
+static void transformEachChar(std::string &str, int (*transform)(int))
 {
     std::transform(str.begin(), str.end(), str.begin(), transform);
 }
