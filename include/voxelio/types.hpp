@@ -109,22 +109,22 @@ struct MovingAverage {
 template <typename T>
 constexpr bool is_voxel_v = std::is_same_v<T, Voxel32> || std::is_same_v<T, Voxel64>;
 
-constexpr bool operator==(const voxelio::Voxel32 &lhs, const voxelio::Voxel32 &rhs)
+constexpr bool operator==(const Voxel32 &lhs, const Voxel32 &rhs)
 {
     return lhs.pos == rhs.pos && lhs.argb == rhs.argb;
 }
 
-constexpr bool operator!=(const voxelio::Voxel32 &lhs, const voxelio::Voxel32 &rhs)
+constexpr bool operator!=(const Voxel32 &lhs, const Voxel32 &rhs)
 {
     return lhs.pos != rhs.pos || lhs.argb != rhs.argb;
 }
 
-constexpr bool operator==(const voxelio::Voxel64 &lhs, const voxelio::Voxel64 &rhs)
+constexpr bool operator==(const Voxel64 &lhs, const Voxel64 &rhs)
 {
     return lhs.pos == rhs.pos && lhs.argb == rhs.argb;
 }
 
-constexpr bool operator!=(const voxelio::Voxel64 &lhs, const voxelio::Voxel64 &rhs)
+constexpr bool operator!=(const Voxel64 &lhs, const Voxel64 &rhs)
 {
     return lhs.pos != rhs.pos || lhs.argb != rhs.argb;
 }
