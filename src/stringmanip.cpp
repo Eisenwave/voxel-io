@@ -4,17 +4,25 @@
 #include <cstdarg>
 #include <iomanip>
 #include <sstream>
+#include <cctype>
 
 namespace voxelio {
 
+static_assert (std::is_same_v<std::string::size_type, size_t>);
+
+static void transformEachChar(std::string &str, int(*transform)(int))
+{
+    std::transform(str.begin(), str.end(), str.begin(), transform);
+}
+
 void toUpperCase(std::string &str)
 {
-    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+    transformEachChar(str, std::toupper);
 }
 
 void toLowerCase(std::string &str)
 {
-    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+    transformEachChar(str, std::tolower);
 }
 
 static constexpr const char *SPACE_CHARS = " \f\t\n\r";
@@ -28,7 +36,7 @@ void ltrim(std::string &s)
 void rtrim(std::string &s)
 {
     usize i = s.find_last_not_of(SPACE_CHARS);
-    s.erase(i);
+    s.erase(i + 1);
 }
 
 void trim(std::string &s)
