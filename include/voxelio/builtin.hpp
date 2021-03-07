@@ -257,6 +257,7 @@ inline int popCount(unsigned long long x) noexcept
     return __builtin_popcountll(x);
 }
 #elif defined(VXIO_MSVC)
+#define VXIO_HAS_BUILTIN_POPCOUNT
 inline uint8_t popCount(uint8_t x) noexcept
 {
     return __popcnt16(x);
