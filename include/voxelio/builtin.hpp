@@ -412,22 +412,22 @@ inline uint64_t byteSwap(uint64_t x) noexcept
 
 #elif defined(VXIO_MSVC)
 #define VXIO_HAS_BUILTIN_BSWAP
-uint8_t byteSwap(uint8_t val)
+inline uint8_t byteSwap(uint8_t val)
 {
     return val;
 }
 
-unsigned short byteSwap(unsigned short val)
+inline unsigned short byteSwap(unsigned short val)
 {
     return _byteswap_ushort(val);
 }
 
-unsigned long byteSwap(unsigned long val)
+inline unsigned long byteSwap(unsigned long val)
 {
     return _byteswap_ulong(val);
 }
 
-uint64_t byteSwap(uint64_t val)
+inline uint64_t byteSwap(uint64_t val)
 {
     return _byteswap_uint64(val);
 }
