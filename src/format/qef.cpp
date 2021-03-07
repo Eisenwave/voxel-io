@@ -20,12 +20,12 @@ constexpr const char *CSTR_SUPPORT_URL = "www.minddesk.com";
 
 const std::string PREAMBLE = CSTR_MAGIC + std::string{'\n'} + CSTR_VERSION + '\n' + CSTR_SUPPORT_URL + '\n';
 
-constexpr size_t HEADER_LINE_COUNT = 5;
+constexpr usize HEADER_LINE_COUNT = 5;
 
 Color32 roundColor(const float rgb[3])
 {
     u8 result[3];
-    for (size_t i = 0; i < 3; ++i) {
+    for (usize i = 0; i < 3; ++i) {
         result[i] = static_cast<u8>(std::lround(rgb[i] * 255));
     }
     return {result[0], result[1], result[2]};
@@ -38,7 +38,7 @@ std::vector<T> parseMultiple(const std::string &line) noexcept(false)
     std::vector<std::string> splits = splitAtDelimiter(line, ' ');
     result.resize(splits.size());
 
-    for (size_t i = 0; i < splits.size(); i++) {
+    for (usize i = 0; i < splits.size(); i++) {
         if (not parse(splits[i], result[i])) {
             throw std::runtime_error("failed to parse \"" + line + "\"");
         }
@@ -99,7 +99,7 @@ ReadResult Reader::init() noexcept
         return ReadResult::end();
     }
 
-    for (size_t i = 0; i < paletteSize; ++i) {
+    for (usize i = 0; i < paletteSize; ++i) {
         VXIO_FORWARD_ERROR(readLine(line));
         VXIO_FORWARD_ERROR(parseColorDefinition(i + 6, line));
     }
@@ -107,7 +107,7 @@ ReadResult Reader::init() noexcept
     return ReadResult::nextObject();
 }
 
-ReadResult Reader::read(Voxel32 buffer[], size_t bufferLength)
+ReadResult Reader::read(Voxel32 buffer[], usize bufferLength)
 {
     if (not initialized) {
         VXIO_LOG(DEBUG, "calling voxelio::qef::Reader::init() in read()");
@@ -119,7 +119,7 @@ ReadResult Reader::read(Voxel32 buffer[], size_t bufferLength)
     return doRead();
 }
 
-ReadResult Reader::read(Voxel64 buffer[], size_t bufferLength) noexcept
+ReadResult Reader::read(Voxel64 buffer[], usize bufferLength) noexcept
 {
     if (not initialized) {
         VXIO_LOG(DEBUG, "calling voxelio::qef::Reader::init() in read()");
@@ -167,7 +167,7 @@ ReadResult Reader::doRead() noexcept
 
 ReadResult Reader::parseDimensions(const std::string &line) noexcept
 {
-    auto dims = parseMultiple<size_t>(line);
+    auto dims = parseMultiple<usize>(line);
     if (dims.size() < 3) return ReadResult::parseError(4, "fewer than 3 dimensions");
     dimensions = {dims[0], dims[1], dims[2]};
     return ReadResult::ok();
@@ -258,7 +258,7 @@ ResultCode Writer::write(const Voxel32 buffer[], usize bufferLength) noexcept
         return ResultCode::USER_ERROR_MISSING_PALETTE;
     }
 
-    for (size_t i = 0; i < bufferLength; ++i) {
+    for (usize i = 0; i < bufferLength; ++i) {
         VXIO_FORWARD_ERROR(writeVoxelLine(buffer[i]));
     }
     return ResultCode::OK;
@@ -299,7 +299,7 @@ ResultCode Writer::verifyVoxel(Voxel32 voxel) noexcept
     Vec3u32 globalDimsValue = *globalDims;
     Vec3i32 pos = voxel.pos;
 
-    for (size_t i = 0; i < 3; ++i) {
+    for (usize i = 0; i < 3; ++i) {
         if (pos[i] < 0 || static_cast<u32>(pos[i]) > globalDimsValue[i]) {
             // TODO use line number
             this->err = {0,
@@ -322,7 +322,7 @@ ResultCode Writer::verifyVoxel(Voxel32 voxel) noexcept
 
 VoxelArray Deserializer::read() noexcept(false)
 {
-    size_t lineNum = 0;
+    usize lineNum = 0;
 
     std::string line;
     while (true) {
@@ -349,14 +349,14 @@ VoxelArray Deserializer::read() noexcept(false)
     return std::move(voxels.value());
 }
 
-void Deserializer::parseLine(size_t num, const std::string &line) noexcept(false)
+void Deserializer::parseLine(usize num, const std::string &line) noexcept(false)
 {
-    constexpr size_t magicLine = 1;
-    constexpr size_t versionLine = 2;
-    constexpr size_t urlLine = 3;
-    constexpr size_t dimensionsLine = 4;
-    constexpr size_t colorCountLine = 5;
-    constexpr size_t firstColorLine = 6;
+    constexpr usize magicLine = 1;
+    constexpr usize versionLine = 2;
+    constexpr usize urlLine = 3;
+    constexpr usize dimensionsLine = 4;
+    constexpr usize colorCountLine = 5;
+    constexpr usize firstColorLine = 6;
 
     if (num == magicLine || num == urlLine) return;  // header lines
 
@@ -379,7 +379,7 @@ void Deserializer::parseLine(size_t num, const std::string &line) noexcept(false
         VXIO_LOG(DEBUG, "parsing " + stringify(colorCount) + " colors ...");
     }
 
-    else if (size_t firstVoxelLine = firstColorLine + colorCount; num < firstVoxelLine) {
+    else if (usize firstVoxelLine = firstColorLine + colorCount; num < firstVoxelLine) {
         parseColorDefinition(num, line);
     }
 
@@ -390,23 +390,23 @@ void Deserializer::parseLine(size_t num, const std::string &line) noexcept(false
 
 void Deserializer::parseDimensions(const std::string &line) noexcept(false)
 {
-    auto dims = parseMultiple<size_t>(line);
+    auto dims = parseMultiple<usize>(line);
     if (dims.size() < 3) {
         throw std::runtime_error("fewer than 3 dimensions");
     }
     voxels.emplace(dims[0], dims[1], dims[2]);
 }
 
-size_t Deserializer::parseColorCount(const std::string &line) noexcept(false)
+usize Deserializer::parseColorCount(const std::string &line) noexcept(false)
 {
-    size_t result;
+    usize result;
     if (not parse(line, result)) {
         throw std::runtime_error("failed to parse \"" + line + "\"");
     }
     return result;
 }
 
-void Deserializer::parseColorDefinition(size_t num, const std::string &line) noexcept(false)
+void Deserializer::parseColorDefinition(usize num, const std::string &line) noexcept(false)
 {
     auto rgb = parseMultiple<float>(line);
     if (rgb.size() < 3) {
@@ -416,7 +416,7 @@ void Deserializer::parseColorDefinition(size_t num, const std::string &line) noe
     colors.push_back(roundColor(rgb.data()));
 }
 
-void Deserializer::parseVoxelDefinition(size_t num, const std::string &line) noexcept(false)
+void Deserializer::parseVoxelDefinition(usize num, const std::string &line) noexcept(false)
 {
     VXIO_DEBUG_ASSERT(voxels.has_value());
     auto ints = parseMultiple<u32>(line);

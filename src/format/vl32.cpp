@@ -10,21 +10,21 @@ namespace voxelio::vl32 {
     return ReadResult::ok();
 }
 
-[[nodiscard]] ReadResult Reader::read(Voxel64 buffer[], size_t bufferLength) noexcept
+[[nodiscard]] ReadResult Reader::read(Voxel64 buffer[], usize bufferLength) noexcept
 {
     return read_impl(buffer, bufferLength);
 }
 
-[[nodiscard]] ReadResult Reader::read(Voxel32 buffer[], size_t bufferLength) noexcept
+[[nodiscard]] ReadResult Reader::read(Voxel32 buffer[], usize bufferLength) noexcept
 {
     return read_impl(buffer, bufferLength);
 }
 
 template <typename Voxel>
-ReadResult Reader::read_impl(Voxel buffer[], size_t bufferLength) noexcept
+ReadResult Reader::read_impl(Voxel buffer[], usize bufferLength) noexcept
 {
     Voxel32 voxel;
-    size_t voxelsWritten = 0;
+    usize voxelsWritten = 0;
 
     for (; voxelsWritten < bufferLength; ++voxelsWritten) {
         VXIO_FORWARD_ERROR(readVoxel(voxel));
@@ -67,14 +67,14 @@ ResultCode Writer::init() noexcept
     return ResultCode::OK;
 }
 
-ResultCode Writer::write(const Voxel32 buffer[], size_t bufferLength) noexcept
+ResultCode Writer::write(const Voxel32 buffer[], usize bufferLength) noexcept
 {
     if (not isInitialized()) {
         VXIO_FORWARD_ERROR(init());
     }
     VXIO_DEBUG_ASSERT(isInitialized());
 
-    for (size_t i = 0; i < bufferLength; ++i) {
+    for (usize i = 0; i < bufferLength; ++i) {
         VXIO_FORWARD_ERROR(writeVoxel(buffer[i]));
     }
     return ResultCode::OK;

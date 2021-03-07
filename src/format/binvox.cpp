@@ -113,7 +113,7 @@ ReadResult Reader::parseHeaderLine(const std::string &line)
     return ReadResult::unexpectedSymbol(state.lineNum, "header keyword \"" + keyword + "\"");
 }
 
-ReadResult Reader::read(Voxel64 buffer[], size_t bufferLength) noexcept
+ReadResult Reader::read(Voxel64 buffer[], usize bufferLength) noexcept
 {
     VXIO_ASSERT_NOTNULL(buffer);
     VXIO_ASSERT_NE(bufferLength, 0);
@@ -137,7 +137,7 @@ ReadResult Reader::read(Voxel64 buffer[], size_t bufferLength) noexcept
     }
 }
 
-bool Reader::resumeWritingToBuffer(Voxel64 buffer[], size_t bufferLength)
+bool Reader::resumeWritingToBuffer(Voxel64 buffer[], usize bufferLength)
 {
     auto lim = std::min<u32>(state.resumeCount, static_cast<u32>(bufferLength));
     u8 i = 0;
@@ -149,7 +149,7 @@ bool Reader::resumeWritingToBuffer(Voxel64 buffer[], size_t bufferLength)
     return state.resumeCount != 0;
 }
 
-ReadResult Reader::readNextVoxels(Voxel64 buffer[], size_t bufferLength)
+ReadResult Reader::readNextVoxels(Voxel64 buffer[], usize bufferLength)
 {
     static_assert(sizeof(voxelBuffer) == 2);
 

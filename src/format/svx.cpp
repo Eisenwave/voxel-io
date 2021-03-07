@@ -33,9 +33,9 @@ constexpr bool usesId(ChannelType type)
 }
 
 struct SvxLimits {
-    size_t slice;
-    size_t u;
-    size_t v;
+    usize slice;
+    usize u;
+    usize v;
 };
 
 /**
@@ -72,7 +72,7 @@ constexpr Vec3size svxProject(Vec3size suv)
     }
 }
 
-constexpr ColorFormat densityFormatOf(const size_t bits)
+constexpr ColorFormat densityFormatOf(const usize bits)
 {
     switch (bits) {
     case 1: return ColorFormat::V1;
@@ -81,7 +81,7 @@ constexpr ColorFormat densityFormatOf(const size_t bits)
     }
 }
 
-constexpr ColorFormat rgbFormatOf(const size_t bits)
+constexpr ColorFormat rgbFormatOf(const usize bits)
 {
     switch (bits) {
     case 1: return ColorFormat::V1;
@@ -100,13 +100,13 @@ constexpr ColorFormat formatOf(const Channel &channel)
 }
 
 template <Axis AXIS>
-void writeSvxLayerToImage(Image &image, const VoxelArray &voxels, size_t slice)
+void writeSvxLayerToImage(Image &image, const VoxelArray &voxels, usize slice)
 {
-    const size_t w = image.width();
-    const size_t h = image.height();
+    const usize w = image.width();
+    const usize h = image.height();
 
-    for (size_t u = 0; u < w; ++u) {
-        for (size_t v = 0; v < h; ++v) {
+    for (usize u = 0; u < w; ++u) {
+        for (usize v = 0; v < h; ++v) {
             Vec3size xyz = svxProject<AXIS>({slice, u, v});
             Color32 rgb = voxels[xyz];
             image.setPixel(u, v, rgb);
@@ -196,7 +196,7 @@ ResultCode Serializer::writeChannel(miniz_cpp::zip_file &archive, const SimpleVo
     ByteArrayOutputStream pngStream;
     pngStream.reserve(lims.u * lims.v * bitSizeOf(format) / 8);
 
-    for (size_t slice = 0; slice < lims.slice; ++slice) {
+    for (usize slice = 0; slice < lims.slice; ++slice) {
         std::string fileName = voxelio::format(fileNameFormatCstr, slice);
         VXIO_LOG(SPAM, "Writing slice #" + stringify(slice) + ", named" + fileName);
 
@@ -229,7 +229,7 @@ ResultCode Serializer::write(const SimpleVoxels &svx)
         }
     }
 
-    archive.save([this](const char *data, size_t size) {
+    archive.save([this](const char *data, usize size) {
         streamWrapper.write(reinterpret_cast<const u8 *>(data), size);
     });
     if (not streamWrapper.good()) {

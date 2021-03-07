@@ -22,7 +22,7 @@ VobjWriteHelper::OffsetGuard::~OffsetGuard()
     parent->offset -= this->offset;
 }
 
-size_t VobjWriteHelper::voxelsWritten()
+usize VobjWriteHelper::voxelsWritten()
 {
     return index;
 }
@@ -42,7 +42,7 @@ void VobjWriteHelper::setColorFormat(ColorFormat format)
     this->colorFormat = format;
 }
 
-void VobjWriteHelper::resetBuffer(Voxel64 buffer[], size_t bufferSize)
+void VobjWriteHelper::resetBuffer(Voxel64 buffer[], usize bufferSize)
 {
     VXIO_DEBUG_ASSERT_CONSEQUENCE(bufferSize != 0, buffer != nullptr);
     this->buffer = buffer;
@@ -66,12 +66,12 @@ void VobjWriteHelper::write(Vec3i64 pos, argb32 color)
     buffer[index++] = Voxel64{pos + offset, {color}};
 }
 
-ArrayU8 makeArrayU8(size_t size)
+ArrayU8 makeArrayU8(usize size)
 {
     return std::make_unique<u8[]>(size);
 }
 
-ArrayU8 copyArrayU8(const ArrayU8 &array, size_t bytes)
+ArrayU8 copyArrayU8(const ArrayU8 &array, usize bytes)
 {
     ArrayU8 result = makeArrayU8(bytes);
     std::memcpy(result.get(), array.get(), bytes);
@@ -109,7 +109,7 @@ static const std::unordered_set<u8> recognizedPaletteBits{0, 8, 16, 32};
     return readContent(false);
 }
 
-[[nodiscard]] ReadResult Reader::read(Voxel64 buffer[], size_t bufferLength) noexcept
+[[nodiscard]] ReadResult Reader::read(Voxel64 buffer[], usize bufferLength) noexcept
 {
     VXIO_ASSERT_NOTNULL(buffer);
     VXIO_ASSERT_NE(bufferLength, 0);
@@ -143,12 +143,12 @@ bool Reader::pushGroup(GroupHeader group)
     return true;
 }
 
-bool Reader::popGroups(size_t count)
+bool Reader::popGroups(usize count)
 {
     if (count >= groupStack.size()) {
         return false;
     }
-    for (size_t i = 0; i < count; ++i) {
+    for (usize i = 0; i < count; ++i) {
         groupStack.pop();
     }
     return true;
@@ -188,7 +188,7 @@ argb32 Reader::decodeColor(u8 data[])
     return ReadResult::ok();
 }
 
-[[nodiscard]] ReadResult Reader::readArrayU8(size_t bytes, ArrayU8 &out)
+[[nodiscard]] ReadResult Reader::readArrayU8(usize bytes, ArrayU8 &out)
 {
     static_assert(std::is_same_v<unsigned char, u8>, "reinterpretation of char as u8 impossible");
     out = makeArrayU8(bytes);
@@ -197,7 +197,7 @@ argb32 Reader::decodeColor(u8 data[])
     return ReadResult::ok();
 }
 
-[[nodiscard]] ReadResult Reader::readString(size_t length, std::string &out)
+[[nodiscard]] ReadResult Reader::readString(usize length, std::string &out)
 {
     out.resize(length);
     stream.read(reinterpret_cast<u8 *>(out.data()), length);
@@ -226,7 +226,7 @@ argb32 Reader::decodeColor(u8 data[])
     VXIO_NO_EOF();
     std::unordered_set<std::string> extSet;
 
-    for (size_t i = 0; i < extensionsSize; ++i) {
+    for (usize i = 0; i < extensionsSize; ++i) {
         std::string extension;
         VXIO_FORWARD_ERROR(readString(extension));
         if (bool unrecognized = recognizedExtensions.find(extension) != recognizedExtensions.end(); unrecognized) {
@@ -544,7 +544,7 @@ argb32 Reader::decodeColor(u8 data[])
                     return ReadResult::ok(writeHelper.voxelsWritten());
                 }
 
-                size_t superIndex = state.arrIndex / 8;
+                usize superIndex = state.arrIndex / 8;
                 u8 maskBit = u8{0b10000000} >> (state.arrIndex % 8);
                 if ((state.existArr[superIndex] & maskBit) == 0) continue;
 

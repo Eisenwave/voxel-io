@@ -14,17 +14,17 @@ Matrix::Matrix(std::string name_, Vec3i32 pos_, VoxelArray voxels_)
 {
 }
 
-size_t Model::computeCombinedVolume() const
+usize Model::computeCombinedVolume() const
 {
-    size_t v = 0;
+    usize v = 0;
     for (const Matrix &e : _matrices)
         v += e.voxels.volume();
     return v;
 }
 
-size_t Model::countVoxels() const
+usize Model::countVoxels() const
 {
-    size_t count = 0;
+    usize count = 0;
     for (const Matrix &e : _matrices)
         count += e.voxels.countVoxels();
     return count;
@@ -90,7 +90,7 @@ ReadResult Reader::init() noexcept
     }
 }
 
-ReadResult Reader::read(Voxel64 buffer[], size_t bufferLength) noexcept
+ReadResult Reader::read(Voxel64 buffer[], usize bufferLength) noexcept
 {
     VXIO_ASSERT_NOTNULL(buffer);
     VXIO_ASSERT_NE(bufferLength, 0);
@@ -198,7 +198,7 @@ ReadResult Reader::deserializeHeader() noexcept
 
 ReadResult Reader::deserializeMatrixHeaderName() noexcept
 {
-    const size_t nameLength = stream.readU8();
+    const usize nameLength = stream.readU8();
     VXIO_NO_EOF();
     stream.readStringTo(matrixName, nameLength);
     VXIO_NO_EOF();
@@ -227,7 +227,7 @@ ReadResult Reader::deserializeMatrixHeader() noexcept
     return ReadResult::ok();
 }
 
-ReadResult Reader::readUncompressed(Voxel64 buffer[], size_t bufferLength) noexcept
+ReadResult Reader::readUncompressed(Voxel64 buffer[], usize bufferLength) noexcept
 {
     VXIO_DEBUG_ASSERT(this->initialized);
     VXIO_DEBUG_ASSERT_LE(index, matVolume);
@@ -248,7 +248,7 @@ ReadResult Reader::readUncompressed(Voxel64 buffer[], size_t bufferLength) noexc
     static_assert(sizeof(tmpBuffer[0]) == sizeof(u8));
 
     u64 voxelsRead = 0;
-    size_t tmpIndex = 0;
+    usize tmpIndex = 0;
     for (; slice < matSizeZ; slice++) {
         const u32 z = header.zLeft ? slice : matSizeZ - slice - 1;
         for (; y < matSizeY; y++) {
@@ -277,7 +277,7 @@ ReadResult Reader::readUncompressed(Voxel64 buffer[], size_t bufferLength) noexc
 }
 
 std::pair<u32, u32> Reader::readCompressed_writeToBuffer(
-    Voxel64 buffer[], size_t bufferLength, size_t bufferIndex, size_t relZ, u32 data, size_t count) noexcept
+    Voxel64 buffer[], usize bufferLength, usize bufferIndex, usize relZ, u32 data, usize count) noexcept
 {
     const Color32 color = decodeColor(data, this->header.colorFormat, this->header.visibilityMaskEncoded);
     if (color.isInvisible()) {
@@ -286,8 +286,8 @@ std::pair<u32, u32> Reader::readCompressed_writeToBuffer(
     }
 
     VXIO_IF_DEBUG(auto oldIndex = this->index);
-    size_t lim = std::min(count, bufferLength - bufferIndex);
-    for (size_t i = 0; i < lim; ++i, ++this->index) {
+    usize lim = std::min(count, bufferLength - bufferIndex);
+    for (usize i = 0; i < lim; ++i, ++this->index) {
         const u64 relIndex = this->index % (matSizeX * matSizeY);
         const u64 relX = relIndex % matSizeX;
         const u64 relY = relIndex / matSizeX;
@@ -306,7 +306,7 @@ std::pair<u32, u32> Reader::readCompressed_writeToBuffer(
     return {lim, lim};
 }
 
-ReadResult Reader::readCompressed(Voxel64 buffer[], size_t bufferLength) noexcept
+ReadResult Reader::readCompressed(Voxel64 buffer[], usize bufferLength) noexcept
 {
     VXIO_DEBUG_ASSERT(this->initialized);
     VXIO_DEBUG_ASSERT_LE(index, matVolume);
@@ -315,7 +315,7 @@ ReadResult Reader::readCompressed(Voxel64 buffer[], size_t bufferLength) noexcep
 
     u32 readVoxels = 0;
 
-    const auto writeToBuffer = [this, &readVoxels, buffer, bufferLength](size_t z, u32 data, size_t count) {
+    const auto writeToBuffer = [this, &readVoxels, buffer, bufferLength](usize z, u32 data, usize count) {
         return readCompressed_writeToBuffer(buffer, bufferLength, readVoxels, z, data, count);
     };
 
@@ -323,7 +323,7 @@ ReadResult Reader::readCompressed(Voxel64 buffer[], size_t bufferLength) noexcep
     u32 &resumeData = this->y;
 
     if (resumeCount != 0) {
-        const auto z = header.zLeft ? slice : matSizeZ - size_t{1} - slice;
+        const auto z = header.zLeft ? slice : matSizeZ - usize{1} - slice;
         const auto [actualCount, actualVolume] = writeToBuffer(z, resumeData, resumeCount);
         readVoxels += actualCount;
         VXIO_DEBUG_ASSERT_NE(actualVolume, 0);
@@ -339,7 +339,7 @@ ReadResult Reader::readCompressed(Voxel64 buffer[], size_t bufferLength) noexcep
     VXIO_DEBUG_ASSERT_EQ(resumeCount, 0);
 
     for (; slice < matSizeZ; ++slice) {
-        const auto z = header.zLeft ? slice : matSizeZ - size_t{1} - slice;
+        const auto z = header.zLeft ? slice : matSizeZ - usize{1} - slice;
 
         while (true) {
             const auto data = stream.readLittle<u32>();
@@ -458,17 +458,17 @@ VoxelArray Deserializer::readUncompressed(u32 sizeX, u32 sizeY, u32 sizeZ) noexc
 {
     VoxelArray matrix{sizeX, sizeY, sizeZ};
 
-    const size_t bufferSize = sizeX * sizeY * sizeZ * sizeof(u32);
+    const usize bufferSize = sizeX * sizeY * sizeZ * sizeof(u32);
     auto buffer = std::make_unique<u8[]>(bufferSize);
     u8 *bufferPtr = buffer.get();
 
     streamWrapper.read(bufferPtr, bufferSize);
 
     const u32 maxZ = sizeZ - 1;
-    for (size_t slice = 0, index = 0; slice < sizeZ; slice++) {
-        const size_t z = header.zLeft ? slice : maxZ - slice;
-        for (size_t y = 0; y < sizeY; y++)
-            for (size_t x = 0; x < sizeX; x++, index++) {
+    for (usize slice = 0, index = 0; slice < sizeZ; slice++) {
+        const usize z = header.zLeft ? slice : maxZ - slice;
+        for (usize y = 0; y < sizeY; y++)
+            for (usize x = 0; x < sizeX; x++, index++) {
                 auto data = decodeBig<u32>(bufferPtr + index * sizeof(u32));
                 auto color = decodeColor(data, header.colorFormat, header.visibilityMaskEncoded);
                 matrix[{x, y, z}] = color;
@@ -483,9 +483,9 @@ VoxelArray Deserializer::readCompressed(u32 sizeX, u32 sizeY, u32 sizeZ) noexcep
     VoxelArray voxels{sizeX, sizeY, sizeZ};
     const u32 maxZ = sizeZ - 1;
 
-    for (size_t slice = 0; slice < sizeZ; slice++) {
-        const size_t z = header.zLeft ? slice : maxZ - slice;
-        size_t index = 0;
+    for (usize slice = 0; slice < sizeZ; slice++) {
+        const usize z = header.zLeft ? slice : maxZ - slice;
+        usize index = 0;
 
         while (true) {
             auto data = streamWrapper.readLittle<u32>();
@@ -497,14 +497,14 @@ VoxelArray Deserializer::readCompressed(u32 sizeX, u32 sizeY, u32 sizeZ) noexcep
                 data = streamWrapper.readBig<u32>();
 
                 for (u32 i = 0; i < count; i++) {
-                    size_t x = index % sizeX, y = index / sizeX;
+                    usize x = index % sizeX, y = index / sizeX;
                     auto color = decodeColor(data, header.colorFormat, header.visibilityMaskEncoded);
                     voxels[{x, y, z}] = color;
                     index++;
                 }
             }
             else {
-                size_t x = index % sizeX, y = index / sizeX;
+                usize x = index % sizeX, y = index / sizeX;
                 auto color = decodeColor(reverseBytes<u32>(data), header.colorFormat, header.visibilityMaskEncoded);
                 voxels[{x, y, z}] = color;
                 index++;
@@ -555,9 +555,9 @@ void Serializer::serializeUncompressed(const VoxelArray &array) noexcept(false)
 {
     const auto dims = array.dimensions();
 
-    for (size_t z = 0; z < dims.z(); z++)
-        for (size_t y = 0; y < dims.y(); y++)
-            for (size_t x = 0; x < dims.x(); x++) {
+    for (usize z = 0; z < dims.z(); z++)
+        for (usize y = 0; y < dims.y(); y++)
+            for (usize x = 0; x < dims.x(); x++) {
                 argb32 color = encodeColor<ColorFormat::RGBA>(array[{x, y, z}]);
                 streamWrapper.writeBig<u32>(color);
             }
