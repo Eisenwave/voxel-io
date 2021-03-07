@@ -64,6 +64,13 @@ constexpr u32 distanceSqr(Vec4u8 p0, Vec4u8 p1)
     return lengthSqr(p0.cast<int>() - p1.cast<int>());
 }
 
+inline u32 distanceManhattan(Vec4u8 p0, Vec4u8 p1)
+{
+    const Vec<int, 4> diff = p0.cast<int>() - p1.cast<int>();
+    const int result = std::abs(diff[0]) + std::abs(diff[1]) + std::abs(diff[2]) + std::abs(diff[3]);
+    return static_cast<u32>(result);
+}
+
 constexpr u32 ileave4b(u32 bytes)
 {
     return static_cast<u32>(ileaveBytes_const<4>(bytes));
@@ -123,7 +130,13 @@ public:
     template <typename F, std::enable_if_t<std::is_invocable_v<F, argb32, value_type>, int> = 0>
     void forEach(const F &action)
     {
-        forEach_impl(0, root, std::move(action));
+        forEach_impl<true>(0, root, std::move(action));
+    }
+
+    template <typename F, std::enable_if_t<std::is_invocable_v<F, argb32, value_type>, int> = 0>
+    void forEachMorton(const F &action)
+    {
+        forEach_impl<false>(0, root, std::move(action));
     }
 
     /**
@@ -142,7 +155,7 @@ public:
     u32 distanceSqr(argb32 color);
 
 private:
-    template <typename F, usize LEVEL>
+    template <bool DILEAVE, typename F, usize LEVEL>
     static void forEach_impl(u32 morton, Node<LEVEL> &node, const F &action)
     {
         for (u8 i = 0; i < BRANCHING_FACTOR; ++i) {
@@ -151,7 +164,10 @@ private:
             }
             const u32 childMorton = (morton << 4) | i;
             if constexpr (LEVEL > 1) {
-                forEach_impl(childMorton, *node.children[i], action);
+                forEach_impl<DILEAVE>(childMorton, *node.children[i], action);
+            }
+            else if constexpr (not DILEAVE) {
+                action(childMorton, node.values[i]);
             }
             else {
                 u32 childPos = detail::dileave4b(childMorton);
