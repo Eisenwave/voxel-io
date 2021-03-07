@@ -37,7 +37,7 @@ std::string fractionToString_impl(Int num, const Int den, const unsigned precisi
     return result;
 }
 
-template <usize BASE = 1024, bool SPACE = true, std::enable_if_t<BASE == 1000 || BASE == 1024, usize> = BASE>
+template <usize BASE, std::enable_if_t<BASE == 1000 || BASE == 1024, usize> = BASE>
 std::string stringifyFileSize_impl(uint64_t size, unsigned precision = 0, char separator = ' ') noexcept
 {
     static constexpr const char FILE_SIZE_UNITS[8][3]{"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB"};
