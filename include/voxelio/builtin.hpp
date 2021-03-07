@@ -35,6 +35,11 @@
 #if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_unreachable)
 #define VXIO_HAS_BUILTIN_UNREACHABLE
 #define VXIO_UNREACHABLE() __builtin_unreachable()
+
+#elif defined(VXIO_MSVC)
+#define VXIO_HAS_BUILTIN_UNREACHABLE
+#define VXIO_UNREACHABLE() __assume(false)
+
 #else
 #define VXIO_UNREACHABLE()
 #endif
@@ -50,7 +55,7 @@
 
 #elif defined(VXIO_GNU)
 #define VXIO_HAS_BUILTIN_ASSUME
-#define VXIO_ASSUME(condition) static_cast<bool>(condition) ? void(0) : VXIO_UNREACHABLE()
+#define VXIO_ASSUME(condition) static_cast<bool>(condition) ? void(0) : __builtin_unreachable()
 
 #elif defined(VXIO_MSVC)
 #define VXIO_HAS_BUILTIN_ASSUME
@@ -81,7 +86,11 @@ namespace voxelio::builtin {
 //     This builtin can potentially not exist and it has no sane default.
 //     clang 9+ and gcc 9+ support this builtin, even for C++17, allowing for implementation of
 //     std::is_constant_evaluated() before C++20.
-#if defined(VXIO_CLANG) && VXIO_HAS_BUILTIN(__builtin_is_constant_evaluated) || defined(VXIO_GNU) && VXIO_GNU >= 9
+// clang-format off
+#if defined(VXIO_CLANG) && VXIO_HAS_BUILTIN(__builtin_is_constant_evaluated) || \
+    defined(VXIO_GNU) && VXIO_GNU >= 9 || \
+    defined(VXIO_MSVC) && VXIO_MSVC >= 1925
+// clang-format on
 #define VXIO_HAS_BUILTIN_IS_CONSTANT_EVALUATED
 constexpr bool isConstantEvaluated()
 {
@@ -218,39 +227,6 @@ inline int findFirstSet(unsigned long long x) noexcept
 }
 #endif
 
-// int parity(unsigned ...):
-//     Returns the parity of a number.
-//     This is a bool which indicates whether the number of set bits in x is odd.
-//     The parity of 0 is 0, the parity of 1 is 1.
-#if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_parity) && VXIO_HAS_BUILTIN(__builtin_parityl) && \
-    VXIO_HAS_BUILTIN(__builtin_parityll)
-#define VXIO_HAS_BUILTIN_PARITY
-inline bool parity(unsigned char x) noexcept
-{
-    return __builtin_parity(x);
-}
-
-inline int parity(unsigned short x) noexcept
-{
-    return __builtin_parity(x);
-}
-
-inline int parity(unsigned int x) noexcept
-{
-    return __builtin_parity(x);
-}
-
-inline int parity(unsigned long x) noexcept
-{
-    return __builtin_parityl(x);
-}
-
-inline int parity(unsigned long long x) noexcept
-{
-    return __builtin_parityll(x);
-}
-#endif
-
 // int popCount(unsigned ...):
 //     Counts the number of one-bits in an unsigned integer type.
 #if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_popcount) && VXIO_HAS_BUILTIN(__builtin_popcountl) && \
@@ -299,6 +275,61 @@ inline uint32_t popCount(uint32_t x) noexcept
 inline uint64_t popCount(uint64_t x) noexcept
 {
     return __popcnt64(x);
+}
+#endif
+
+// int parity(unsigned ...):
+//     Returns the parity of a number.
+//     This is a bool which indicates whether the number of set bits in x is odd.
+//     The parity of 0 is 0, the parity of 1 is 1.
+#if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_parity) && VXIO_HAS_BUILTIN(__builtin_parityl) && \
+    VXIO_HAS_BUILTIN(__builtin_parityll)
+#define VXIO_HAS_BUILTIN_PARITY
+inline bool parity(unsigned char x) noexcept
+{
+    return __builtin_parity(x);
+}
+
+inline bool parity(unsigned short x) noexcept
+{
+    return __builtin_parity(x);
+}
+
+inline bool parity(unsigned int x) noexcept
+{
+    return __builtin_parity(x);
+}
+
+inline bool parity(unsigned long x) noexcept
+{
+    return __builtin_parityl(x);
+}
+
+inline bool parity(unsigned long long x) noexcept
+{
+    return __builtin_parityll(x);
+}
+
+#elif defined(VXIO_HAS_BUILTIN_POPCOUNT)
+#define VXIO_HAS_BUILTIN_PARITY
+inline bool parity(uint8_t x) noexcept
+{
+    return popCount(x) & 1;
+}
+
+inline bool parity(uint16_t x) noexcept
+{
+    return popCount(x) & 1;
+}
+
+inline bool parity(uint32_t x) noexcept
+{
+    return popCount(x) & 1;
+}
+
+inline bool parity(uint64_t x) noexcept
+{
+    return popCount(x) & 1;
 }
 #endif
 
@@ -377,6 +408,28 @@ inline uint32_t byteSwap(uint32_t x) noexcept
 inline uint64_t byteSwap(uint64_t x) noexcept
 {
     return __builtin_bswap64(x);
+}
+
+#elif defined(VXIO_MSVC)
+#define VXIO_HAS_BUILTIN_BSWAP
+uint8_t byteSwap(uint8_t val)
+{
+    return val;
+}
+
+unsigned short byteSwap(unsigned short val)
+{
+    return _byteswap_ushort(val);
+}
+
+unsigned long byteSwap(unsigned long val)
+{
+    return _byteswap_ulong(val);
+}
+
+uint64_t byteSwap(uint64_t val)
+{
+    return _byteswap_uint64(val);
 }
 #endif
 
