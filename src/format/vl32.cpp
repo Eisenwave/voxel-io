@@ -67,7 +67,7 @@ ResultCode Writer::init() noexcept
     return ResultCode::OK;
 }
 
-ResultCode Writer::write(Voxel32 buffer[], size_t bufferLength) noexcept
+ResultCode Writer::write(const Voxel32 buffer[], size_t bufferLength) noexcept
 {
     if (not isInitialized()) {
         VXIO_FORWARD_ERROR(init());

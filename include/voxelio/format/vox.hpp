@@ -198,7 +198,7 @@ public:
     ~Writer() final;
 
     [[nodiscard]] ResultCode init() noexcept final;
-    [[nodiscard]] ResultCode write(Voxel32 buffer[], usize bufferLength) noexcept final;
+    [[nodiscard]] ResultCode write(const Voxel32 buffer[], usize bufferLength) noexcept final;
     [[nodiscard]] ResultCode finalize() noexcept final;
 
     [[nodiscard]] ResultCode setSubVolumeSize(u32 size) noexcept final

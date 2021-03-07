@@ -846,12 +846,12 @@ ResultCode Writer::init() noexcept
     const usize rawPaletteSize = palette().size();
 
     for (usize rawIndex = 0; rawIndex < rawPaletteSize; ++rawIndex) {
-        u32 representativeIndex = paletteReduction[rawIndex];
-        argb32 representativeColor = palette().colorOf(representativeIndex);
-        usize reducedIndex = representativePalette.insert(representativeColor);
+        const u32 representativeIndex = paletteReduction[rawIndex];
+        const argb32 representativeColor = palette().colorOf(representativeIndex);
+        const usize reducedIndex = representativePalette.insert(representativeColor);
 
         VXIO_DEBUG_ASSERT_LT(reducedIndex, PALETTE_SIZE - 1);
-        usize byteOffset = reducedIndex % PALETTE_SIZE * sizeof(argb32);
+        const usize byteOffset = reducedIndex % PALETTE_SIZE * sizeof(argb32);
         u8 *colorLocation = representativePaletteColors + byteOffset;
         colorLocation[0] = static_cast<u8>(representativeColor >> 16);
         colorLocation[1] = static_cast<u8>(representativeColor >> 8);
@@ -867,7 +867,7 @@ ResultCode Writer::init() noexcept
     return streamBasedResultCode();
 }
 
-ResultCode Writer::write(Voxel32 buffer[], usize bufferLength) noexcept
+ResultCode Writer::write(const Voxel32 buffer[], usize bufferLength) noexcept
 {
     if (state == IoState::UNINITIALIZED) {
         VXIO_FORWARD_ERROR(init());

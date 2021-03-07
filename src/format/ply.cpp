@@ -37,7 +37,7 @@ ResultCode Writer::init() noexcept
     return stream.good() ? ResultCode::OK : ResultCode::WRITE_ERROR_IO_FAIL;
 }
 
-ResultCode Writer::write(Voxel32 buffer[], size_t bufferLength) noexcept
+ResultCode Writer::write(const Voxel32 buffer[], size_t bufferLength) noexcept
 {
     if (state == IoState::UNINITIALIZED) {
         VXIO_FORWARD_ERROR(init());

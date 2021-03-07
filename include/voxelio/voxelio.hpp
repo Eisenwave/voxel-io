@@ -94,7 +94,7 @@ public:
      * @param buffer the input buffer from which all voxels are read
      * @param bufferLength the length of the buffer
      */
-    [[nodiscard]] virtual ResultCode write(Voxel32 buffer[], size_t bufferLength) noexcept = 0;
+    [[nodiscard]] virtual ResultCode write(const Voxel32 buffer[], size_t bufferLength) noexcept = 0;
 
     /**
      * @brief Flushes the writer.
