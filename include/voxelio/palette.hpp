@@ -107,6 +107,13 @@ public:
      * @return a table mapping from palette indices in this palette to representative indices
      */
     std::unique_ptr<u32[]> reduce(usize desiredSize, usize &outSize) const;
+
+    Palette32 createReducedPalette(const u32 reduction[]) const;
+    Palette32 createReducedPaletteAndStoreMapping(u32 inOutReduction[]) const;
+
+private:
+    std::unique_ptr<u32[]> reduceByClustering(usize desiredSize) const;
+    std::unique_ptr<u32[]> reduceByTruncating(usize minimumSize, usize &outSize) const;
 };
 
 }  // namespace voxelio
