@@ -67,7 +67,7 @@ constexpr bool RELEASE = !DEBUG;
 // COMPILER DETECTION ==================================================================================================
 
 #ifdef _MSC_VER
-#define VXIO_MSVC
+#define VXIO_MSVC _MSC_VER
 #endif
 
 #ifdef __GNUC__
