@@ -43,7 +43,8 @@ SOURCES +=  \
     src/format/qef.cpp \
     src/format/vl32.cpp \
     src/format/vobj.cpp \
-    src/format/vox.cpp
+    src/format/vox.cpp \
+    src/format/xyzrgb.cpp
 
 HEADERS +=  \
     include/voxelio/3rd_party/lodepng/lodepng.hpp \
@@ -88,6 +89,7 @@ HEADERS +=  \
     include/voxelio/format/qb.hpp \
     include/voxelio/format/qbt.hpp \
     include/voxelio/format/qef.hpp \
+    include/voxelio/format/xyzrgb.hpp \
     include/voxelio/results.hpp \
     include/voxelio/types.hpp \
     include/voxelio/format/vl32.hpp \
