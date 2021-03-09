@@ -92,7 +92,7 @@ namespace voxelio::builtin {
     defined(VXIO_MSVC) && VXIO_MSVC >= 1925
 // clang-format on
 #define VXIO_HAS_BUILTIN_IS_CONSTANT_EVALUATED
-constexpr bool isConstantEvaluated()
+constexpr bool isConstantEvaluated() noexcept
 {
     return __builtin_is_constant_evaluated();
 }
@@ -413,22 +413,22 @@ inline uint64_t byteSwap(uint64_t x) noexcept
 
 #elif defined(VXIO_MSVC)
 #define VXIO_HAS_BUILTIN_BSWAP
-inline uint8_t byteSwap(uint8_t val)
+inline uint8_t byteSwap(uint8_t val) noexcept
 {
     return val;
 }
 
-inline unsigned short byteSwap(unsigned short val)
+inline unsigned short byteSwap(unsigned short val) noexcept
 {
     return _byteswap_ushort(val);
 }
 
-inline unsigned long byteSwap(unsigned long val)
+inline unsigned long byteSwap(unsigned long val) noexcept
 {
     return _byteswap_ulong(val);
 }
 
-inline uint64_t byteSwap(uint64_t val)
+inline uint64_t byteSwap(uint64_t val) noexcept
 {
     return _byteswap_uint64(val);
 }
