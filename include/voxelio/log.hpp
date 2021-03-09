@@ -23,6 +23,8 @@ enum class LogLevel : unsigned {
     ERROR,
     /** Warns the user about unusual behavior. (could not clear some data, had to retry some operation, etc.) */
     WARNING,
+    /** Important messages, more relevant than regular info messages. */
+    IMPORTANT,
     /** Default level on release builds. Used for general messages. */
     INFO,
     /** Default level on debug builds. Used for messages that are only relevant to the developer. */
@@ -44,6 +46,7 @@ constexpr const char *nameOf(LogLevel level)
     case LogLevel::FAILURE: return "FAILURE";
     case LogLevel::ERROR: return "ERROR";
     case LogLevel::WARNING: return "WARNING";
+    case LogLevel::IMPORTANT: return "IMPORTANT";
     case LogLevel::INFO: return "INFO";
     case LogLevel::DEBUG: return "DEBUG";
     case LogLevel::DETAIL: return "DETAIL";
@@ -60,6 +63,7 @@ constexpr const char *fixedWidthNameOf(LogLevel level)
     case LogLevel::FAILURE: return "FAIL";
     case LogLevel::ERROR: return "EROR";
     case LogLevel::WARNING: return "WARN";
+    case LogLevel::IMPORTANT: return "IMPO";
     case LogLevel::INFO: return "INFO";
     case LogLevel::DEBUG: return "DBUG";
     case LogLevel::DETAIL: return "DTAL";
@@ -107,6 +111,7 @@ namespace detail {
 extern LogLevel logLevel;
 extern LogCallback logBackend;
 extern LogFormatter logFormatter;
+extern bool isSourceLogging;
 
 }  // namespace detail
 
@@ -143,6 +148,11 @@ inline void setLogLevel(LogLevel level)
 inline bool isLoggable(LogLevel level)
 {
     return level <= detail::logLevel;
+}
+
+inline void enableLoggingSourceLocation(bool enable)
+{
+    detail::isSourceLogging = enable;
 }
 
 // LOGGING FUNCTIONS ===================================================================================================

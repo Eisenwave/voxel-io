@@ -18,7 +18,7 @@ constexpr const char *RESET = ASCII_ESC "[0m";
 
 constexpr const char *FG_16C_BLK = ASCII_ESC "[38;5;0m";
 // constexpr const char *FG_16C_RED = ASCII_ESC "[38;5;1m";
-// constexpr const char *FG_16C_GRN = ASCII_ESC "[38;5;2m";
+constexpr const char *FG_16C_GRN = ASCII_ESC "[38;5;2m";
 constexpr const char *FG_16C_ORG = ASCII_ESC "[38;5;3m";
 // constexpr const char *FG_16C_BLU = ASCII_ESC "[38;5;4m";
 constexpr const char *FG_16C_MAG = ASCII_ESC "[38;5;5m";
@@ -33,23 +33,25 @@ constexpr const char *FG_16C_BRI_MAG = ASCII_ESC "[38;5;13m";
 // constexpr const char *FG_16C_BRI_CYA = ASCII_ESC "[38;5;14m";
 // constexpr const char *FG_16C_WHT = ASCII_ESC "[38;5;15m";
 
-// constexpr const char *FG_BLK = ASCII_ESC "[30m";
-// constexpr const char *FG_RED = ASCII_ESC "[31m";
-// constexpr const char *FG_GRN = ASCII_ESC "[32m";
-// constexpr const char *FG_YLW = ASCII_ESC "[33m";
-// constexpr const char *FG_BLU = ASCII_ESC "[34m";
-// constexpr const char *FG_MAG = ASCII_ESC "[35m";
-// constexpr const char *FG_CYA = ASCII_ESC "[36m";
-// constexpr const char *FG_WHT = ASCII_ESC "[37m";
+#if 0
+constexpr const char *FG_BLK = ASCII_ESC "[30m";
+constexpr const char *FG_RED = ASCII_ESC "[31m";
+constexpr const char *FG_GRN = ASCII_ESC "[32m";
+constexpr const char *FG_YLW = ASCII_ESC "[33m";
+constexpr const char *FG_BLU = ASCII_ESC "[34m";
+constexpr const char *FG_MAG = ASCII_ESC "[35m";
+constexpr const char *FG_CYA = ASCII_ESC "[36m";
+constexpr const char *FG_WHT = ASCII_ESC "[37m";
 
-// constexpr const char *FG_INTENSE_BLK = ASCII_ESC "[1;30m";
-// constexpr const char *FG_INTENSE_RED = ASCII_ESC "[1;31m";
-// constexpr const char *FG_INTENSE_GRN = ASCII_ESC "[1;32m";
-// constexpr const char *FG_INTENSE_YLW = ASCII_ESC "[1;33m";
-// constexpr const char *FG_INTENSE_BLU = ASCII_ESC "[1;34m";
-// constexpr const char *FG_INTENSE_MAG = ASCII_ESC "[1;35m";
-// constexpr const char *FG_INTENSE_CYA = ASCII_ESC "[1;36m";
-// constexpr const char *FG_INTENSE_WHT = ASCII_ESC "[1;37m";
+constexpr const char *FG_INTENSE_BLK = ASCII_ESC "[1;30m";
+constexpr const char *FG_INTENSE_RED = ASCII_ESC "[1;31m";
+constexpr const char *FG_INTENSE_GRN = ASCII_ESC "[1;32m";
+constexpr const char *FG_INTENSE_YLW = ASCII_ESC "[1;33m";
+constexpr const char *FG_INTENSE_BLU = ASCII_ESC "[1;34m";
+constexpr const char *FG_INTENSE_MAG = ASCII_ESC "[1;35m";
+constexpr const char *FG_INTENSE_CYA = ASCII_ESC "[1;36m";
+constexpr const char *FG_INTENSE_WHT = ASCII_ESC "[1;37m";
+#endif
 
 }  // namespace ansi
 
@@ -88,6 +90,7 @@ constexpr const char *prefixOf(LogLevel level)
     case LogLevel::FAILURE: return ansi::FG_16C_BRI_RED;
     case LogLevel::ERROR: return ansi::FG_16C_BRI_RED;
     case LogLevel::WARNING: return ansi::FG_16C_YLW;
+    case LogLevel::IMPORTANT: return ansi::FG_16C_GRN;
     case LogLevel::INFO: return ansi::FG_16C_BRI_BLU;
     case LogLevel::DEBUG: return ansi::FG_16C_BRI_MAG;
     case LogLevel::DETAIL: return ansi::FG_16C_MAG;
@@ -117,6 +120,7 @@ void logToAsyncCallback(const char *msg)
 LogLevel detail::logLevel = LogLevel::INFO;
 LogCallback detail::logBackend = &logToCout;
 LogFormatter detail::logFormatter = &defaultFormat;
+bool detail::isSourceLogging = true;
 
 void defaultFormat(const char *msg, LogLevel level, SourceLocation location)
 {
@@ -137,12 +141,16 @@ void defaultFormat(const char *msg, LogLevel level, SourceLocation location)
     output += fixedWidthNameOf(level);
     VXIO_IF_UNIX(output += ansi::RESET);
     output += "] ";
-    VXIO_IF_UNIX(output += ansi::FG_16C_BRI_GRA);
-    output += basename(location.file, VXIO_IF_WINDOWS('\\') VXIO_IF_UNIX('/'));
-    output += '@';
-    output += voxelio::stringify(location.line);
-    output += ": ";
-    VXIO_IF_UNIX(output += ansi::RESET);
+
+    if (detail::isSourceLogging) {
+        VXIO_IF_UNIX(output += ansi::FG_16C_BRI_GRA);
+        output += basename(location.file, VXIO_IF_WINDOWS('\\') VXIO_IF_UNIX('/'));
+        output += '@';
+        output += voxelio::stringify(location.line);
+        output += ": ";
+        VXIO_IF_UNIX(output += ansi::RESET);
+    }
+
     output += msg;
     output += '\n';
 
