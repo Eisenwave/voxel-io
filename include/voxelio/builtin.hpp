@@ -260,7 +260,7 @@ inline int popCount(unsigned long long x) noexcept
 #define VXIO_HAS_BUILTIN_POPCOUNT
 inline uint8_t popCount(uint8_t x) noexcept
 {
-    return __popcnt16(x);
+    return static_cast<uint8_t>(__popcnt16(x));
 }
 
 inline uint16_t popCount(uint16_t x) noexcept
@@ -421,6 +421,17 @@ inline uint8_t byteSwap(uint8_t val) noexcept
 inline unsigned short byteSwap(unsigned short val) noexcept
 {
     return _byteswap_ushort(val);
+}
+
+inline unsigned int byteSwap(unsigned int val) noexcept
+{
+    static_assert(sizeof(unsigned int) == sizeof(unsigned short) || sizeof(unsigned int) == sizeof(unsigned long), "No viable _byteswap implementation for unsigned int");
+    if constexpr (sizeof(unsigned int) == sizeof(unsigned short)) {
+        return static_cast<unsigned int>(_byteswap_ushort(static_cast<unsigned short>(val)));
+    }
+    else {
+        return static_cast<unsigned int>(_byteswap_ulong(static_cast<unsigned long>(val))); 
+    }
 }
 
 inline unsigned long byteSwap(unsigned long val) noexcept
