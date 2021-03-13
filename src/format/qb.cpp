@@ -54,8 +54,8 @@ Color32 decodeColor(argb32 color, ColorFormat colorFormat, bool visibilityMaskEn
     VXIO_DEBUG_ASSERT(colorFormat == ColorFormat::RGBA || colorFormat == ColorFormat::BGRA);
 
     switch (colorFormat) {
-    case ColorFormat::RGBA: color = reorderColor<RGBA, ARGB>(color); break;
-    case ColorFormat::BGRA: color = reorderColor<BGRA, ARGB>(color); break;
+    case ColorFormat::RGBA: color = reorderColor<ArgbOrder::RGBA, ArgbOrder::ARGB>(color); break;
+    case ColorFormat::BGRA: color = reorderColor<ArgbOrder::BGRA, ArgbOrder::ARGB>(color); break;
     }
 
     // DEBUG_ASSERT_CONSEQUENCE(visibilityMaskEncoded, RGB32::alpha(color) < 0b1000000);
@@ -73,8 +73,8 @@ u32 encodeColor(Color32 argb)
 {
     static_assert(FORMAT == ColorFormat::RGBA || FORMAT == ColorFormat::BGRA);
 
-    if constexpr (FORMAT == ColorFormat::RGBA) return reorderColor<ARGB, RGBA>(argb);
-    if constexpr (FORMAT == ColorFormat::BGRA) return reorderColor<ARGB, BGRA>(argb);
+    if constexpr (FORMAT == ColorFormat::RGBA) return reorderColor<ArgbOrder::ARGB, ArgbOrder::RGBA>(argb);
+    if constexpr (FORMAT == ColorFormat::BGRA) return reorderColor<ArgbOrder::ARGB, ArgbOrder::BGRA>(argb);
 }
 
 ReadResult Reader::init() noexcept

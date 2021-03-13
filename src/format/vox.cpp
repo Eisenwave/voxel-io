@@ -606,7 +606,7 @@ ReadResult Reader::readChunkContent_rgba() noexcept
         u32 rgba = stream.readBig<u32>();
         VXIO_NO_EOF();
         // The last color stored in RGBA chunks, which is mapped to palette index 0 is not usable.
-        this->palette[(i + 1) % PALETTE_SIZE] = reorderColor<RGBA, ARGB>(rgba);
+        this->palette[(i + 1) % PALETTE_SIZE] = reorderColor<ArgbOrder::RGBA, ArgbOrder::ARGB>(rgba);
     }
     return ReadResult::ok();
 }

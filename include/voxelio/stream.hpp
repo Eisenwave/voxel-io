@@ -855,7 +855,7 @@ private:
 public:
     ByteArrayOutputStream(usize initialSize = DEFAULT_INITIAL_SIZE) noexcept;
 
-    ByteArrayOutputStream(ByteArrayOutputStream &&moveOf) : pos{moveOf.pos}, sink{moveOf.sink}
+    ByteArrayOutputStream(ByteArrayOutputStream &&moveOf) noexcept : pos{moveOf.pos}, sink{moveOf.sink}
     {
         moveOf.sink = nullptr;
     }

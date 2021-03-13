@@ -75,7 +75,7 @@ constexpr u64 duplBits_naive(u64 input, usize out_bits_per_in_bits)
  * @tparam BITS the number of bits to be interleaved, must be > 0
  * @return the input interleaved with <BITS> bits
  */
-template <usize BITS>
+template <unsigned BITS>
 constexpr u64 ileaveZeros_const(u32 input)
 {
     if constexpr (BITS == 0) {
@@ -90,11 +90,11 @@ constexpr u64 ileaveZeros_const(u32 input)
             detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 16),
         };
         // log2_floor(0) == 0 so this is always safe, even for 1 bit
-        constexpr int start = 4 - (voxelio::log2floor(BITS >> 1));
+        constexpr int start = 4 - static_cast<int>(voxelio::log2floor(BITS >> 1));
 
         u64 n = input;
         for (int i = start; i != -1; --i) {
-            usize shift = BITS * (1 << i);
+            unsigned shift = BITS * (1u << i);
             n |= n << shift;
             n &= MASKS[i];
         }
@@ -138,7 +138,7 @@ constexpr u64 remIleavedBits_naive(u64 input, usize bits) noexcept
  * @param bits input bits per output bit
  * @return the the output with removed bits
  */
-template <usize BITS>
+template <unsigned BITS>
 constexpr u64 remIleavedBits_const(u64 input) noexcept
 {
     if constexpr (BITS == 0) {
@@ -154,12 +154,12 @@ constexpr u64 remIleavedBits_const(u64 input) noexcept
             detail::duplBits_naive(detail::ileaveZeros_naive(~u32(0), BITS), 32),
         };
         // log2_floor(0) == 0 so this is always safe, even for 1 bit
-        constexpr usize iterations = 5 - (voxelio::log2floor(BITS >> 1));
+        constexpr usize iterations = 5 - voxelio::log2floor(BITS >> 1);
 
         input &= MASKS[0];
 
         for (usize i = 0; i < iterations; ++i) {
-            usize rshift = (1 << i) * BITS;
+            unsigned rshift = (1u << i) * BITS;
             input |= input >> rshift;
             input &= MASKS[i + 1];
         }

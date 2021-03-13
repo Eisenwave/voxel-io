@@ -100,7 +100,7 @@ struct MovingAverage {
     constexpr Number operator*() const
     {
         VXIO_DEBUG_ASSERT_NE(index, 0);
-        return sum / std::min(index, N);
+        return static_cast<Number>(sum / std::min(index, N));
     }
 };
 

@@ -196,7 +196,7 @@ constexpr Color32 operator!=(const Color32 &rgb0, const Color32 &rgb1)
     return rgb0.argb() != rgb1.argb();
 }
 
-enum ArgbOrder { ARGB, RGBA, BGRA };
+enum class ArgbOrder { ARGB, RGBA, BGRA };
 
 namespace detail {
 struct ChannelOffsets {
