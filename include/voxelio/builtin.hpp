@@ -13,6 +13,7 @@
 #endif
 
 #include <cstdint>
+#include <type_traits>
 
 // COMPILER AGNOSTIC ===================================================================================================
 
@@ -97,6 +98,8 @@ constexpr bool isConstantEvaluated() noexcept
     return __builtin_is_constant_evaluated();
 }
 #endif
+
+// BITWISE AND ARITHMETIC BUILTINS =====================================================================================
 
 // int countLeadingRedundantSignBits(unsigned ...):
 //     Counts the number of redundant sign bits, i.o.w. the number of bits following the sign bit which are equal to it.
@@ -338,24 +341,13 @@ inline bool parity(uint64_t x) noexcept
 //     Right-rotates the bits of a number.
 #if defined(VXIO_CLANG) && VXIO_HAS_BUILTIN(__builtin_rotateright8) && VXIO_HAS_BUILTIN(__builtin_rotateright64)
 #define VXIO_HAS_BUILTIN_ROTR
-inline uint8_t rotr(uint8_t x, unsigned char rot) noexcept
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint> && (sizeof(Uint) <= 8), int> = 0>
+Uint rotateRight(Uint x, unsigned char rot) noexcept
 {
-    return __builtin_rotateright8(x, rot);
-}
-
-inline uint16_t rotr(uint16_t x, unsigned char rot) noexcept
-{
-    return __builtin_rotateright16(x, rot);
-}
-
-inline uint32_t rotr(uint32_t x, unsigned char rot) noexcept
-{
-    return __builtin_rotateright32(x, rot);
-}
-
-inline uint64_t rotr(uint64_t x, unsigned char rot) noexcept
-{
-    return __builtin_rotateright64(x, rot);
+    if constexpr (sizeof(x) == 1) return __builtin_rotateright8(static_cast<uint8_t>(x), rot);
+    if constexpr (sizeof(x) == 2) return __builtin_rotateright16(static_cast<uint16_t>(x), rot);
+    if constexpr (sizeof(x) == 4) return __builtin_rotateright32(static_cast<uint32_t>(x), rot);
+    if constexpr (sizeof(x) == 8) return __builtin_rotateright64(static_cast<uint64_t>(x), rot);
 }
 #endif
 
@@ -363,24 +355,13 @@ inline uint64_t rotr(uint64_t x, unsigned char rot) noexcept
 //     Left-rotates the bits of a number.
 #if defined(VXIO_CLANG) && VXIO_HAS_BUILTIN(__builtin_rotateleft8) && VXIO_HAS_BUILTIN(__builtin_rotateleft64)
 #define VXIO_HAS_BUILTIN_ROTL
-inline uint8_t rotl(uint8_t x, unsigned char rot) noexcept
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint> && (sizeof(Uint) <= 8), int> = 0>
+Uint rotateLeft(Uint x, unsigned char rot) noexcept
 {
-    return __builtin_rotateleft8(x, rot);
-}
-
-inline uint16_t rotl(uint16_t x, unsigned char rot) noexcept
-{
-    return __builtin_rotateleft16(x, rot);
-}
-
-inline uint32_t rotl(uint32_t x, unsigned char rot) noexcept
-{
-    return __builtin_rotateleft32(x, rot);
-}
-
-inline uint64_t rotl(uint64_t x, unsigned char rot) noexcept
-{
-    return __builtin_rotateleft64(x, rot);
+    if constexpr (sizeof(x) == 1) return __builtin_rotateleft8(static_cast<uint8_t>(x), rot);
+    if constexpr (sizeof(x) == 2) return __builtin_rotateleft16(static_cast<uint16_t>(x), rot);
+    if constexpr (sizeof(x) == 4) return __builtin_rotateleft32(static_cast<uint32_t>(x), rot);
+    if constexpr (sizeof(x) == 8) return __builtin_rotateleft64(static_cast<uint64_t>(x), rot);
 }
 #endif
 
@@ -391,24 +372,13 @@ inline uint64_t rotl(uint64_t x, unsigned char rot) noexcept
 #if defined(VXIO_GNU_OR_CLANG) && VXIO_HAS_BUILTIN(__builtin_bswap16) && VXIO_HAS_BUILTIN(__builtin_bswap32) && \
     VXIO_HAS_BUILTIN(__builtin_bswap64)
 #define VXIO_HAS_BUILTIN_BSWAP
-inline uint8_t byteSwap(uint8_t x) noexcept
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint> && (sizeof(Uint) <= 8), int> = 0>
+Uint byteSwap(Uint x) noexcept
 {
-    return x;
-}
-
-inline uint16_t byteSwap(uint16_t x) noexcept
-{
-    return __builtin_bswap16(x);
-}
-
-inline uint32_t byteSwap(uint32_t x) noexcept
-{
-    return __builtin_bswap32(x);
-}
-
-inline uint64_t byteSwap(uint64_t x) noexcept
-{
-    return __builtin_bswap64(x);
+    if constexpr (sizeof(x) == 1) return x;
+    if constexpr (sizeof(x) == 2) return __builtin_bswap16(x);
+    if constexpr (sizeof(x) == 4) return __builtin_bswap32(x);
+    if constexpr (sizeof(x) == 8) return __builtin_bswap64(x);
 }
 
 #elif defined(VXIO_MSVC)
@@ -425,12 +395,13 @@ inline unsigned short byteSwap(unsigned short val) noexcept
 
 inline unsigned int byteSwap(unsigned int val) noexcept
 {
-    static_assert(sizeof(unsigned int) == sizeof(unsigned short) || sizeof(unsigned int) == sizeof(unsigned long), "No viable _byteswap implementation for unsigned int");
+    static_assert(sizeof(unsigned int) == sizeof(unsigned short) || sizeof(unsigned int) == sizeof(unsigned long),
+                  "No viable _byteswap implementation for unsigned int");
     if constexpr (sizeof(unsigned int) == sizeof(unsigned short)) {
         return static_cast<unsigned int>(_byteswap_ushort(static_cast<unsigned short>(val)));
     }
     else {
-        return static_cast<unsigned int>(_byteswap_ulong(static_cast<unsigned long>(val))); 
+        return static_cast<unsigned int>(_byteswap_ulong(static_cast<unsigned long>(val)));
     }
 }
 
