@@ -120,6 +120,9 @@ void logToAsyncCallback(const char *msg)
 LogLevel detail::logLevel = LogLevel::INFO;
 LogCallback detail::logBackend = &logToCout;
 LogFormatter detail::logFormatter = &defaultFormat;
+
+bool detail::isTimestampLogging = true;
+bool detail::isLevelLogging = true;
 bool detail::isSourceLogging = true;
 
 void defaultFormat(const char *msg, LogLevel level, SourceLocation location)
@@ -134,9 +137,14 @@ void defaultFormat(const char *msg, LogLevel level, SourceLocation location)
 
     std::string output;
 
-    output += "[";
-    output += currentIso8601Time();
-    output += "] [";
+    if (detail::isTimestampLogging) {
+        output += "[";
+        output += currentIso8601Time();
+        output += "] [";
+    }
+    else {
+        output += '[';
+    }
     VXIO_IF_UNIX(output += prefixOf(level));
     output += fixedWidthNameOf(level);
     VXIO_IF_UNIX(output += ansi::RESET);

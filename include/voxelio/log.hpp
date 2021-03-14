@@ -111,6 +111,9 @@ namespace detail {
 extern LogLevel logLevel;
 extern LogCallback logBackend;
 extern LogFormatter logFormatter;
+
+extern bool isTimestampLogging;
+extern bool isLevelLogging;
 extern bool isSourceLogging;
 
 }  // namespace detail
@@ -148,6 +151,16 @@ inline void setLogLevel(LogLevel level)
 inline bool isLoggable(LogLevel level)
 {
     return level <= detail::logLevel;
+}
+
+inline void enableLoggingTimestamp(bool enable)
+{
+    detail::isTimestampLogging = enable;
+}
+
+inline void enableLoggingLevel(bool enable)
+{
+    detail::isLevelLogging = enable;
 }
 
 inline void enableLoggingSourceLocation(bool enable)
