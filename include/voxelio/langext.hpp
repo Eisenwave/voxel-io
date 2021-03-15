@@ -18,7 +18,7 @@ namespace voxelio {
  *
  * @return true if the function call occurs within a constant-evaluated context
  */
-constexpr bool isConstantEvaluated()
+constexpr bool isConstantEvaluated() noexcept
 {
 #ifdef VXIO_HAS_BUILTIN_IS_CONSTANT_EVALUATED
     return builtin::isConstantEvaluated();

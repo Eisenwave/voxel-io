@@ -37,7 +37,7 @@ static_assert(std::is_same_v<int, commonSignedType<int, int>>);
 template <typename Dividend,
           typename Divisor,
           std::enable_if_t<std::is_integral_v<Dividend> && std::is_integral_v<Divisor>, int> = 0>
-constexpr commonSignedType<Dividend, Divisor> divCeil(Dividend x, Divisor y)
+constexpr commonSignedType<Dividend, Divisor> divCeil(Dividend x, Divisor y) noexcept
 {
     if constexpr (std::is_unsigned_v<Dividend> && std::is_unsigned_v<Divisor>) {
         // quotient is always positive
@@ -78,7 +78,7 @@ constexpr commonSignedType<Dividend, Divisor> divCeil(Dividend x, Divisor y)
 template <typename Dividend,
           typename Divisor,
           std::enable_if_t<std::is_integral_v<Dividend> && std::is_integral_v<Divisor>, int> = 0>
-constexpr commonSignedType<Dividend, Divisor> divFloor(Dividend x, Divisor y)
+constexpr commonSignedType<Dividend, Divisor> divFloor(Dividend x, Divisor y) noexcept
 {
     if constexpr (std::is_unsigned_v<Dividend> && std::is_unsigned_v<Divisor>) {
         // quotient is never negative
@@ -103,7 +103,7 @@ constexpr commonSignedType<Dividend, Divisor> divFloor(Dividend x, Divisor y)
 template <typename Dividend,
           typename Divisor,
           std::enable_if_t<std::is_integral_v<Dividend> && std::is_integral_v<Divisor>, int> = 0>
-constexpr commonSignedType<Dividend, Divisor> divUp(Dividend x, Divisor y)
+constexpr commonSignedType<Dividend, Divisor> divUp(Dividend x, Divisor y) noexcept
 {
     constexpr auto sgn = [](commonSignedType<Dividend, Divisor> n) -> signed char {
         return (n > 0) - (n < 0);

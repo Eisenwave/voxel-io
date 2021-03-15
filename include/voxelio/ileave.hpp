@@ -30,7 +30,7 @@ namespace detail {
  * @param bits the amount of zero bits per input bit to interleave
  * @return the input number interleaved with input-bits
  */
-constexpr u64 ileaveZeros_naive(u32 input, usize bits)
+constexpr u64 ileaveZeros_naive(u32 input, usize bits) noexcept
 {
     const auto lim = std::min<usize>(32, voxelio::divCeil<usize>(64, bits + 1));
 
@@ -50,7 +50,7 @@ constexpr u64 ileaveZeros_naive(u32 input, usize bits)
  * @param out_bits_per_in_bits the output bits per input bits
  * @return the output number or 0 if the bits parameter was zero
  */
-constexpr u64 duplBits_naive(u64 input, usize out_bits_per_in_bits)
+constexpr u64 duplBits_naive(u64 input, usize out_bits_per_in_bits) noexcept
 {
     if (out_bits_per_in_bits == 0) {
         return 0;
@@ -76,7 +76,7 @@ constexpr u64 duplBits_naive(u64 input, usize out_bits_per_in_bits)
  * @return the input interleaved with <BITS> bits
  */
 template <unsigned BITS>
-constexpr u64 ileaveZeros_const(u32 input)
+constexpr u64 ileaveZeros_const(u32 input) noexcept
 {
     if constexpr (BITS == 0) {
         return input;
@@ -180,7 +180,7 @@ constexpr u64 remIleavedBits_const(u64 input) noexcept
  * @param lo the low bits
  * @return the interleaved bits
  */
-constexpr u64 ileave2(u32 hi, u32 lo)
+constexpr u64 ileave2(u32 hi, u32 lo) noexcept
 {
     constexpr u64 MASKS[] = {0x5555'5555'5555'5555,
                              0x3333'3333'3333'3333,
@@ -205,7 +205,7 @@ constexpr u64 ileave2(u32 hi, u32 lo)
 
 namespace detail {
 
-constexpr u64 ileave3_naive(u32 x, u32 y, u32 z)
+constexpr u64 ileave3_naive(u32 x, u32 y, u32 z) noexcept
 {
     return (detail::ileaveZeros_naive(x, 2) << 2) | (detail::ileaveZeros_naive(y, 2) << 1) | ileaveZeros_naive(z, 2);
 }
@@ -222,7 +222,7 @@ constexpr u64 ileave3_naive(u32 x, u32 y, u32 z)
  * @param z the lowest bits
  * @return the interleaved bits
  */
-constexpr u64 ileave3(u32 x, u32 y, u32 z)
+constexpr u64 ileave3(u32 x, u32 y, u32 z) noexcept
 {
     return (ileaveZeros_const<2>(x) << 2) | (ileaveZeros_const<2>(y) << 1) | ileaveZeros_const<2>(z);
 }
@@ -231,7 +231,7 @@ constexpr u64 ileave3(u32 x, u32 y, u32 z)
 
 namespace detail {
 
-constexpr void dileave3_naive(u64 n, u32 out[3])
+constexpr void dileave3_naive(u64 n, u32 out[3]) noexcept
 {
     out[0] = static_cast<u32>(detail::remIleavedBits_naive(n >> 2, 2));
     out[1] = static_cast<u32>(detail::remIleavedBits_naive(n >> 1, 2));
@@ -249,7 +249,7 @@ constexpr void dileave3_naive(u64 n, u32 out[3])
  * @param n the number
  * @return the interleaved bits
  */
-constexpr void dileave3(u64 n, u32 out[3])
+constexpr void dileave3(u64 n, u32 out[3]) noexcept
 {
     out[0] = static_cast<u32>(remIleavedBits_const<2>(n >> 2));
     out[1] = static_cast<u32>(remIleavedBits_const<2>(n >> 1));
@@ -265,7 +265,7 @@ constexpr void dileave3(u64 n, u32 out[3])
  * @return the interleaved bytes stored in a 64-bit integer
  */
 template <usize COUNT, std::enable_if_t<COUNT <= 8, int> = 0>
-constexpr u64 ileaveBytes_const(u64 bytes)
+constexpr u64 ileaveBytes_const(u64 bytes) noexcept
 {
     u64 result = 0;
     // use if-constexpr to avoid instantiation of ileave_zeros
@@ -281,7 +281,7 @@ constexpr u64 ileaveBytes_const(u64 bytes)
 namespace detail {
 
 // alternative implementation using a naive algorithm
-constexpr u64 ileaveBytes_naive(u64 bytes, usize count)
+constexpr u64 ileaveBytes_naive(u64 bytes, usize count) noexcept
 {
     VXIO_DEBUG_ASSERT_LE(count, 8);
     VXIO_ASSUME(count <= 8);
@@ -295,7 +295,7 @@ constexpr u64 ileaveBytes_naive(u64 bytes, usize count)
 }
 
 // alternative implementation adapting ileave_bytes_const to work with a runtime parameter
-constexpr u64 ileaveBytes_jmp(u64 bytes, usize count)
+constexpr u64 ileaveBytes_jmp(u64 bytes, usize count) noexcept
 {
     VXIO_DEBUG_ASSERT_LE(count, 8);
     VXIO_ASSUME(count <= 8);
@@ -322,7 +322,7 @@ constexpr u64 ileaveBytes_jmp(u64 bytes, usize count)
  * @param count number of bytes to interleave
  * @return the interleaved bytes stored in a 64-bit integer
  */
-constexpr u64 ileaveBytes(u64 bytes, usize count)
+constexpr u64 ileaveBytes(u64 bytes, usize count) noexcept
 {
     return detail::ileaveBytes_jmp(bytes, count);
 }
@@ -330,7 +330,7 @@ constexpr u64 ileaveBytes(u64 bytes, usize count)
 // BYTE DE-INTERLEAVING ================================================================================================
 
 template <usize COUNT, std::enable_if_t<COUNT <= 8, int> = 0>
-constexpr u64 dileaveBytes_const(u64 ileaved)
+constexpr u64 dileaveBytes_const(u64 ileaved) noexcept
 {
     u64 result = 0;
     // use if-constexpr to avoid instantiation of rem_ileaved_bits
@@ -347,7 +347,7 @@ constexpr u64 dileaveBytes_const(u64 ileaved)
 namespace detail {
 
 // alternative implementation adapting ileave_bytes_const to work with a runtime parameter
-constexpr u64 dileaveBytes_jmp(u64 bytes, usize count)
+constexpr u64 dileaveBytes_jmp(u64 bytes, usize count) noexcept
 {
     VXIO_DEBUG_ASSERT_LE(count, 8);
     VXIO_ASSUME(count <= 8);
@@ -368,7 +368,7 @@ constexpr u64 dileaveBytes_jmp(u64 bytes, usize count)
 
 }  // namespace detail
 
-constexpr u64 dileave_bytes(u64 bytes, usize count)
+constexpr u64 dileave_bytes(u64 bytes, usize count) noexcept
 {
     return detail::dileaveBytes_jmp(bytes, count);
 }
