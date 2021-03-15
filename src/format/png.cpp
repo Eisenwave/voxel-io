@@ -10,7 +10,27 @@
 #define STBI_ONLY_PNG
 #define STBI_ONLY_BMP
 #define STBI_ONLY_GIF
+
+#ifdef VXIO_CLANG
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-compare"
+#endif
+
+#ifdef VXIO_GNU
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
+
 #include "voxelio/3rd_party/stb_image.h"
+
+#ifdef VXIO_GNU
+#pragma GCC diagnostic pop
+#endif
+
+#ifdef VXIO_CLANG
+#pragma clang diagnostic pop
+#endif
 
 namespace voxelio::png {
 
