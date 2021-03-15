@@ -92,7 +92,6 @@ private:
         ArrayU8 content;
     };
 
-    std::ostream *logger;
     VobjWriteHelper writeHelper;
 
     std::stack<GroupNode> groupStack{};
@@ -107,8 +106,7 @@ private:
     State state;
 
 public:
-    Reader(InputStream &istream, u64 dataLen = DATA_LENGTH_UNKNOWN, std::ostream *logger = nullptr)
-        : AbstractReader{istream, dataLen}, logger{logger}
+    Reader(InputStream &istream, u64 dataLen = DATA_LENGTH_UNKNOWN) : AbstractReader{istream, dataLen}
     {
         groupStack.emplace(GroupHeader{"", Vec3i32::zero()});
     }
