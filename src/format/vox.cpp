@@ -833,9 +833,6 @@ ResultCode Writer::init() noexcept
     if (state == IoState::FINALIZED) {
         return ResultCode::USER_ERROR_INIT_AFTER_FINALIZE;
     }
-    if (palette().empty()) {
-        return ResultCode::USER_ERROR_MISSING_PALETTE;
-    }
 
     state = IoState::INITIALIZED;
     VXIO_LOG(
