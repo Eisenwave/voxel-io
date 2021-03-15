@@ -22,31 +22,31 @@ namespace voxelio {
 // BIT GETTING / SETTING ===============================================================================================
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr bool getBit(Uint input, usize index)
+constexpr bool getBit(Uint input, usize index) noexcept
 {
     return (input >> index) & 1;
 }
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint setBit(Uint input, usize index)
+constexpr Uint setBit(Uint input, usize index) noexcept
 {
     return input | (1 << index);
 }
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint setBit(Uint input, usize index, bool value)
+constexpr Uint setBit(Uint input, usize index, bool value) noexcept
 {
     return input ^ ((getBit(input) ^ value) << index);
 }
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint clearBit(Uint input, usize index)
+constexpr Uint clearBit(Uint input, usize index) noexcept
 {
     return input & ~(1 << index);
 }
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint flipBit(Uint input, usize index)
+constexpr Uint flipBit(Uint input, usize index) noexcept
 {
     return input ^ (1 << index);
 }
@@ -61,7 +61,7 @@ namespace detail {
  * @param integer the integer
  */
 template <typename Int>
-constexpr Int reverseBytes_shift(Int integer)
+constexpr Int reverseBytes_shift(Int integer) noexcept
 {
     // Compiler Explorer experiments have shown that we can't use encode/decode with different endians, as gcc
     // loses the ability to recognize the byte swap with bswap automatically.
@@ -87,7 +87,7 @@ constexpr Int reverseBytes_shift(Int integer)
  * @param integer the integer
  */
 template <typename Int>
-[[nodiscard]] constexpr Int reverseBytes(Int integer)
+[[nodiscard]] constexpr Int reverseBytes(Int integer) noexcept
 {
     if constexpr (sizeof(Int) == 1) {
         return integer;
@@ -112,9 +112,9 @@ static_assert(reverseBytes(0x11223344) == 0x44332211);
 namespace detail {
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-[[nodiscard]] constexpr Uint rotl_impl(Uint n, unsigned char rot)
+[[nodiscard]] constexpr Uint leftRot_shift(Uint n, unsigned char rot) noexcept
 {
-    constexpr Uint mask = 8 * sizeof(Uint) - 1;
+    constexpr unsigned char mask = 8 * sizeof(Uint) - 1;
 
     rot &= mask;
     Uint hi = n << rot;
@@ -123,9 +123,9 @@ template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
 }
 
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-[[nodiscard]] constexpr Uint rotr_impl(Uint n, unsigned char rot)
+[[nodiscard]] constexpr Uint rightRot_shift(Uint n, unsigned char rot) noexcept
 {
-    const unsigned int mask = 8 * sizeof(Uint) - 1;
+    constexpr unsigned char mask = 8 * sizeof(Uint) - 1;
 
     rot &= mask;
     Uint lo = n >> rot;
@@ -143,12 +143,12 @@ template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
  * @param rot bit count
  */
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-[[nodiscard]] constexpr Uint leftRot(Uint n, unsigned char rot = 1)
+[[nodiscard]] constexpr Uint leftRot(Uint n, unsigned char rot = 1) noexcept
 {
 #ifdef VXIO_HAS_BUILTIN_ROTL
-    return isConstantEvaluated() ? detail::rotl_impl(n, rot) : builtin::rotl(n, rot);
+    return isConstantEvaluated() ? detail::leftRot_shift(n, rot) : builtin::rotateLeft(n, rot);
 #else
-    return detail::rotl_impl(n, rot);
+    return detail::leftRot_shift(n, rot);
 #endif
 }
 
@@ -160,12 +160,12 @@ template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
  * @param rot bit count
  */
 template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-[[nodiscard]] constexpr Uint rightRot(Uint n, unsigned char rot = 1)
+[[nodiscard]] constexpr Uint rightRot(Uint n, unsigned char rot = 1) noexcept
 {
 #ifdef VXIO_HAS_BUILTIN_ROTL
-    return isConstantEvaluated() ? detail::rotr_impl(n, rot) : builtin::rotr(n, rot);
+    return isConstantEvaluated() ? detail::rightRot_shift(n, rot) : builtin::rotateRight(n, rot);
 #else
-    return detail::rotr_impl(n, rot);
+    return detail::rightRot_shift(n, rot);
 #endif
 }
 
