@@ -39,7 +39,7 @@ enum class LogLevel : unsigned {
     SUPERSPAM,
 };
 
-constexpr const char *nameOf(LogLevel level)
+constexpr const char *nameOf(LogLevel level) noexcept
 {
     switch (level) {
     case LogLevel::NONE: return "NONE";
@@ -56,7 +56,7 @@ constexpr const char *nameOf(LogLevel level)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-constexpr const char *fixedWidthNameOf(LogLevel level)
+constexpr const char *fixedWidthNameOf(LogLevel level) noexcept
 {
     switch (level) {
     case LogLevel::NONE: return "NONE";
@@ -73,22 +73,22 @@ constexpr const char *fixedWidthNameOf(LogLevel level)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-constexpr bool operator<=(LogLevel x, LogLevel y)
+constexpr bool operator<=(LogLevel x, LogLevel y) noexcept
 {
     return static_cast<unsigned>(x) <= static_cast<unsigned>(y);
 }
 
-constexpr bool operator<(LogLevel x, LogLevel y)
+constexpr bool operator<(LogLevel x, LogLevel y) noexcept
 {
     return static_cast<unsigned>(x) < static_cast<unsigned>(y);
 }
 
-constexpr bool operator>=(LogLevel x, LogLevel y)
+constexpr bool operator>=(LogLevel x, LogLevel y) noexcept
 {
     return static_cast<unsigned>(x) >= static_cast<unsigned>(y);
 }
 
-constexpr bool operator>(LogLevel x, LogLevel y)
+constexpr bool operator>(LogLevel x, LogLevel y) noexcept
 {
     return static_cast<unsigned>(x) > static_cast<unsigned>(y);
 }
@@ -129,41 +129,41 @@ extern bool isSourceLogging;
  * @param callback the callback or nullptr if the behavior should be reset to default
  * @param async true if voxelio should automatically ensure thread-safety using a mutex
  */
-void setLogBackend(LogCallback callback, bool async = false);
+void setLogBackend(LogCallback callback, bool async = false) noexcept;
 
 /**
  * @brief Sets the logging formatter to the given function or resets it to default if the pointer is nullptr.
  * The formatter should format messages and metadata and then pass it on to the backend using logRaw().
  * @param formatter the formatter
  */
-void setLogFormatter(LogFormatter formatter);
+void setLogFormatter(LogFormatter formatter) noexcept;
 
-inline LogLevel getLogLevel()
+inline LogLevel getLogLevel() noexcept
 {
     return detail::logLevel;
 }
 
-inline void setLogLevel(LogLevel level)
+inline void setLogLevel(LogLevel level) noexcept
 {
     detail::logLevel = level;
 }
 
-inline bool isLoggable(LogLevel level)
+inline bool isLoggable(LogLevel level) noexcept
 {
     return level <= detail::logLevel;
 }
 
-inline void enableLoggingTimestamp(bool enable)
+inline void enableLoggingTimestamp(bool enable) noexcept
 {
     detail::isTimestampLogging = enable;
 }
 
-inline void enableLoggingLevel(bool enable)
+inline void enableLoggingLevel(bool enable) noexcept
 {
     detail::isLevelLogging = enable;
 }
 
-inline void enableLoggingSourceLocation(bool enable)
+inline void enableLoggingSourceLocation(bool enable) noexcept
 {
     detail::isSourceLogging = enable;
 }
@@ -171,29 +171,29 @@ inline void enableLoggingSourceLocation(bool enable)
 // LOGGING FUNCTIONS ===================================================================================================
 
 /// Directly invokes the logging callback.
-inline void logRaw(const char *msg)
+inline void logRaw(const char *msg) noexcept
 {
     detail::logBackend(msg);
 }
 
 /// Directly invokes the logging callback.
-inline void logRaw(const std::string &msg)
+inline void logRaw(const std::string &msg) noexcept
 {
     detail::logBackend(msg.c_str());
 }
 
-inline void log(const char *msg, LogLevel level, SourceLocation location)
+inline void log(const char *msg, LogLevel level, SourceLocation location) noexcept
 {
     detail::logFormatter(msg, level, location);
 }
 
-inline void log(const std::string &msg, LogLevel level, SourceLocation location)
+inline void log(const std::string &msg, LogLevel level, SourceLocation location) noexcept
 {
     detail::logFormatter(msg.c_str(), level, location);
 }
 
 /// The default format function. Invoking this bypasses the logFormatter and goes straight to the backend.
-void defaultFormat(const char *msg, LogLevel level, SourceLocation location);
+void defaultFormat(const char *msg, LogLevel level, SourceLocation location) noexcept;
 
 #ifdef VXIO_DEBUG
 #define VXIO_LOG_IMPL(level, msg, file, function, line)                                  \

@@ -58,21 +58,21 @@ constexpr const char *FG_INTENSE_WHT = ASCII_ESC "[1;37m";
 // constexpr const char* ISO8601_DATETIME = "%Y-%m-%d %H:%M:%S";
 constexpr const char *ISO8601_TIME = "%H:%M:%S";
 
-std::time_t time()
+std::time_t time() noexcept
 {
     std::time_t rawTime;
     VXIO_ASSERTM(std::time(&rawTime) != -1, "Failed to get system time");
     return rawTime;
 }
 
-std::tm *localtime(std::time_t time)
+std::tm *localtime(std::time_t time) noexcept
 {
     std::tm *timeInfo = std::localtime(&time);
     VXIO_ASSERT_NOTNULL(timeInfo);
     return timeInfo;
 }
 
-std::string currentIso8601Time()
+std::string currentIso8601Time() noexcept
 {
     constexpr size_t resultLength = 8;
 
@@ -83,7 +83,7 @@ std::string currentIso8601Time()
     return {buffer, resultLength};
 }
 
-constexpr const char *prefixOf(LogLevel level)
+constexpr const char *prefixOf(LogLevel level) noexcept
 {
     switch (level) {
     case LogLevel::NONE: return ansi::FG_16C_ORG;
@@ -100,16 +100,16 @@ constexpr const char *prefixOf(LogLevel level)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-void logToCout(const char *msg)
+void logToCout(const char *msg) noexcept
 {
     std::cout << msg;
     std::cout.flush();
-};
+}
 
 static LogCallback asyncLogCallback = nullptr;
 static std::mutex asyncLogMutex;
 
-void logToAsyncCallback(const char *msg)
+void logToAsyncCallback(const char *msg) noexcept
 {
     std::lock_guard<std::mutex> lock{asyncLogMutex};
     asyncLogCallback(msg);
@@ -125,7 +125,7 @@ bool detail::isTimestampLogging = true;
 bool detail::isLevelLogging = true;
 bool detail::isSourceLogging = true;
 
-void defaultFormat(const char *msg, LogLevel level, SourceLocation location)
+void defaultFormat(const char *msg, LogLevel level, SourceLocation location) noexcept
 {
 #ifdef VXIO_UNIX
 #define VXIO_IF_UNIX(code) code
@@ -165,7 +165,7 @@ void defaultFormat(const char *msg, LogLevel level, SourceLocation location)
     logRaw(output);
 }
 
-void setLogBackend(LogCallback callback, bool async)
+void setLogBackend(LogCallback callback, bool async) noexcept
 {
     if (callback == nullptr) {
         callback = &logToCout;
@@ -179,7 +179,7 @@ void setLogBackend(LogCallback callback, bool async)
     }
 }
 
-void setLogFormatter(LogFormatter callback)
+void setLogFormatter(LogFormatter callback) noexcept
 {
     detail::logFormatter = callback == nullptr ? &defaultFormat : callback;
 }
