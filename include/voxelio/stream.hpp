@@ -49,7 +49,7 @@ protected:
     };
 
     /// Small buffer used for decoding (groups of) integers in the writeU16, writeI32, etc. convenience functions
-    u8 readBuffer[sizeof(umax) * 4 - sizeof(Flags)];
+    u8 readBuffer[sizeof(umax) * 4 - sizeof(Flags)]{};
     Flags flags;
 
 public:
@@ -434,7 +434,7 @@ protected:
     };
 
     /// Small write buffer for writing (multiple) integers, used in the writeU16(), writeI32(), ... functions.
-    u8 writeBuffer[sizeof(umax) * 4 - sizeof(Flags)];
+    u8 writeBuffer[sizeof(umax) * 4 - sizeof(Flags)]{};
     Flags flags;
 
 public:
