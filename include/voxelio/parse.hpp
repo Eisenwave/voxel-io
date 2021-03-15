@@ -15,10 +15,11 @@ namespace detail {
 template <typename T>
 bool parseUsingStream(const std::string &str, T &out) noexcept
 {
-    std::stringstream *stream = detail::stringstream_make(str);
-    *stream >> out;
-    bool result = not detail::stringstream_fail(stream);
-    detail::stringstream_free(stream);
+    std::istringstream *const stream = detail::istringstream_make(str);
+    std::istream *const istream = detail::istringstream_to_istream(stream);
+    *istream >> out;
+    bool result = not detail::istream_fail(istream);
+    detail::istream_free(istream);
     return result;
 }
 

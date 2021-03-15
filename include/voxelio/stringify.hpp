@@ -32,10 +32,10 @@ std::string stringifyUsingStream(const T &t) noexcept
     // This header (stringify.hpp) is being included by many, many other headers on way or the other.
     // Henceforth, optimizing its includes is very important to avoid including <iostream> in the whole project.
 
-    std::stringstream *stream = detail::stringstream_make();
-    *detail::stringstream_to_ostream(stream) << t;
-    std::string result = detail::stringstream_to_string(stream);
-    detail::stringstream_free(stream);
+    std::ostringstream *stream = detail::ostringstream_make();
+    *detail::ostringstream_to_ostream(stream) << t;
+    std::string result = detail::ostringstream_to_string(stream);
+    detail::ostream_free(detail::ostringstream_to_ostream(stream));
     return result;
 }
 
@@ -124,11 +124,13 @@ std::string stringifyUInt(const Uint n) noexcept
 template <typename Float, std::enable_if_t<std::is_floating_point_v<Float>, int> = 0>
 std::string stringifyFloat(Float f, usize precision) noexcept
 {
-    std::stringstream *stream = detail::stringstream_make();
-    detail::stringstream_precision(stream, static_cast<std::streamsize>(precision));
-    *reinterpret_cast<std::ostream *>(stream) << f;
-    std::string result = detail::stringstream_to_string(stream);
-    detail::stringstream_free(stream);
+    std::ostringstream *const stream = detail::ostringstream_make();
+    std::ostream *const ostream = detail::ostringstream_to_ostream(stream);
+
+    detail::ostream_precision(ostream, static_cast<std::streamsize>(precision));
+    *ostream << f;
+    std::string result = detail::ostringstream_to_string(stream);
+    detail::ostream_free(ostream);
     return result;
 }
 

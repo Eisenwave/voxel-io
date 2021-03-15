@@ -4,14 +4,19 @@
 
 namespace voxelio::detail {
 
-std::stringstream *stringstream_make()
+std::istringstream *istringstream_make()
 {
-    return new std::stringstream;
+    return new std::istringstream;
 }
 
-std::stringstream *stringstream_make(std::string contents)
+std::ostringstream *ostringstream_make()
 {
-    return new std::stringstream{contents};
+    return new std::ostringstream;
+}
+
+std::istringstream *istringstream_make(std::string contents)
+{
+    return new std::istringstream{contents};
 }
 
 std::istream *stringstream_to_istream(std::stringstream *stream)
@@ -19,27 +24,42 @@ std::istream *stringstream_to_istream(std::stringstream *stream)
     return static_cast<std::istream *>(stream);
 }
 
-std::ostream *stringstream_to_ostream(std::stringstream *stream)
+std::istream *istringstream_to_istream(std::istringstream *stream)
+{
+    return static_cast<std::istream *>(stream);
+}
+
+std::ostream *ostringstream_to_ostream(std::ostringstream *stream)
 {
     return static_cast<std::ostream *>(stream);
 }
 
-void stringstream_precision(std::stringstream *stream, std::streamsize precision)
+void ostream_precision(std::ostream *stream, std::streamsize precision)
 {
     stream->precision(precision);
 }
 
-void stringstream_free(std::stringstream *stream)
-{
-    delete stream;
-}
-
-bool stringstream_fail(std::stringstream *stream)
+bool ostream_fail(std::ostream *stream)
 {
     return stream->fail();
 }
 
-std::string stringstream_to_string(std::stringstream *stream)
+void ostream_free(std::ostream *stream)
+{
+    delete stream;
+}
+
+bool istream_fail(std::istream *stream)
+{
+    return stream->fail();
+}
+
+void istream_free(std::istream *stream)
+{
+    delete stream;
+}
+
+std::string ostringstream_to_string(std::ostringstream *stream)
 {
     return stream->str();
 }

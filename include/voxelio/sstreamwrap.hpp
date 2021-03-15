@@ -6,17 +6,21 @@
 
 namespace voxelio::detail {
 
-std::stringstream *stringstream_make();
-std::stringstream *stringstream_make(std::string contents);
+std::istringstream *istringstream_make();
+std::ostringstream *ostringstream_make();
+std::istringstream *istringstream_make(std::string);
 
-std::istream *stringstream_to_istream(std::stringstream *);
-std::ostream *stringstream_to_ostream(std::stringstream *);
+std::istream *istringstream_to_istream(std::istringstream *);
+std::ostream *ostringstream_to_ostream(std::ostringstream *);
 
-bool stringstream_fail(std::stringstream *);
-void stringstream_precision(std::stringstream *stream, std::streamsize precision);
-std::string stringstream_to_string(std::stringstream *stream);
+bool ostream_fail(std::ostream *);
+void ostream_free(std::ostream *);
 
-void stringstream_free(std::stringstream *);
+bool istream_fail(std::istream *);
+void istream_free(std::istream *);
+
+void ostream_precision(std::ostream *, std::streamsize);
+std::string ostringstream_to_string(std::ostringstream *);
 
 }  // namespace voxelio::detail
 
