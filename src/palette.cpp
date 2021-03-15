@@ -183,7 +183,7 @@ void storeRepresentative(u32 result[], const MortonAndIndex buffer[], const u32 
     for (u32 i = 0; i < neighborCount; ++i) {
         result[buffer[i].index] = representativeIndex;
     }
-};
+}
 
 }  // namespace truncate
 

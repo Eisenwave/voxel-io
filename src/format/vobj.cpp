@@ -90,7 +90,7 @@ template <typename UInt>
 constexpr u64 zeroToMaxPlusOne(UInt num)
 {
     return (num == 0) ? static_cast<u64>(std::numeric_limits<decltype(num)>::max()) + 1 : num;
-};
+}
 
 static const std::unordered_set<std::string> recognizedExtensions{
     EXT_DEBUG, EXT_EXISTENCE_ARRAY, EXT_GROUPS, EXT_16_BIT_ARRAY, EXT_32_BIT_ARRAY};
