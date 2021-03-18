@@ -67,12 +67,12 @@ std::string stringifyUInt(const Uint n) noexcept
     static_assert(BASE <= 16);
 
     constexpr usize maxDigits = voxelio::digitCount<BASE>(std::numeric_limits<Uint>::max()) + STRINGIFY_FACTOR - 1;
-    constexpr const char *hexDigits = "0123456789abcdef";
 
     char result[maxDigits];
     Uint x = n;
 
     if constexpr (isPow2(BASE)) {
+        static constexpr const char *hexDigits = "0123456789abcdef";
         static constexpr usize bitsPerDigit = log2floor(BASE);
         static constexpr Uint digitMask = BASE - 1;
 
