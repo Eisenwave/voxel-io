@@ -205,7 +205,7 @@ Palette32 createReducedPalette_impl(const Palette32 &palette, T inOutReduction[]
     const usize colorCount = palette.size();
     for (u32 i = 0; i < colorCount; ++i) {
         const u32 representativeIndex = inOutReduction[i];
-        const u32 resultIndex = result.insert(palette.colorOf(representativeIndex));
+        [[maybe_unused]] const u32 resultIndex = result.insert(palette.colorOf(representativeIndex));
 
         if constexpr (not std::is_const_v<T>) {
             inOutReduction[i] = resultIndex;
