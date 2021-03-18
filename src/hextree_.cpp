@@ -119,7 +119,7 @@ void HexTree::insert(argb32 color, value_type value)
 {
     const u32 morton = ileave4b(color);
 
-    value_type *ptr = findOrCreate_impl<DEPTH>(morton, root, value);
+    value_type *ptr = findOrCreate_impl(morton, root);
     VXIO_DEBUG_ASSERT_NOTNULL(ptr);
     *ptr = value;
 }
@@ -165,23 +165,23 @@ const HexTree::value_type *HexTree::find_impl(u32 morton, NodeType &node)
     }
 }
 
-template <usize LEVEL>
-HexTree::value_type *HexTree::findOrCreate_impl(u32 morton, Node<LEVEL> &node, value_type paletteIndex)
+template <typename NodeType>
+HexTree::value_type *HexTree::findOrCreate_impl(u32 morton, NodeType &node)
 {
-    static_assert(LEVEL != 0);
+    static_assert(NodeType::level != 0);
 
     const u8 highestDigit = (morton >> 28) & 0xf;
 
-    if constexpr (LEVEL > 1) {
-        std::unique_ptr<Node<LEVEL - 1>> &child = node.children[highestDigit];
+    if constexpr (NodeType::level > 1) {
+        std::unique_ptr<Node<NodeType::level - 1>> &child = node.children[highestDigit];
         if (not node.has(highestDigit)) {
             VXIO_DEBUG_ASSERT_NULL(child);
-            child.reset(new Node<LEVEL - 1>{});
+            child.reset(new Node<NodeType::level - 1>{});
             node.add(highestDigit);
         }
         VXIO_DEBUG_ASSERT(node.has(highestDigit));
 
-        return findOrCreate_impl(morton << 4, *child, paletteIndex);
+        return findOrCreate_impl(morton << 4, *child);
     }
     else {
         node.add(highestDigit);

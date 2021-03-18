@@ -179,8 +179,8 @@ private:
     template <typename NodeType>
     static const value_type *find_impl(u32 morton, NodeType &node);
 
-    template <usize LEVEL>
-    static value_type *findOrCreate_impl(u32 morton, Node<LEVEL> &node, value_type paletteIndex);
+    template <typename NodeType>
+    static value_type *findOrCreate_impl(u32 morton, NodeType &node);
 };
 
 }  // namespace voxelio
