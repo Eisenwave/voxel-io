@@ -6,6 +6,7 @@
  * Captures information about the build, such as the C++ standard, compiler, debug/release build, etc.
  *
  * This header does not and should never have additional includes.
+ * See https://godbolt.org/z/xza5qY for testing.
  */
 
 // BUILD TYPE DETECTION ================================================================================================
@@ -104,12 +105,24 @@ constexpr bool RELEASE = !DEBUG;
 #define VXIO_X64
 #endif
 
-#ifdef _M_X86
+#ifdef _M_IX86
 #define VXIO_X86
 #endif
 
 #ifdef _M_AMD64
 #define VXIO_X64
+#endif
+
+#ifdef _M_ARM64
+#define VXIO_ARM64
+#endif
+
+#if defined(VXIO_x86) || defined(VXIO_X64)
+#define VXIO_X86_OR_X64
+#endif
+
+#if defined(VXIO_X64) || defined(VXIO_ARM64)
+#define VXIO_64_BIT
 #endif
 
 // OS DETECTION ========================================================================================================
@@ -127,26 +140,16 @@ constexpr bool RELEASE = !DEBUG;
 #if defined(__BYTE_ORDER__) && __BYTE_ORDER__
 // C++17 ENDIANNESS DETECTION USING __BYTE__ORDER MACRO ----------------------------------------------------------------
 
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define VXIO_LITTLE_ENDIAN
-#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#define VXIO_BIG_ENDIAN
-#elif __BYTE_ORDER == __ORDER_PDP_ENDIAN__
-#define VXIO_PDP_ENDIAN
-#else
-#error "__BYTE_ORDER__ has unrecognized value"
-#endif
-
-#ifdef VXIO_PDP_ENDIAN
-#error "voxelio can't compile on platforms with PDP endianness"
-#endif
-
 namespace voxelio::build {
 
-#ifdef VXIO_LITTLE_ENDIAN
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 constexpr bool NATIVE_ENDIAN_LITTLE = true;
-#else
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 constexpr bool NATIVE_ENDIAN_LITTLE = false;
+#elif __BYTE_ORDER == __ORDER_PDP_ENDIAN__
+#error "voxelio can't compile on platforms with PDP endianness"
+#else
+#error "__BYTE_ORDER__ has unrecognized value"
 #endif
 
 }  // namespace voxelio::build
@@ -161,7 +164,7 @@ constexpr bool NATIVE_ENDIAN_LITTLE = std::endian::native == std::endian::little
 
 }  // namespace voxelio::build
 
-#elif defined(VXIO_X86) || defined(VXIO_X64)
+#elif defined(VXIO_X86_OR_X64)
 // ARCHITECTURE BASED ENDIANNESS DETECTION -----------------------------------------------------------------------------
 
 namespace voxelio::build {
