@@ -15,8 +15,6 @@
 #include <cstdint>
 #include <type_traits>
 
-// COMPILER AGNOSTIC ===================================================================================================
-
 // VXIO_HAS_BUILTIN(builtin):
 //     Checks whether a builtin exists.
 //     This only works on recent versions of clang, as this macro does not exist in gcc.
@@ -28,7 +26,7 @@
 #define VXIO_HAS_BUILTIN(builtin) 1
 #endif
 
-// GCC / CLANG BUILTINS ================================================================================================
+// METAPROGRAMMING =====================================================================================================
 
 // VXIO_UNREACHABLE():
 //     Signals to the compiler that a given code point is unreachable.
@@ -56,7 +54,7 @@
 
 #elif defined(VXIO_GNU)
 #define VXIO_HAS_BUILTIN_ASSUME
-#define VXIO_ASSUME(condition) static_cast<bool>(condition) ? void(0) : __builtin_unreachable()
+#define VXIO_ASSUME(condition) (static_cast<bool>(condition) ? void(0) : __builtin_unreachable())
 
 #elif defined(VXIO_MSVC)
 #define VXIO_HAS_BUILTIN_ASSUME
@@ -99,7 +97,7 @@ constexpr bool isConstantEvaluated() noexcept
 }
 #endif
 
-// BITWISE AND ARITHMETIC BUILTINS =====================================================================================
+// BIT COUNTING ========================================================================================================
 
 // int countLeadingRedundantSignBits(unsigned ...):
 //     Counts the number of redundant sign bits, i.o.w. the number of bits following the sign bit which are equal to it.
@@ -164,6 +162,47 @@ inline int countLeadingZeros(unsigned long long x) noexcept
 {
     return __builtin_clzll(x);
 }
+
+#elif defined(VXIO_MSVC) && defined(VXIO_X86_OR_X64)
+#define VXIO_HAS_BUILTIN_CLZ
+__forceinline int countLeadingZeros(unsigned char x) noexcept
+{
+    return __lzcnt16(x) - 8;
+}
+
+__forceinline int countLeadingZeros(unsigned short x) noexcept
+{
+    return __lzcnt16(x);
+}
+
+__forceinline int countLeadingZeros(unsigned int x) noexcept
+{
+    return __lzcnt(x);
+}
+
+__forceinline int countLeadingZeros(unsigned long x) noexcept
+{
+    static_assert(sizeof(unsigned long) == sizeof(unsigned) || sizeof(unsigned long) == sizeof(uint64_t));
+
+    if constexpr (sizeof(unsigned long) == sizeof(unsigned)) {
+        return __lzcnt(static_cast<unsigned>(x));
+    }
+    else {
+        return __lzcnt64(static_cast<uint64_t>(x));
+    }
+}
+
+#ifdef VXIO_64_BIT
+__forceinline int countLeadingZeros(uint64_t x) noexcept
+{
+    return __lzcnt64(x);
+}
+#else
+[[noreturn]] __forceinline int countLeadingZeros(uint64_t) noexcept
+{
+    trap();
+}
+#endif
 #endif
 
 // int countTrailingZeros(unsigned ...):
@@ -196,6 +235,104 @@ inline int countTrailingZeros(unsigned long long x) noexcept
 {
     return __builtin_ctzll(x);
 }
+#endif
+
+// int leastSignificantBit(unsigned ...):
+//     Returns the index of the least significant bit.
+//     For example, leastSignificantBit(0b110) -> 1.
+//     The result of leastSignificantBit(0) is 0 for all types.
+#ifdef VXIO_MSVC
+#define VXIO_HAS_BUILTIN_LSB
+__forceinline int leastSignificantBit(unsigned char x) noexcept
+{
+    unsigned long result;
+    bool nonzero = _BitScanForward(&result, x);
+    return nonzero * static_cast<int>(result);
+}
+
+__forceinline int leastSignificantBit(unsigned short x) noexcept
+{
+    unsigned long result;
+    bool nonzero = _BitScanForward(&result, x);
+    return nonzero * static_cast<int>(result);
+}
+
+__forceinline int leastSignificantBit(unsigned int x) noexcept
+{
+    unsigned long result;
+    bool nonzero = _BitScanForward(&result, x);
+    return nonzero * static_cast<int>(result);
+}
+
+__forceinline int leastSignificantBit(unsigned long x) noexcept
+{
+    unsigned long result;
+    bool nonzero = _BitScanForward(&result, x);
+    return nonzero * static_cast<int>(result);
+}
+
+#ifdef VXIO_64_BIT
+__forceinline int leastSignificantBit(uint64_t x) noexcept
+{
+    unsigned long result;
+    bool nonzero = _BitScanForward64(&result, x);
+    return nonzero * static_cast<int>(result);
+}
+#else
+[[noreturn]] __forceinline int leastSignificantBit(uint64_t) noexcept
+{
+    trap();
+}
+#endif
+#endif
+
+// int mostSignificantBit(unsigned ...):
+//     Returns the index of the most significant bit.
+//     For example, mostSignificantBit(0b110) -> 2.
+//     The result of mostSignificantBit(0) is 0 for all types.
+#ifdef VXIO_MSVC
+#define VXIO_HAS_BUILTIN_MSB
+__forceinline int mostSignificantBit(unsigned char x) noexcept
+{
+    unsigned long result;
+    bool nonzero = _BitScanReverse(&result, x);
+    return nonzero * static_cast<int>(result);
+}
+
+__forceinline int mostSignificantBit(unsigned short x) noexcept
+{
+    unsigned long result;
+    bool nonzero = _BitScanReverse(&result, x);
+    return nonzero * static_cast<int>(result);
+}
+
+__forceinline int mostSignificantBit(unsigned int x) noexcept
+{
+    unsigned long result;
+    bool nonzero = _BitScanReverse(&result, x);
+    return nonzero * static_cast<int>(result);
+}
+
+__forceinline int mostSignificantBit(unsigned long x) noexcept
+{
+    unsigned long result;
+    bool nonzero = _BitScanReverse(&result, x);
+    return nonzero * static_cast<int>(result);
+}
+
+#ifdef VXIO_64_BIT
+__forceinline int mostSignificantBit(uint64_t x) noexcept
+{
+    unsigned long result;
+    bool nonzero = _BitScanReverse64(&result, x);
+    return nonzero * static_cast<int>(result);
+}
+#else
+[[noreturn]] __forceinline int mostSignificantBit(uint64_t) noexcept
+{
+    trap();
+}
+#endif
 #endif
 
 // int findFirstSet(unsigned ...):
@@ -261,25 +398,32 @@ inline int popCount(unsigned long long x) noexcept
 }
 #elif defined(VXIO_MSVC)
 #define VXIO_HAS_BUILTIN_POPCOUNT
-inline uint8_t popCount(uint8_t x) noexcept
+__forceinline int popCount(uint8_t x) noexcept
 {
-    return static_cast<uint8_t>(__popcnt16(x));
+    return static_cast<int>(__popcnt16(x));
 }
 
-inline uint16_t popCount(uint16_t x) noexcept
+__forceinline int popCount(uint16_t x) noexcept
 {
-    return __popcnt16(x);
+    return static_cast<int>(__popcnt16(x));
 }
 
-inline uint32_t popCount(uint32_t x) noexcept
+__forceinline int popCount(uint32_t x) noexcept
 {
-    return __popcnt(x);
+    return static_cast<int>(__popcnt(x));
 }
 
-inline uint64_t popCount(uint64_t x) noexcept
+#ifdef VXIO_64_BIT
+__forceinline int popCount(uint64_t x) noexcept
 {
-    return __popcnt64(x);
+    return static_cast<int>(__popcnt64(x));
 }
+#else
+[[noreturn]] __forceinline int popCount(uint64_t) noexcept
+{
+    trap();
+}
+#endif
 #endif
 
 // int parity(unsigned ...):
@@ -313,29 +457,9 @@ inline bool parity(unsigned long long x) noexcept
 {
     return __builtin_parityll(x);
 }
-
-#elif defined(VXIO_HAS_BUILTIN_POPCOUNT)
-#define VXIO_HAS_BUILTIN_PARITY
-inline bool parity(uint8_t x) noexcept
-{
-    return popCount(x) & 1;
-}
-
-inline bool parity(uint16_t x) noexcept
-{
-    return popCount(x) & 1;
-}
-
-inline bool parity(uint32_t x) noexcept
-{
-    return popCount(x) & 1;
-}
-
-inline bool parity(uint64_t x) noexcept
-{
-    return popCount(x) & 1;
-}
 #endif
+
+// ADVANCED BITWISE OPS ================================================================================================
 
 // unsigned rotr(unsigned ...):
 //     Right-rotates the bits of a number.
@@ -383,17 +507,17 @@ Uint byteSwap(Uint x) noexcept
 
 #elif defined(VXIO_MSVC)
 #define VXIO_HAS_BUILTIN_BSWAP
-inline uint8_t byteSwap(uint8_t val) noexcept
+__forceinline uint8_t byteSwap(uint8_t val) noexcept
 {
     return val;
 }
 
-inline unsigned short byteSwap(unsigned short val) noexcept
+__forceinline unsigned short byteSwap(unsigned short val) noexcept
 {
     return _byteswap_ushort(val);
 }
 
-inline unsigned int byteSwap(unsigned int val) noexcept
+__forceinline unsigned int byteSwap(unsigned int val) noexcept
 {
     static_assert(sizeof(unsigned int) == sizeof(unsigned short) || sizeof(unsigned int) == sizeof(unsigned long),
                   "No viable _byteswap implementation for unsigned int");
@@ -405,15 +529,22 @@ inline unsigned int byteSwap(unsigned int val) noexcept
     }
 }
 
-inline unsigned long byteSwap(unsigned long val) noexcept
+__forceinline unsigned long byteSwap(unsigned long val) noexcept
 {
     return _byteswap_ulong(val);
 }
 
-inline uint64_t byteSwap(uint64_t val) noexcept
+#ifdef VXIO_64_BIT
+__forceinline uint64_t byteSwap(uint64_t val) noexcept
 {
     return _byteswap_uint64(val);
 }
+#else
+[[noreturn]] __forceinline uint64_t byteSwap(uint64_t) noexcept
+{
+    trap();
+}
+#endif
 #endif
 
 }  // namespace voxelio::builtin
