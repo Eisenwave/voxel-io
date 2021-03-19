@@ -170,22 +170,6 @@ constexpr u32 log2floor_debruijn(u32 val) noexcept
     return detail::MultiplyDeBruijnBitPosition[val];
 }
 
-#ifdef VXIO_HAS_BUILTIN_CLZ
-/**
- * @brief log2floor implementation using the builtin::countLeadingZeros intrinsic.
- * When available, this is by far the fastest implementation as it only requires the use of a clz instruction plus
- * some surrounding code.
- *
- * countLeadingZeros(0) is undefined and must be handled specially.
- */
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-inline Uint log2floor_builtin(Uint v) noexcept
-{
-    constexpr int maxIndex = bits_v<Uint> - 1;
-    return static_cast<Uint>(v == 0 ? 0 : maxIndex - builtin::countLeadingZeros(v));
-}
-#endif
-
 /**
  * @brief Computes the floored binary logarithm of a given integer.
  * Example: log2floor(123) = 6
@@ -201,9 +185,14 @@ inline Uint log2floor_builtin(Uint v) noexcept
 template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
 constexpr Int log2floor(Int v) noexcept
 {
-#ifdef VXIO_HAS_BUILTIN_CLZ
+#ifdef VXIO_HAS_BUILTIN_MSB
     if (not isConstantEvaluated()) {
-        return static_cast<Int>(log2floor_builtin(v));
+        return builtin::mostSignificantBit(v);
+    }
+#elif defined(VXIO_HAS_BUILTIN_CLZ)
+    if (not isConstantEvaluated()) {
+        constexpr int maxIndex = bits_v<Int> - 1;
+        return (v != 0) * static_cast<Int>(maxIndex - builtin::countLeadingZeros(v));
     }
 #endif
     if constexpr (std::is_same_v<Int, u32>) {
