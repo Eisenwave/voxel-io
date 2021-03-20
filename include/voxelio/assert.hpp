@@ -54,7 +54,6 @@ struct AssertHandlerGuard {
 
 // CONDITIONALLY DISABLED ASSSERTS =====================================================================================
 #ifndef VXIO_DISABLE_ASSERTS
-#include "stringify.hpp"
 
 namespace voxelio {
 
@@ -69,17 +68,21 @@ namespace voxelio {
 #define VXIO_ASSERT_IMPL(expr, msg) \
     (static_cast<bool>(expr) ? void(0) : ::voxelio::assertFail(__FILE__, __LINE__, __func__, msg))
 
-#define VXIO_TO_STRING(x) ::voxelio::stringify(x)
+// FIXME fix multiple evaluations
+#define VXIO_ASSERT_CMP(l, r, op)                                                                             \
+    VXIO_ASSERT_IMPL((l) op(r),                                                                               \
+                     "Comparison failed: " #l " " #op " " #r " (with \"" #l "\"=" + ::voxelio::stringify(l) + \
+                         ", \"" #r "\"=" + ::voxelio::stringify(r) + ")")
 
-#define VXIO_ASSERT_CMP(l, r, op)                                                                       \
-    VXIO_ASSERT_IMPL((l) op(r),                                                                         \
-                     "Comparison failed: " #l " " #op " " #r " (with \"" #l "\"=" + VXIO_TO_STRING(l) + \
-                         ", \"" #r "\"=" + VXIO_TO_STRING(r) + ")")
+#define VXIO_ASSERT_CONSEQUENCE(l, r)                                                                     \
+    VXIO_ASSERT_IMPL(!(l) || (r),                                                                         \
+                     "Consequence failed: " #l " => " #r " (with \"" #l "\"=" + ::voxelio::stringify(l) + \
+                         ", \"" #r "\"=" + ::voxelio::stringify(r) + ")")
 
-#define VXIO_ASSERT_CONSEQUENCE(l, r)                                                               \
-    VXIO_ASSERT_IMPL(!(l) || (r),                                                                   \
-                     "Consequence failed: " #l " => " #r " (with \"" #l "\"=" + VXIO_TO_STRING(l) + \
-                         ", \"" #r "\"=" + VXIO_TO_STRING(r) + ")")
+#define VXIO_ASSERT_DIVISIBLE(l, r)                                                                       \
+    VXIO_ASSERT_IMPL((l) % (r) == 0,                                                                      \
+                     "Divisibility failed: " #l " | " #r " (with \"" #l "\"=" + ::voxelio::stringify(l) + \
+                         ", \"" #r "\"=" + ::voxelio::stringify(r) + ")")
 
 #else
 
@@ -90,6 +93,7 @@ constexpr void consumeBool(bool) {}
 #define VXIO_ASSERT_IMPL(expr, msg) ::voxelio::detail::consumeBool(expr)
 #define VXIO_ASSERT_CMP(l, r, op) ::voxelio::detail::consumeBool((l) op(r))
 #define VXIO_ASSERT_CONSEQUENCE(l, r) ::voxelio::detail::consumeBool(!(l) || (r))
+#define VXIO_ASSERT_DIVISIBLE(l, r) ::voxelio::detail::consumeBool((l) % (r) == 0)
 
 #endif
 // COMMON ASSERTS (ALWAYS DEFINED THE SAME) ============================================================================
@@ -120,6 +124,7 @@ constexpr void consumeBool(bool) {}
 #define VXIO_DEBUG_ASSERT_GT(l, r) VXIO_IF_DEBUG(VXIO_ASSERT_CMP(l, r, >))
 #define VXIO_DEBUG_ASSERT_GE(l, r) VXIO_IF_DEBUG(VXIO_ASSERT_CMP(l, r, >=))
 #define VXIO_DEBUG_ASSERT_CONSEQUENCE(l, r) VXIO_IF_DEBUG(VXIO_ASSERT_CONSEQUENCE(l, r))
+#define VXIO_DEBUG_ASSERT_DIVISIBLE(l, r) VXIO_IF_DEBUG(VXIO_ASSERT_DIVISIBLE(l, r))
 
 // UNREACHABILITY ASSERTS ==============================================================================================
 //
