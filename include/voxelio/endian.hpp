@@ -26,8 +26,6 @@ using build::Endian;
 // IMPLEMENTATION ======================================================================================================
 
 namespace detail {
-// The builtin version will only be chosen if VXIO_HAS_ACCELERATED_REVERSE_BYTES is defined.
-// Both are defined so that they can be tested individually.
 
 template <Endian ENDIAN, typename Int>
 constexpr void encode_reverse(Int integer, u8 out[sizeof(Int)])
