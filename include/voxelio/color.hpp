@@ -5,13 +5,6 @@
 
 namespace voxelio {
 
-struct ArgbColor {
-    enum Value : argb32 {
-        WHITE = 0xffffffff,
-        INVISIBLE_WHITE = 0x00ffffff,
-    };
-};
-
 struct Color32 {
     // This order is optimal for little-endian platforms when converting to an ARGB integer.
     // On LE platforms, only a mov is necessary to pack these bytes into an int.
@@ -243,7 +236,7 @@ constexpr void encodeArgb(argb32 argb, u8 out[4])
  * @brief Converts an array of {alpha, red, green, blue} channels to an integer in the given format.
  */
 template <ArgbOrder format = ArgbOrder::ARGB>
-constexpr argb32 decodeArgb(u8 argb[4])
+constexpr argb32 decodeArgb(const u8 argb[4])
 {
     constexpr detail::ChannelOffsets shifts = detail::byteShiftAmountsOf(format) * 8;
     argb32 result = 0;
@@ -266,6 +259,15 @@ constexpr argb32 reorderColor(argb32 rgb)
         return decodeArgb<TO>(buffer);
     }
 }
+
+struct ArgbColor {
+    static constexpr Color32 WHITE = 0xffffffff;
+    static constexpr Color32 BLACK = 0xff000000;
+    static constexpr Color32 INVISIBLE_WHITE = 0x00ffffff;
+    static constexpr Color32 RED = 0xffff0000;
+    static constexpr Color32 GREEN = 0xff00ff00;
+    static constexpr Color32 BLUE = 0xff0000ff;
+};
 
 }  // namespace voxelio
 
