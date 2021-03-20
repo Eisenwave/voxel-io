@@ -13,7 +13,7 @@ namespace voxelio {
     std::terminate();
 }
 
-static thread_local std::vector<AssertHandler> assertHandlerStack{defaultAssertHandler};
+static thread_local std::vector<AssertHandler> assertHandlerStack{&defaultAssertHandler};
 
 void pushAssertHandler(AssertHandler handler) noexcept
 {
