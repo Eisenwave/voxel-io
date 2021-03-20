@@ -201,6 +201,19 @@ std::string stringifyBin(T num) noexcept
 
 // UNIVERSAL STRINGIFICATION ===========================================================================================
 
+namespace detail {
+
+template <typename From, typename To>
+auto isStaticCastable_impl(int) -> decltype(static_cast<To>(std::declval<From>()));
+
+template <typename From, typename To>
+auto isStaticCastable_impl(...) -> void;
+
+template <typename From, typename To>
+constexpr bool isStaticCastable = not std::is_same_v<decltype(isStaticCastable_impl<From, To>(0)), void>;
+
+}  // namespace detail
+
 /**
  * @brief Stringifies any type.
  * - bools are stringified as "true" or "false"
@@ -243,6 +256,9 @@ std::string stringify(const T &t) noexcept
     }
     else if constexpr (std::is_pointer_v<T>) {
         return stringifyHex(reinterpret_cast<uintptr_t>(t));
+    }
+    else if constexpr (detail::isStaticCastable<T, std::string>) {
+        return static_cast<std::string>(t);
     }
     else {
         return detail::stringifyUsingStream<T>(t);
