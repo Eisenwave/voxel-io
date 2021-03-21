@@ -9,9 +9,6 @@ static constexpr const char *TEST_ORDER[]{
 
 int runTests()
 {
-    setLogLevel(voxelio::LogLevel::DEBUG);
-    enableLoggingSourceLocation(voxelio::build::DEBUG);
-
     VXIO_LOG(INFO, "Running " + stringify(testCount()) + " tests ...");
 
     setTestOrder(TEST_ORDER, std::size(TEST_ORDER));
@@ -27,10 +24,10 @@ int runTests()
     });
 
     if (testFailureCount == 0) {
-        VXIO_LOG(IMPORTANT, "All tests passed");
+        VXIO_LOG(IMPORTANT, "All " + stringify(testCount()) + " tests passed");
     }
     else {
-        VXIO_LOG(ERROR, "Some tests failed (" + stringify(testFailureCount) + " total)");
+        VXIO_LOG(ERROR, "Some tests failed (" + stringify(testFailureCount) + "/" + stringify(testCount()) + ") total");
     }
     return testFailureCount;
 }
@@ -39,5 +36,9 @@ int runTests()
 
 int main()
 {
+    voxelio::setLogLevel(voxelio::LogLevel::DEBUG);
+    voxelio::enableLoggingSourceLocation(voxelio::build::DEBUG);
+    voxelio::enableLoggingTimestamp(false);
+
     return voxelio::test::runTests();
 }
