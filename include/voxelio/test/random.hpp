@@ -9,6 +9,8 @@ using fast_rng32 = std::linear_congruential_engine<uint32_t, 1664525, 1013904223
 using fast_rng64 = std::linear_congruential_engine<uint64_t, 6364136223846793005, 1442695040888963407, 0>;
 using default_rng = std::mt19937;
 
+constexpr std::uint32_t DEFAULT_SEED = 12345;
+
 inline std::uint32_t hardwareSeed()
 {
     return std::random_device{}();

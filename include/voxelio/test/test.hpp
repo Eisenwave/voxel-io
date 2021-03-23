@@ -61,7 +61,9 @@ void registerTest(Test *test);
 
 void setTestOrder(const char *const prefixes[], usize count);
 
-void forEachTest(void (*action)(Test &test));
+using TestConsumer = void(const Test &test);
+
+void forEachTest(TestConsumer *action);
 
 usize testCount();
 
