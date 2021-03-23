@@ -48,7 +48,7 @@ void detail::registerTest(Test *test)
     tests.push_back(std::unique_ptr<Test>{test});
 }
 
-void forEachTest(void (*action)(Test &test))
+void forEachTest(TestConsumer *action)
 {
     if (not anyTestsRegistered) {
         return;
