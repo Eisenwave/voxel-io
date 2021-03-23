@@ -1,27 +1,44 @@
+#include "voxelio/test/io.hpp"
 #include "voxelio/test/test.hpp"
 
 namespace voxelio::test {
+namespace {
 
 static int testFailureCount = 0;
 
-static constexpr const char *TEST_ORDER[]{
-    "intlog", "ileave", "wileave", "stringify", "parse", "stringmanip", "color32", "hextree", "palette"};
+static constexpr const char *TEST_ORDER[]{"intlog",
+                                          "ileave",
+                                          "wileave",
+                                          "stringify",
+                                          "parse",
+                                          "stringmanip",
+                                          "color32",
+                                          "hextree",
+                                          "palette",
+                                          "stream",
+                                          "deflate",
+                                          "binvox",
+                                          "vl32"};
+
+void runTest(const Test &test)
+{
+    static thread_local const char *previousCategory = "";
+
+    if (std::strcmp(previousCategory, test.category) != 0) {
+        previousCategory = test.category;
+        VXIO_LOG(IMPORTANT, "Category: \"" + std::string{test.category} + "\" tests");
+    }
+    VXIO_LOG(INFO, "Running \"" + std::string{test.name} + "\" ...");
+    testFailureCount += not test.operator()();
+}
 
 int runTests()
 {
     VXIO_LOG(INFO, "Running " + stringify(testCount()) + " tests ...");
+    VXIO_LOG(DEBUG, "Test assets at: " + std::string{ASSET_PATH});
 
     setTestOrder(TEST_ORDER, std::size(TEST_ORDER));
-
-    static const char *previousCategory = "";
-    forEachTest([](Test &test) {
-        if (std::strcmp(previousCategory, test.category) != 0) {
-            previousCategory = test.category;
-            VXIO_LOG(IMPORTANT, "Category: \"" + std::string{test.category} + "\" tests");
-        }
-        VXIO_LOG(INFO, "Running \"" + std::string{test.name} + "\" ...");
-        testFailureCount += not test.operator()();
-    });
+    forEachTest(&runTest);
 
     if (testFailureCount == 0) {
         VXIO_LOG(IMPORTANT, "All " + stringify(testCount()) + " tests passed");
@@ -32,6 +49,7 @@ int runTests()
     return testFailureCount;
 }
 
+}  // namespace
 }  // namespace voxelio::test
 
 int main()
