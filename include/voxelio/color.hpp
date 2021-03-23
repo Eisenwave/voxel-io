@@ -101,6 +101,11 @@ struct Color32 {
     {
         return argb();
     }
+
+    explicit operator std::string() const
+    {
+        return '#' + stringifyHex(argb());
+    }
 };
 
 constexpr u8 alpha(argb32 argb)

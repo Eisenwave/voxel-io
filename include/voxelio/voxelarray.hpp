@@ -190,6 +190,11 @@ public:
 
     std::string toString() const;
 
+    explicit operator std::string() const
+    {
+        return toString();
+    }
+
     // OPERATORS
 
     VoxelArray &operator=(VoxelArray &&) = default;
