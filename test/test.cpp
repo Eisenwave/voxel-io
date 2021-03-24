@@ -9,20 +9,6 @@
 
 namespace voxelio::test {
 
-static std::vector<LogLevel> logLevelStack{};
-
-void pushLogLevel(LogLevel level)
-{
-    logLevelStack.push_back(voxelio::getLogLevel());
-    voxelio::setLogLevel(level);
-}
-
-void popLogLevel()
-{
-    voxelio::setLogLevel(logLevelStack.back());
-    logLevelStack.pop_back();
-}
-
 Test::~Test() = default;
 
 // The reason why we have such strange code design with a pointer to a local static is that registerTests(Test*) gets
@@ -37,7 +23,8 @@ static std::map<std::string, unsigned> testPriorityMap;
 unsigned getPriority(const std::string &prefix)
 {
     auto location = testPriorityMap.find(prefix);
-    return location == testPriorityMap.end() ? ~unsigned{0} : location->second;
+    VXIO_ASSERTM(location != testPriorityMap.end(), "Priority for category " + prefix + " is unspecified");
+    return location->second;
 }
 
 void detail::registerTest(Test *test)
@@ -73,7 +60,7 @@ void setTestOrder(const char *const prefixes[], usize count)
     }
 }
 
-usize testCount()
+usize getTestCount()
 {
     return anyTestsRegistered ? testsPtr->size() : 0;
 }

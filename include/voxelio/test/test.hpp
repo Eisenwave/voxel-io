@@ -8,28 +8,25 @@
 
 namespace voxelio::test {
 
-void pushLogLevel(LogLevel level);
-
-void popLogLevel();
-
-struct TestGuard {
-    TestGuard() noexcept
-    {
-        pushAssertHandler([]() {
-            throw nullptr;
-        });
-    }
-
-    ~TestGuard() noexcept
-    {
-        popAssertHandler();
-    }
-
-    TestGuard(const TestGuard &) = delete;
-    TestGuard(TestGuard &&) = delete;
-};
-
 struct Test {
+private:
+    struct TestGuard {
+        TestGuard() noexcept
+        {
+            pushAssertHandler([]() {
+                throw nullptr;
+            });
+        }
+
+        ~TestGuard() noexcept
+        {
+            popAssertHandler();
+        }
+
+        TestGuard(const TestGuard &) = delete;
+        TestGuard(TestGuard &&) = delete;
+    };
+
 public:
     const char *category;
     const char *name;
@@ -39,7 +36,7 @@ public:
 
     bool operator()() const
     {
-        TestGuard testGuard{};
+        TestGuard testGuard;
         try {
             run();
             return true;
@@ -53,6 +50,8 @@ protected:
     virtual void run() const = 0;
 };
 
+using TestConsumer = void(const Test &test);
+
 namespace detail {
 
 void registerTest(Test *test);
@@ -61,22 +60,21 @@ void registerTest(Test *test);
 
 void setTestOrder(const char *const prefixes[], usize count);
 
-using TestConsumer = void(const Test &test);
-
 void forEachTest(TestConsumer *action);
 
-usize testCount();
+usize getTestCount();
 
-#define VXIO_TEST_CLASS_NAME(name) Test_##name##_
+#define VXIO_TEST_CLASS_NAME(category, name) Test_##category##_##name##_
 
-#define VXIO_TEST(category, name)                                                                           \
-    struct VXIO_TEST_CLASS_NAME(name) : ::voxelio::test::Test {                                             \
-        [[maybe_unused]] VXIO_TEST_CLASS_NAME(name)() : ::voxelio::test::Test{#category, #name} {}          \
-        void run() const final;                                                                             \
-    };                                                                                                      \
-    static const int name##__ = (::voxelio::test::detail::registerTest(new VXIO_TEST_CLASS_NAME(name)), 0); \
-                                                                                                            \
-    void VXIO_TEST_CLASS_NAME(name)::run() const
+#define VXIO_TEST(category, name)                                                                            \
+    struct VXIO_TEST_CLASS_NAME(category, name) : ::voxelio::test::Test {                                    \
+        [[maybe_unused]] VXIO_TEST_CLASS_NAME(category, name)() : ::voxelio::test::Test{#category, #name} {} \
+        void run() const final;                                                                              \
+    };                                                                                                       \
+    static const int category##_##name##_ =                                                                  \
+        (::voxelio::test::detail::registerTest(new VXIO_TEST_CLASS_NAME(category, name)), 0);                \
+                                                                                                             \
+    void VXIO_TEST_CLASS_NAME(category, name)::run() const
 
 #ifndef DISABLE_STATIC_TESTS
 #define VXIO_STATIC_ASSERT_EQ(x, y) \

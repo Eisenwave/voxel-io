@@ -15,10 +15,12 @@ add_executable(voxelio-test
                test_stream.cpp
                test_hextree.cpp
                test_palette.cpp
+               test_deflate.cpp
 
                test_binvox.cpp
+               test_qubicle.cpp
                test_vl32.cpp
-               test_deflate.cpp
+               test_vox.cpp
 
                "${TEST_INCLUDE_DIR}/test.hpp"
                "${TEST_INCLUDE_DIR}/io.hpp"

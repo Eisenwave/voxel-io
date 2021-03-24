@@ -18,7 +18,10 @@ static constexpr const char *TEST_ORDER[]{"intlog",
                                           "stream",
                                           "deflate",
                                           "binvox",
-                                          "vl32"};
+                                          "vl32",
+                                          "qef",
+                                          "qb",
+                                          "vox"};
 
 void runTest(const Test &test)
 {
@@ -34,17 +37,18 @@ void runTest(const Test &test)
 
 int runTests()
 {
-    VXIO_LOG(INFO, "Running " + stringify(testCount()) + " tests ...");
+    VXIO_LOG(INFO, "Running " + stringify(getTestCount()) + " tests ...");
     VXIO_LOG(DEBUG, "Test assets at: " + std::string{ASSET_PATH});
 
     setTestOrder(TEST_ORDER, std::size(TEST_ORDER));
     forEachTest(&runTest);
 
     if (testFailureCount == 0) {
-        VXIO_LOG(IMPORTANT, "All " + stringify(testCount()) + " tests passed");
+        VXIO_LOG(IMPORTANT, "All " + stringify(getTestCount()) + " tests passed");
     }
     else {
-        VXIO_LOG(ERROR, "Some tests failed (" + stringify(testFailureCount) + "/" + stringify(testCount()) + ") total");
+        VXIO_LOG(ERROR,
+                 "Some tests failed (" + stringify(testFailureCount) + "/" + stringify(getTestCount()) + ") total");
     }
     return testFailureCount;
 }

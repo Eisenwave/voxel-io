@@ -39,6 +39,11 @@ struct MatrixHeader {
         auto max = pos + size.cast<i32>() - Vec3i32{1, 1, 1};
         return {pos, max};
     }
+
+    bool operator==(const MatrixHeader &other) const
+    {
+        return this->name == other.name && this->pos == other.pos && this->size == other.size;
+    }
 };
 
 struct Matrix : public MatrixHeader {
@@ -53,6 +58,16 @@ struct Matrix : public MatrixHeader {
     {
         return "Matrix{name=" + name + ",voxels=" + voxels.toString() + "}";
     }
+
+    explicit operator std::string() const
+    {
+        return toString();
+    }
+
+    bool operator==(const Matrix &other) const
+    {
+        return this->MatrixHeader::operator==(other) && this->voxels == other.voxels;
+    }
 };
 
 class Model {
@@ -65,6 +80,7 @@ public:
     Model(Model &&) = default;
 
     explicit Model(std::vector<Matrix> matrices) : _matrices{std::move(matrices)} {}
+    explicit Model(Matrix matrix) : _matrices{matrix} {}
 
     // GETTERS
 
@@ -161,6 +177,16 @@ public:
     std::string toString() const
     {
         return "QBModel{size:" + stringify(matrixCount()) + "}";
+    }
+
+    explicit operator std::string() const
+    {
+        return toString();
+    }
+
+    bool operator==(const Model &other) const
+    {
+        return this->_matrices == other._matrices;
     }
 };
 

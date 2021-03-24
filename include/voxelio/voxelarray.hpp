@@ -54,7 +54,7 @@ public:
     value_type operator*()
     {
         Vec3size pos = parent->posOf(index);
-        return Voxel32{pos.cast<i32>(), parent->voxels[index]};
+        return Voxel32{pos.cast<i32>(), {parent->voxels[index]}};
     }
 };
 
