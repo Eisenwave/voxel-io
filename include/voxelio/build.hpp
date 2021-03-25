@@ -117,7 +117,7 @@ constexpr bool RELEASE = !DEBUG;
 #define VXIO_ARM64
 #endif
 
-#if defined(VXIO_x86) || defined(VXIO_X64)
+#if defined(VXIO_X86) || defined(VXIO_X64)
 #define VXIO_X86_OR_X64
 #endif
 
