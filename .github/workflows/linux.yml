@@ -35,3 +35,6 @@ jobs:
     - name: Make
       shell: bash
       run: make -C build
+      
+    - name: Test
+      run: build/test/voxelio-test
