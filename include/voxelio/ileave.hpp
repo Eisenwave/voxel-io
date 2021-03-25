@@ -19,30 +19,9 @@
 #include <cstdint>
 
 namespace voxelio {
-
-// ZERO-BIT INTERLEAVING ===============================================================================================
-
 namespace detail {
 
-/**
- * @brief Interleaves an input number with <bits> zero-bits per input bit. Example: 0b11 -> 0b0101
- * @param input the input number
- * @param bits the amount of zero bits per input bit to interleave
- * @return the input number interleaved with input-bits
- */
-constexpr u64 ileaveZeros_naive(u32 input, usize bits) noexcept
-{
-    const auto lim = std::min<usize>(32, voxelio::divCeil<usize>(64, bits + 1));
-
-    u64 result = 0;
-    for (usize i = 0, b_out = 0; i < lim; ++i) {
-        result |= static_cast<u64>(input & 1) << b_out;
-        input >>= 1;
-        b_out += bits + 1;
-    }
-
-    return result;
-}
+// BIT DUPLICATION =====================================================================================================
 
 /**
  * @brief Duplicates each input bit <bits> times. Example: 0b101 -> 0b110011
@@ -67,16 +46,30 @@ constexpr u64 duplBits_naive(u64 input, usize out_bits_per_in_bits) noexcept
     return result;
 }
 
-}  // namespace detail
+// ZERO-BIT INTERLEAVING ===============================================================================================
 
 /**
- * @brief Interleaves <BITS> zero-bits inbetween each input bit.
+ * @brief Interleaves an input number with <bits> zero-bits per input bit. Example: 0b11 -> 0b0101
  * @param input the input number
- * @tparam BITS the number of bits to be interleaved, must be > 0
- * @return the input interleaved with <BITS> bits
+ * @param bits the amount of zero bits per input bit to interleave
+ * @return the input number interleaved with input-bits
  */
+constexpr u64 ileaveZeros_naive(u32 input, usize bits) noexcept
+{
+    const auto lim = std::min<usize>(32, voxelio::divCeil<usize>(64, bits + 1));
+
+    u64 result = 0;
+    for (usize i = 0, b_out = 0; i < lim; ++i) {
+        result |= static_cast<u64>(input & 1) << b_out;
+        input >>= 1;
+        b_out += bits + 1;
+    }
+
+    return result;
+}
+
 template <unsigned BITS>
-constexpr u64 ileaveZeros_const(u32 input) noexcept
+constexpr u64 ileaveZeros_shift(u32 input) noexcept
 {
     if constexpr (BITS == 0) {
         return input;
@@ -101,6 +94,38 @@ constexpr u64 ileaveZeros_const(u32 input) noexcept
 
         return n;
     }
+}
+
+#ifdef VXIO_HAS_BUILTIN_PDEP
+#define VXIO_HAS_BUILTIN_ILEAVE_ZEROS
+template <unsigned BITS, unsigned SHIFT = 0>
+inline u64 ileaveZeros_builtin(u32 input) noexcept
+{
+    constexpr u64 mask = detail::ileaveZeros_naive(~u32(0), BITS) << SHIFT;
+    return builtin::depositBits(u64{input}, mask);
+}
+#endif
+
+}  // namespace detail
+
+/**
+ * @brief Interleaves BITS zero-bits inbetween each input bit and optionally leftshifts the result by SHIFT bits.
+ *
+ * SHIFT is an additional parameter because left-shifting is a no-op when the builtin implementation is available.
+ * @param input the input number
+ * @tparam BITS the number of bits to be interleaved or zero for an identity mapping
+ * @tparam SHIFT the number of bits to left-shift the input by after interleaving zeros
+ * @return the input interleaved with <BITS> bits
+ */
+template <unsigned BITS, unsigned SHIFT = 0>
+constexpr u64 ileaveZeros_const(u32 input) noexcept
+{
+#ifdef VXIO_HAS_BUILTIN_ILEAVE_ZEROS
+    if (not isConstantEvaluated()) {
+        return detail::ileaveZeros_builtin<BITS, SHIFT>(input);
+    }
+#endif
+    return detail::ileaveZeros_shift<BITS>(input) << SHIFT;
 }
 
 // BITWISE DE-INTERLEAVING =============================================================================================
@@ -129,17 +154,8 @@ constexpr u64 remIleavedBits_naive(u64 input, usize bits) noexcept
     return result;
 }
 
-}  // namespace detail
-
-/**
- * @brief Removes each interleaved <BITS> bits. Example: 0b010101 --rem 1--> 0b111
- * If BITS is zero, no bits are removed and the input is returned.
- * @param input the input number
- * @param bits input bits per output bit
- * @return the the output with removed bits
- */
 template <unsigned BITS>
-constexpr u64 remIleavedBits_const(u64 input) noexcept
+constexpr u64 remIleavedBits_shift(u64 input) noexcept
 {
     if constexpr (BITS == 0) {
         return input;
@@ -168,40 +184,37 @@ constexpr u64 remIleavedBits_const(u64 input) noexcept
     }
 }
 
-// NUMBER INTERLEAVING =================================================================================================
+#ifdef VXIO_HAS_BUILTIN_PEXT
+#define VXIO_HAS_BUILTIN_REM_ILEAVED_BITS
+template <unsigned BITS, unsigned SHIFT>
+inline u64 remIleavedBits_builtin(u64 input) noexcept
+{
+    constexpr u64 mask = detail::ileaveZeros_naive(~u32(0), BITS) << SHIFT;
+    return builtin::extractBits(u64{input}, mask);
+}
+#endif
+
+}  // namespace detail
 
 /**
- * @brief Interleaves 2 integers, where hi comprises the upper bits of each bit pair and lo the lower bits.
- * Examle: ileave2(0b111, 0b000) = 0b101010
- *
- * This is also referred to as a Morton Code in scientific literature.
- *
- * @param hi the high bits
- * @param lo the low bits
- * @return the interleaved bits
+ * @brief Removes each interleaved <BITS> bits. Example: 0b010101 --rem 1--> 0b111
+ * If BITS is zero, no bits are removed and the input is returned.
+ * @param input the input number
+ * @param bits input bits per output bit
+ * @return the the output with removed bits
  */
-constexpr u64 ileave2(u32 hi, u32 lo) noexcept
+template <unsigned BITS, unsigned SHIFT = 0>
+constexpr u64 remIleavedBits_const(u64 input) noexcept
 {
-    constexpr u64 MASKS[] = {0x5555'5555'5555'5555,
-                             0x3333'3333'3333'3333,
-                             0x0F0F'0F0F'0F0F'0F0F,
-                             0x00FF'00FF'00FF'00FF,
-                             0x0000'FFFF'0000'FFFF};
-
-    u64 result = 0;
-    u32 *nums[] = {&hi, &lo};
-
-    for (usize i = 0; i < 2; ++i) {
-        u64 n = *nums[i];
-        for (usize i = 4; i != std::numeric_limits<usize>::max(); --i) {
-            n |= n << (1 << i);
-            n &= MASKS[i];
-        }
-        result |= n << (1 - i);
+#ifdef VXIO_HAS_BUILTIN_REM_ILEAVED_BITS
+    if (not isConstantEvaluated()) {
+        return detail::remIleavedBits_builtin<BITS, SHIFT>(input);
     }
-
-    return result;
+#endif
+    return detail::remIleavedBits_shift<BITS>(input >> SHIFT);
 }
+
+// NUMBER INTERLEAVING =================================================================================================
 
 namespace detail {
 
@@ -211,6 +224,11 @@ constexpr u64 ileave3_naive(u32 x, u32 y, u32 z) noexcept
 }
 
 }  // namespace detail
+
+constexpr u64 ileave2(u32 hi, u32 lo) noexcept
+{
+    return ileaveZeros_const<1, 1>(hi) | ileaveZeros_const<1, 0>(lo);
+}
 
 /**
  * @brief Interleaves 3 integers, where x comprises the uppermost bits of each bit triple and z the lowermost bits.
@@ -224,7 +242,7 @@ constexpr u64 ileave3_naive(u32 x, u32 y, u32 z) noexcept
  */
 constexpr u64 ileave3(u32 x, u32 y, u32 z) noexcept
 {
-    return (ileaveZeros_const<2>(x) << 2) | (ileaveZeros_const<2>(y) << 1) | ileaveZeros_const<2>(z);
+    return ileaveZeros_const<2, 2>(x) | ileaveZeros_const<2, 1>(y) | ileaveZeros_const<2, 0>(z);
 }
 
 // NUMBER DE-INTERLEAVING ==============================================================================================
@@ -251,9 +269,9 @@ constexpr void dileave3_naive(u64 n, u32 out[3]) noexcept
  */
 constexpr void dileave3(u64 n, u32 out[3]) noexcept
 {
-    out[0] = static_cast<u32>(remIleavedBits_const<2>(n >> 2));
-    out[1] = static_cast<u32>(remIleavedBits_const<2>(n >> 1));
-    out[2] = static_cast<u32>(remIleavedBits_const<2>(n >> 0));
+    out[0] = static_cast<u32>(remIleavedBits_const<2, 2>(n));
+    out[1] = static_cast<u32>(remIleavedBits_const<2, 1>(n));
+    out[2] = static_cast<u32>(remIleavedBits_const<2, 0>(n));
 }
 
 // BYTE INTERLEAVING ===================================================================================================

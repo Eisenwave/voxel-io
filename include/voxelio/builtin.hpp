@@ -555,7 +555,7 @@ __forceinline uint64_t byteSwap(uint64_t val) noexcept
 
 // uintXX_t depositBits(uintXX_t val, uintXX_t mask):
 //     See https://www.felixcloutier.com/x86/pdep
-#if defined(VXIO_X86_OR_X64) && (defined(VXIO_MSVC) || defined(VXIO_GNU_OR_CLANG))
+#if defined(VXIO_X86_OR_X64) && (defined(VXIO_MSVC) || defined(VXIO_GNU_OR_CLANG) && defined(__BMI2__))
 #define VXIO_HAS_BUILTIN_PDEP
 template <typename Uint, std::enable_if_t<(std::is_unsigned_v<Uint> && sizeof(Uint) <= 8), int> = 0>
 Uint depositBits(Uint val, Uint mask)
