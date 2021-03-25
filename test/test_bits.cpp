@@ -56,102 +56,102 @@ void test_log2_floor_general()
 
 VXIO_TEST(intlog, log2floor_naive_forPow2)
 {
-    test_log2_floor_forPow2<voxelio::log2floor_naive<uint32_t>, voxelio::log2floor_naive<uint64_t>>();
+    test_log2_floor_forPow2<log2floor_naive<uint32_t>, log2floor_naive<uint64_t>>();
 }
 
 VXIO_TEST(intlog, log2floor_fast_forPow2)
 {
-    test_log2_floor_forPow2<voxelio::log2floor_fast<uint32_t>, voxelio::log2floor_fast<uint64_t>>();
+    test_log2_floor_forPow2<log2floor_fast<uint32_t>, log2floor_fast<uint64_t>>();
 }
 
 VXIO_TEST(intlog, log2floor_debruijn_forPow2)
 {
-    test_log2_floor_forPow2<voxelio::log2floor_debruijn>();
+    test_log2_floor_forPow2<log2floor_debruijn>();
 }
 
 VXIO_TEST(intlog, log2floor_forPow2)
 {
-    test_log2_floor_forPow2<voxelio::log2floor<uint32_t>, voxelio::log2floor<uint64_t>>();
+    test_log2_floor_forPow2<log2floor<uint32_t>, log2floor<uint64_t>>();
 }
 
 VXIO_TEST(intlog, log2floor_naive_general)
 {
-    test_log2_floor_general<voxelio::log2floor_naive<uint32_t>, voxelio::log2floor_naive<uint64_t>>();
+    test_log2_floor_general<log2floor_naive<uint32_t>, log2floor_naive<uint64_t>>();
 }
 
 VXIO_TEST(intlog, log2floor_fast_general)
 {
-    test_log2_floor_general<voxelio::log2floor_fast<uint32_t>, voxelio::log2floor_fast<uint64_t>>();
+    test_log2_floor_general<log2floor_fast<uint32_t>, log2floor_fast<uint64_t>>();
 }
 
 VXIO_TEST(intlog, log2floor_debruijn_general)
 {
-    test_log2_floor_general<voxelio::log2floor_debruijn>();
+    test_log2_floor_general<log2floor_debruijn>();
 }
 
 VXIO_TEST(intlog, log2floor_general)
 {
-    test_log2_floor_general<voxelio::log2floor_debruijn>();
+    test_log2_floor_general<log2floor_debruijn>();
 }
 
 VXIO_TEST(intlog, log2floor_manual)
 {
-    VXIO_STATIC_ASSERT_EQ(voxelio::log2floor(0u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log2floor_debruijn(0u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log2floor_fast(0u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log2floor_naive(0u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log2floor(0u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log2floor_debruijn(0u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log2floor_fast(0u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log2floor_naive(0u), 0u);
 }
 
 VXIO_TEST(intlog, log10floor_manual)
 {
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint8_t>(0u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint8_t>(9u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint8_t>(10u), 1u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint8_t>(99u), 1u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint8_t>(100u), 2u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint8_t>(255u), 2u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint8_t>(0u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint8_t>(9u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint8_t>(10u), 1u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint8_t>(99u), 1u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint8_t>(100u), 2u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint8_t>(255u), 2u);
 
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(0u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(1u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(2u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(3u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(4u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(5u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(6u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(7u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(8u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(9u), 0u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(10u), 1u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(11u), 1u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(12u), 1u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(13u), 1u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(14u), 1u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(15u), 1u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(16u), 1u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(99u), 1u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(100u), 2u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(999u), 2u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(1'000u), 3u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(9'999u), 3u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(10000u), 4u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(99'999u), 4u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(100'000u), 5u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(999'999u), 5u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(1'000'000u), 6u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(9'999'999u), 6u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(10'000'000u), 7u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(99'999'999u), 7u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(100'000'000u), 8u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(999'999'999u), 8u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(1'000'000'000u), 9u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(2'000'000'000u), 9u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(4'000'000'000u), 9u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint32_t>(uint32_t(~0)), 9u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(0u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(1u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(2u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(3u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(4u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(5u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(6u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(7u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(8u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(9u), 0u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(10u), 1u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(11u), 1u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(12u), 1u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(13u), 1u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(14u), 1u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(15u), 1u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(16u), 1u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(99u), 1u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(100u), 2u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(999u), 2u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(1'000u), 3u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(9'999u), 3u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(10000u), 4u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(99'999u), 4u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(100'000u), 5u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(999'999u), 5u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(1'000'000u), 6u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(9'999'999u), 6u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(10'000'000u), 7u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(99'999'999u), 7u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(100'000'000u), 8u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(999'999'999u), 8u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(1'000'000'000u), 9u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(2'000'000'000u), 9u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(4'000'000'000u), 9u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint32_t>(uint32_t(~0)), 9u);
 
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint64_t>(uint64_t{1} << 63), 18u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint64_t>(9'999'999'999'999'999'999ull), 18u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint64_t>(10'000'000'000'000'000'000ull), 19u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::log10floor<uint64_t>(~uint64_t{0}), 19u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint64_t>(uint64_t{1} << 63), 18u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint64_t>(9'999'999'999'999'999'999ull), 18u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint64_t>(10'000'000'000'000'000'000ull), 19u);
+    VXIO_STATIC_ASSERT_EQ(log10floor<uint64_t>(~uint64_t{0}), 19u);
 }
 
 VXIO_TEST(ileave, ileaveZeros_naive_manual)
@@ -166,7 +166,7 @@ VXIO_TEST(ileave, ileaveZeros_naive_manual)
     VXIO_STATIC_ASSERT_EQ(voxelio::detail::ileaveZeros_naive(0xffff'ffff, 15), 0x0001'0001'0001'0001u);
     VXIO_STATIC_ASSERT_EQ(voxelio::detail::ileaveZeros_naive(0xffff'ffff, 31), 0x0000'0001'0000'0001u);
 
-    VXIO_STATIC_ASSERT_EQ(voxelio::ileaveZeros_const<4>(12345678), voxelio::detail::ileaveZeros_naive(12345678, 4));
+    VXIO_STATIC_ASSERT_EQ(ileaveZeros_const<4>(12345678), voxelio::detail::ileaveZeros_naive(12345678, 4));
 }
 
 VXIO_TEST(ileave, duplBits_naive_manual)
@@ -238,24 +238,18 @@ VXIO_TEST(ileave, remIleavedBits_naive_manual)
 
 VXIO_TEST(ileave, remIleavedBits_const_manual)
 {
-    VXIO_STATIC_ASSERT_EQ(voxelio::remIleavedBits_const<0>(0xff), 0xffu);
-    VXIO_STATIC_ASSERT_EQ(voxelio::remIleavedBits_const<1>(0xff), 0xfu);
-    VXIO_STATIC_ASSERT_EQ(voxelio::remIleavedBits_const<1>(0b01010101), 0b1111u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::remIleavedBits_const<1>(0x5555'5555'5555'5555), 0xffff'ffffu);
-    VXIO_STATIC_ASSERT_EQ(voxelio::remIleavedBits_const<3>(0x1111'1111'1111'1111), 0b1111'1111'1111'1111u);
+    VXIO_STATIC_ASSERT_EQ(remIleavedBits_const<0>(0xff), 0xffu);
+    VXIO_STATIC_ASSERT_EQ(remIleavedBits_const<1>(0xff), 0xfu);
+    VXIO_STATIC_ASSERT_EQ(remIleavedBits_const<1>(0b01010101), 0b1111u);
+    VXIO_STATIC_ASSERT_EQ(remIleavedBits_const<1>(0x5555'5555'5555'5555), 0xffff'ffffu);
+    VXIO_STATIC_ASSERT_EQ(remIleavedBits_const<3>(0x1111'1111'1111'1111), 0b1111'1111'1111'1111u);
 
-    VXIO_STATIC_ASSERT_EQ(voxelio::remIleavedBits_const<4>(12345678),
-                          voxelio::detail::remIleavedBits_naive(12345678, 4));
-    VXIO_STATIC_ASSERT_EQ(voxelio::remIleavedBits_const<8>(12345678),
-                          voxelio::detail::remIleavedBits_naive(12345678, 8));
-    VXIO_STATIC_ASSERT_EQ(voxelio::remIleavedBits_const<16>(12345678),
-                          voxelio::detail::remIleavedBits_naive(12345678, 16));
-    VXIO_STATIC_ASSERT_EQ(voxelio::remIleavedBits_const<32>(12345678),
-                          voxelio::detail::remIleavedBits_naive(12345678, 32));
-    VXIO_STATIC_ASSERT_EQ(voxelio::remIleavedBits_const<63>(12345678),
-                          voxelio::detail::remIleavedBits_naive(12345678, 63));
-    VXIO_STATIC_ASSERT_EQ(voxelio::remIleavedBits_const<64>(12345678),
-                          voxelio::detail::remIleavedBits_naive(12345678, 64));
+    VXIO_STATIC_ASSERT_EQ(remIleavedBits_const<4>(12345678), voxelio::detail::remIleavedBits_naive(12345678, 4));
+    VXIO_STATIC_ASSERT_EQ(remIleavedBits_const<8>(12345678), voxelio::detail::remIleavedBits_naive(12345678, 8));
+    VXIO_STATIC_ASSERT_EQ(remIleavedBits_const<16>(12345678), voxelio::detail::remIleavedBits_naive(12345678, 16));
+    VXIO_STATIC_ASSERT_EQ(remIleavedBits_const<32>(12345678), voxelio::detail::remIleavedBits_naive(12345678, 32));
+    VXIO_STATIC_ASSERT_EQ(remIleavedBits_const<63>(12345678), voxelio::detail::remIleavedBits_naive(12345678, 63));
+    VXIO_STATIC_ASSERT_EQ(remIleavedBits_const<64>(12345678), voxelio::detail::remIleavedBits_naive(12345678, 64));
 }
 
 VXIO_TEST(ileave, remIleavedBits_naive_matches_templated)
@@ -267,24 +261,24 @@ VXIO_TEST(ileave, remIleavedBits_naive_matches_templated)
 
     for (size_t i = 0; i < iterations; ++i) {
         const auto input = distr(rng);
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<1>(input), voxelio::detail::remIleavedBits_naive(input, 1));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<2>(input), voxelio::detail::remIleavedBits_naive(input, 2));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<3>(input), voxelio::detail::remIleavedBits_naive(input, 3));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<4>(input), voxelio::detail::remIleavedBits_naive(input, 4));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<5>(input), voxelio::detail::remIleavedBits_naive(input, 5));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<6>(input), voxelio::detail::remIleavedBits_naive(input, 6));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<7>(input), voxelio::detail::remIleavedBits_naive(input, 7));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<8>(input), voxelio::detail::remIleavedBits_naive(input, 8));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<9>(input), voxelio::detail::remIleavedBits_naive(input, 9));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<10>(input), voxelio::detail::remIleavedBits_naive(input, 10));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<11>(input), voxelio::detail::remIleavedBits_naive(input, 11));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<12>(input), voxelio::detail::remIleavedBits_naive(input, 12));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<13>(input), voxelio::detail::remIleavedBits_naive(input, 13));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<14>(input), voxelio::detail::remIleavedBits_naive(input, 14));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<15>(input), voxelio::detail::remIleavedBits_naive(input, 15));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<16>(input), voxelio::detail::remIleavedBits_naive(input, 16));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<32>(input), voxelio::detail::remIleavedBits_naive(input, 32));
-        VXIO_ASSERT_EQ(voxelio::remIleavedBits_const<63>(input), voxelio::detail::remIleavedBits_naive(input, 63));
+        VXIO_ASSERT_EQ(remIleavedBits_const<1>(input), voxelio::detail::remIleavedBits_naive(input, 1));
+        VXIO_ASSERT_EQ(remIleavedBits_const<2>(input), voxelio::detail::remIleavedBits_naive(input, 2));
+        VXIO_ASSERT_EQ(remIleavedBits_const<3>(input), voxelio::detail::remIleavedBits_naive(input, 3));
+        VXIO_ASSERT_EQ(remIleavedBits_const<4>(input), voxelio::detail::remIleavedBits_naive(input, 4));
+        VXIO_ASSERT_EQ(remIleavedBits_const<5>(input), voxelio::detail::remIleavedBits_naive(input, 5));
+        VXIO_ASSERT_EQ(remIleavedBits_const<6>(input), voxelio::detail::remIleavedBits_naive(input, 6));
+        VXIO_ASSERT_EQ(remIleavedBits_const<7>(input), voxelio::detail::remIleavedBits_naive(input, 7));
+        VXIO_ASSERT_EQ(remIleavedBits_const<8>(input), voxelio::detail::remIleavedBits_naive(input, 8));
+        VXIO_ASSERT_EQ(remIleavedBits_const<9>(input), voxelio::detail::remIleavedBits_naive(input, 9));
+        VXIO_ASSERT_EQ(remIleavedBits_const<10>(input), voxelio::detail::remIleavedBits_naive(input, 10));
+        VXIO_ASSERT_EQ(remIleavedBits_const<11>(input), voxelio::detail::remIleavedBits_naive(input, 11));
+        VXIO_ASSERT_EQ(remIleavedBits_const<12>(input), voxelio::detail::remIleavedBits_naive(input, 12));
+        VXIO_ASSERT_EQ(remIleavedBits_const<13>(input), voxelio::detail::remIleavedBits_naive(input, 13));
+        VXIO_ASSERT_EQ(remIleavedBits_const<14>(input), voxelio::detail::remIleavedBits_naive(input, 14));
+        VXIO_ASSERT_EQ(remIleavedBits_const<15>(input), voxelio::detail::remIleavedBits_naive(input, 15));
+        VXIO_ASSERT_EQ(remIleavedBits_const<16>(input), voxelio::detail::remIleavedBits_naive(input, 16));
+        VXIO_ASSERT_EQ(remIleavedBits_const<32>(input), voxelio::detail::remIleavedBits_naive(input, 32));
+        VXIO_ASSERT_EQ(remIleavedBits_const<63>(input), voxelio::detail::remIleavedBits_naive(input, 63));
     }
 }
 
@@ -297,60 +291,60 @@ VXIO_TEST(ileave, ileaveZeros_naive_matches_template)
 
     for (size_t i = 0; i < iterations; ++i) {
         const auto input = distr(rng);
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<1>(input), voxelio::detail::ileaveZeros_naive(input, 1));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<2>(input), voxelio::detail::ileaveZeros_naive(input, 2));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<3>(input), voxelio::detail::ileaveZeros_naive(input, 3));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<4>(input), voxelio::detail::ileaveZeros_naive(input, 4));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<5>(input), voxelio::detail::ileaveZeros_naive(input, 5));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<6>(input), voxelio::detail::ileaveZeros_naive(input, 6));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<7>(input), voxelio::detail::ileaveZeros_naive(input, 7));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<8>(input), voxelio::detail::ileaveZeros_naive(input, 8));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<9>(input), voxelio::detail::ileaveZeros_naive(input, 9));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<10>(input), voxelio::detail::ileaveZeros_naive(input, 10));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<11>(input), voxelio::detail::ileaveZeros_naive(input, 11));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<12>(input), voxelio::detail::ileaveZeros_naive(input, 12));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<13>(input), voxelio::detail::ileaveZeros_naive(input, 13));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<14>(input), voxelio::detail::ileaveZeros_naive(input, 14));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<15>(input), voxelio::detail::ileaveZeros_naive(input, 15));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<16>(input), voxelio::detail::ileaveZeros_naive(input, 16));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<16>(input), voxelio::detail::ileaveZeros_naive(input, 16));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<32>(input), voxelio::detail::ileaveZeros_naive(input, 32));
-        VXIO_ASSERT_EQ(voxelio::ileaveZeros_const<63>(input), voxelio::detail::ileaveZeros_naive(input, 63));
+        VXIO_ASSERT_EQ(ileaveZeros_const<1>(input), voxelio::detail::ileaveZeros_naive(input, 1));
+        VXIO_ASSERT_EQ(ileaveZeros_const<2>(input), voxelio::detail::ileaveZeros_naive(input, 2));
+        VXIO_ASSERT_EQ(ileaveZeros_const<3>(input), voxelio::detail::ileaveZeros_naive(input, 3));
+        VXIO_ASSERT_EQ(ileaveZeros_const<4>(input), voxelio::detail::ileaveZeros_naive(input, 4));
+        VXIO_ASSERT_EQ(ileaveZeros_const<5>(input), voxelio::detail::ileaveZeros_naive(input, 5));
+        VXIO_ASSERT_EQ(ileaveZeros_const<6>(input), voxelio::detail::ileaveZeros_naive(input, 6));
+        VXIO_ASSERT_EQ(ileaveZeros_const<7>(input), voxelio::detail::ileaveZeros_naive(input, 7));
+        VXIO_ASSERT_EQ(ileaveZeros_const<8>(input), voxelio::detail::ileaveZeros_naive(input, 8));
+        VXIO_ASSERT_EQ(ileaveZeros_const<9>(input), voxelio::detail::ileaveZeros_naive(input, 9));
+        VXIO_ASSERT_EQ(ileaveZeros_const<10>(input), voxelio::detail::ileaveZeros_naive(input, 10));
+        VXIO_ASSERT_EQ(ileaveZeros_const<11>(input), voxelio::detail::ileaveZeros_naive(input, 11));
+        VXIO_ASSERT_EQ(ileaveZeros_const<12>(input), voxelio::detail::ileaveZeros_naive(input, 12));
+        VXIO_ASSERT_EQ(ileaveZeros_const<13>(input), voxelio::detail::ileaveZeros_naive(input, 13));
+        VXIO_ASSERT_EQ(ileaveZeros_const<14>(input), voxelio::detail::ileaveZeros_naive(input, 14));
+        VXIO_ASSERT_EQ(ileaveZeros_const<15>(input), voxelio::detail::ileaveZeros_naive(input, 15));
+        VXIO_ASSERT_EQ(ileaveZeros_const<16>(input), voxelio::detail::ileaveZeros_naive(input, 16));
+        VXIO_ASSERT_EQ(ileaveZeros_const<16>(input), voxelio::detail::ileaveZeros_naive(input, 16));
+        VXIO_ASSERT_EQ(ileaveZeros_const<32>(input), voxelio::detail::ileaveZeros_naive(input, 32));
+        VXIO_ASSERT_EQ(ileaveZeros_const<63>(input), voxelio::detail::ileaveZeros_naive(input, 63));
     }
 }
 
 VXIO_TEST(ileave, ileave_manual)
 {
-    VXIO_STATIC_ASSERT_EQ(voxelio::ileave2(0b1111'1111, 0), 0b1010'1010'1010'1010u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::ileave2(0, 0b1'1111'1111), 0b01'0101'0101'0101'0101u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::ileave2(0, 0xffff'ffff), 0x5555'5555'5555'5555u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::ileave2(0, voxelio::ileave2(0, 0b11)), 0b10001u);
+    VXIO_STATIC_ASSERT_EQ(ileave2(0b1111'1111, 0), 0b1010'1010'1010'1010u);
+    VXIO_STATIC_ASSERT_EQ(ileave2(0, 0b1'1111'1111), 0b01'0101'0101'0101'0101u);
+    VXIO_STATIC_ASSERT_EQ(ileave2(0, 0xffff'ffff), 0x5555'5555'5555'5555u);
+    VXIO_STATIC_ASSERT_EQ(ileave2(0, ileave2(0, 0b11)), 0b10001u);
 
-    VXIO_STATIC_ASSERT_EQ(voxelio::ileave3(0, 0, 0b1111), 0b001001001001u);
-    VXIO_STATIC_ASSERT_EQ(voxelio::ileave3(0b1111, 0, 0), 0b100100100100u);
+    VXIO_STATIC_ASSERT_EQ(ileave3(0, 0, 0b1111), 0b001001001001u);
+    VXIO_STATIC_ASSERT_EQ(ileave3(0b1111, 0, 0), 0b100100100100u);
 }
 
 VXIO_TEST(ileave, ileaveBytes_manual)
 {
     for (size_t i = 0; i <= 8; ++i) {
-        VXIO_ASSERT_EQ(voxelio::ileaveBytes(0, i), 0u);
+        VXIO_ASSERT_EQ(ileaveBytes(0, i), 0u);
     }
 
-    VXIO_ASSERT_EQ(voxelio::ileaveBytes(0xcc, 1), 0xccu);
+    VXIO_ASSERT_EQ(ileaveBytes(0xcc, 1), 0xccu);
 
-    VXIO_ASSERT_EQ(voxelio::ileaveBytes(0xff, 2), 0x5555u);
-    VXIO_ASSERT_EQ(voxelio::ileaveBytes(0xff00, 2), 0xaaaau);
+    VXIO_ASSERT_EQ(ileaveBytes(0xff, 2), 0x5555u);
+    VXIO_ASSERT_EQ(ileaveBytes(0xff00, 2), 0xaaaau);
 
-    VXIO_ASSERT_EQ(voxelio::ileaveBytes(0x0000ff, 3), 0b001'001'001'001'001'001'001'001u << 0);
-    VXIO_ASSERT_EQ(voxelio::ileaveBytes(0x00ff00, 3), 0b001'001'001'001'001'001'001'001u << 1);
-    VXIO_ASSERT_EQ(voxelio::ileaveBytes(0xff0000, 3), 0b001'001'001'001'001'001'001'001u << 2);
+    VXIO_ASSERT_EQ(ileaveBytes(0x0000ff, 3), 0b001'001'001'001'001'001'001'001u << 0);
+    VXIO_ASSERT_EQ(ileaveBytes(0x00ff00, 3), 0b001'001'001'001'001'001'001'001u << 1);
+    VXIO_ASSERT_EQ(ileaveBytes(0xff0000, 3), 0b001'001'001'001'001'001'001'001u << 2);
 
-    VXIO_ASSERT_EQ(voxelio::ileaveBytes(0x000000ff, 8), 0x0101'0101'0101'0101u);
-    VXIO_ASSERT_EQ(voxelio::ileaveBytes(0x0000ff00, 8), 0x0202'0202'0202'0202u);
-    VXIO_ASSERT_EQ(voxelio::ileaveBytes(0x00ff0000, 8), 0x0404'0404'0404'0404u);
-    VXIO_ASSERT_EQ(voxelio::ileaveBytes(0xff000000, 8), 0x0808'0808'0808'0808u);
+    VXIO_ASSERT_EQ(ileaveBytes(0x000000ff, 8), 0x0101'0101'0101'0101u);
+    VXIO_ASSERT_EQ(ileaveBytes(0x0000ff00, 8), 0x0202'0202'0202'0202u);
+    VXIO_ASSERT_EQ(ileaveBytes(0x00ff0000, 8), 0x0404'0404'0404'0404u);
+    VXIO_ASSERT_EQ(ileaveBytes(0xff000000, 8), 0x0808'0808'0808'0808u);
 
-    VXIO_ASSERT_EQ(voxelio::ileaveBytes(0xff000000ff, 8), 0x1111'1111'1111'1111u);
+    VXIO_ASSERT_EQ(ileaveBytes(0xff000000ff, 8), 0x1111'1111'1111'1111u);
 }
 
 VXIO_TEST(ileave, ileaveBytes_naive_matches_jmp)
@@ -381,8 +375,8 @@ VXIO_TEST(ileave, ileaveBytes_bitCountPreserved)
         uint64_t next = distr(rng);
         uint64_t bytesAsInt = count == 0 ? 0 : next >> ((8 - count) * 8);
 
-        uint64_t ileaved = voxelio::ileaveBytes(bytesAsInt, count);
-        VXIO_ASSERT_EQ(voxelio::popCount(ileaved), voxelio::popCount(bytesAsInt));
+        uint64_t ileaved = ileaveBytes(bytesAsInt, count);
+        VXIO_ASSERT_EQ(popCount(ileaved), popCount(bytesAsInt));
     }
 }
 
@@ -398,8 +392,8 @@ VXIO_TEST(ileave, ileaveBytes_dileaveBytes_random)
         uint64_t next = distr(rng);
         uint64_t bytesAsInt = count == 0 ? 0 : next >> ((8 - count) * 8);
 
-        uint64_t ileaved = voxelio::ileaveBytes(bytesAsInt, count);
-        uint64_t dileaved = voxelio::dileave_bytes(ileaved, count);
+        uint64_t ileaved = ileaveBytes(bytesAsInt, count);
+        uint64_t dileaved = dileave_bytes(ileaved, count);
 
         VXIO_ASSERT_EQ(dileaved, bytesAsInt);
     }
@@ -412,7 +406,7 @@ VXIO_TEST(ileave, ileave3_naive_matches_regular)
 
     for (size_t i = 0; i < 1024 * 1; ++i) {
         const Vec3u32 v = {distr(rng), distr(rng), distr(rng)};
-        VXIO_ASSERT_EQ(voxelio::ileave3(v.x(), v.y(), v.z()), voxelio::detail::ileave3_naive(v.x(), v.y(), v.z()));
+        VXIO_ASSERT_EQ(ileave3(v.x(), v.y(), v.z()), voxelio::detail::ileave3_naive(v.x(), v.y(), v.z()));
     }
 }
 
@@ -425,7 +419,7 @@ VXIO_TEST(ileave, dileave3_reverses_ileave3)
         const auto x = distr(rng), y = distr(rng), z = distr(rng);
         Vec3u32 expected = {x, y, z};
         Vec3u32 actual;
-        voxelio::detail::dileave3_naive(voxelio::ileave3(x, y, z), actual.data());
+        voxelio::detail::dileave3_naive(ileave3(x, y, z), actual.data());
         VXIO_ASSERT_EQ(actual, expected);
     }
 }
@@ -446,7 +440,7 @@ static void test_wileave_inverse()
     constexpr size_t iterations = 1024;
 
     fast_rng64 rng{12345};
-    std::uniform_int_distribution<UInt> distr;
+    std::uniform_int_distribution<uint64_t> distr;
     UInt input[8]{};
     uint64_t output[8]{};
     UInt inverse[8]{};
@@ -461,9 +455,9 @@ static void test_wileave_inverse()
         WILEAVE(input, output, count);
         WDILEAVE(output, inverse, count);
 
-        size_t inputBitCount = voxelio::wide::popCount(input, count);
-        size_t outputBitCount = voxelio::wide::popCount(output, count);
-        size_t inverseBitCount = voxelio::wide::popCount(inverse, count);
+        size_t inputBitCount = wide::popCount(input, count);
+        size_t outputBitCount = wide::popCount(output, count);
+        size_t inverseBitCount = wide::popCount(inverse, count);
 
         VXIO_ASSERT_EQ(inputBitCount, outputBitCount);
         VXIO_ASSERT_EQ(inputBitCount, inverseBitCount);
@@ -486,7 +480,7 @@ template <typename UInt,
     constexpr size_t iterations = 1024;
 
     fast_rng64 rng{12345};
-    std::uniform_int_distribution<UInt> distr;
+    std::uniform_int_distribution<uint64_t> distr;
     UInt input[8]{};
     uint64_t output[8]{};
     UInt inverse[8]{};
@@ -499,11 +493,11 @@ template <typename UInt,
         }
 
         WILEAVE(input, output, count);
-        voxelio::wide::detail::dileave_naive(output, inverse, count);
+        wide::detail::dileave_naive(output, inverse, count);
 
-        size_t inputBitCount = voxelio::wide::popCount(input, count);
-        size_t outputBitCount = voxelio::wide::popCount(output, count);
-        size_t inverseBitCount = voxelio::wide::popCount(inverse, count);
+        size_t inputBitCount = wide::popCount(input, count);
+        size_t outputBitCount = wide::popCount(output, count);
+        size_t inverseBitCount = wide::popCount(inverse, count);
 
         VXIO_ASSERT_EQ(inputBitCount, outputBitCount);
         VXIO_ASSERT_EQ(inputBitCount, inverseBitCount);
@@ -520,62 +514,62 @@ template <typename UInt,
 
 VXIO_TEST(wileave, naive_wdileave_naive_inverse_8)
 {
-    test_wileave_inverse<uint8_t, voxelio::wide::detail::ileave_naive, voxelio::wide::detail::dileave_naive>();
+    test_wileave_inverse<uint8_t, wide::detail::ileave_naive, wide::detail::dileave_naive>();
 }
 
 VXIO_TEST(wileave, naive_wdileave_naive_inverse_16)
 {
-    test_wileave_inverse<uint16_t, voxelio::wide::detail::ileave_naive, voxelio::wide::detail::dileave_naive>();
+    test_wileave_inverse<uint16_t, wide::detail::ileave_naive, wide::detail::dileave_naive>();
 }
 
 VXIO_TEST(wileave, naive_wdileave_naive_inverse_32)
 {
-    test_wileave_inverse<uint32_t, voxelio::wide::detail::ileave_naive, voxelio::wide::detail::dileave_naive>();
+    test_wileave_inverse<uint32_t, wide::detail::ileave_naive, wide::detail::dileave_naive>();
 }
 
 VXIO_TEST(wileave, naive_wdileave_naive_inverse_64)
 {
-    test_wileave_inverse<uint64_t, voxelio::wide::detail::ileave_naive, voxelio::wide::detail::dileave_naive>();
+    test_wileave_inverse<uint64_t, wide::detail::ileave_naive, wide::detail::dileave_naive>();
 }
 
 VXIO_TEST(wileave, wdileave_naive_inverse_8)
 {
-    test_wileave_inverse<uint8_t, voxelio::wide::ileave, voxelio::wide::detail::dileave_naive>();
+    test_wileave_inverse<uint8_t, wide::ileave, wide::detail::dileave_naive>();
 }
 
 VXIO_TEST(wileave, wdileave_naive_inverse_16)
 {
-    test_wileave_inverse<uint16_t, voxelio::wide::ileave, voxelio::wide::detail::dileave_naive>();
+    test_wileave_inverse<uint16_t, wide::ileave, wide::detail::dileave_naive>();
 }
 
 VXIO_TEST(wileave, wdileave_naive_inverse_32)
 {
-    test_wileave_inverse<uint32_t, voxelio::wide::ileave, voxelio::wide::detail::dileave_naive>();
+    test_wileave_inverse<uint32_t, wide::ileave, wide::detail::dileave_naive>();
 }
 
 VXIO_TEST(wileave, wdileave_naive_inverse_64)
 {
-    test_wileave_inverse<uint64_t, voxelio::wide::ileave, voxelio::wide::detail::dileave_naive>();
+    test_wileave_inverse<uint64_t, wide::ileave, wide::detail::dileave_naive>();
 }
 
 VXIO_TEST(wileave, wdileave_inverse_8)
 {
-    test_wileave_inverse<uint8_t, voxelio::wide::ileave, voxelio::wide::dileave>();
+    test_wileave_inverse<uint8_t, wide::ileave, wide::dileave>();
 }
 
 VXIO_TEST(wileave, wdileave_inverse_16)
 {
-    test_wileave_inverse<uint16_t, voxelio::wide::ileave, voxelio::wide::dileave>();
+    test_wileave_inverse<uint16_t, wide::ileave, wide::dileave>();
 }
 
 VXIO_TEST(wileave, wdileave_inverse_32)
 {
-    test_wileave_inverse<uint32_t, voxelio::wide::ileave, voxelio::wide::dileave>();
+    test_wileave_inverse<uint32_t, wide::ileave, wide::dileave>();
 }
 
 VXIO_TEST(wileave, wdileave_inverse_64)
 {
-    test_wileave_inverse<uint64_t, voxelio::wide::ileave, voxelio::wide::dileave>();
+    test_wileave_inverse<uint64_t, wide::ileave, wide::dileave>();
 }
 
 }  // namespace
