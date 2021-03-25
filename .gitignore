@@ -1,6 +1,7 @@
 # FILES
 **/.directory
+**/CMakeLists.txt.user
 
 # DIRECTORIES
 **/.vscode
-build/
+build*/
