@@ -10,6 +10,7 @@ add_executable(voxelio-test
                voxels.cpp
 
                test_bits.cpp
+               test_intdiv.cpp
                test_color.cpp
                test_stringmanip.cpp
                test_stream.cpp

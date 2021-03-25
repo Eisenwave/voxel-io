@@ -7,6 +7,7 @@ namespace {
 static int testFailureCount = 0;
 
 static constexpr const char *TEST_ORDER[]{"intlog",
+                                          "intdiv",
                                           "ileave",
                                           "wileave",
                                           "stringify",
