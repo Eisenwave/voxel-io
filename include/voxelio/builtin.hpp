@@ -12,6 +12,10 @@
 #include <intrin.h>
 #endif
 
+#if defined(VXIO_X86_OR_X64) && defined(VXIO_GNU_OR_CLANG)
+#include <immintrin.h>
+#endif
+
 #include <cstdint>
 #include <type_traits>
 
@@ -545,6 +549,38 @@ __forceinline uint64_t byteSwap(uint64_t val) noexcept
     trap();
 }
 #endif
+#endif
+
+// BMI2 BITWISE OPS ====================================================================================================
+
+// uintXX_t depositBits(uintXX_t val, uintXX_t mask):
+//     See https://www.felixcloutier.com/x86/pdep
+#if defined(VXIO_X86_OR_X64) && (defined(VXIO_MSVC) || defined(VXIO_GNU_OR_CLANG))
+#define VXIO_HAS_BUILTIN_PDEP
+template <typename Uint, std::enable_if_t<(std::is_unsigned_v<Uint> && sizeof(Uint) <= 8), int> = 0>
+Uint depositBits(Uint val, Uint mask)
+{
+    if constexpr (sizeof(Uint) < 8) {
+        return _pdep_u32(static_cast<uint32_t>(val), static_cast<uint32_t>(mask));
+    }
+    else {
+        return _pdep_u64(val, mask);
+    }
+}
+
+// uintXX_t extractBits(uintXX_t val, uintXX_t mask):
+//     See https://www.felixcloutier.com/x86/pext
+#define VXIO_HAS_BUILTIN_PEXT
+template <typename Uint, std::enable_if_t<(std::is_unsigned_v<Uint> && sizeof(Uint) <= 8), int> = 0>
+Uint extractBits(Uint val, Uint mask)
+{
+    if constexpr (sizeof(Uint) < 8) {
+        return _pext_u32(static_cast<uint64_t>(val), static_cast<uint64_t>(mask));
+    }
+    else {
+        return _pext_u64(val, mask);
+    }
+}
 #endif
 
 }  // namespace voxelio::builtin
