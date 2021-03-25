@@ -21,7 +21,7 @@ VXIO_TEST(vl32, readDebugModel)
 VXIO_TEST(vl32, writeAndReadEqual)
 {
     constexpr size_t dims = 10;
-    voxelio::VoxelArray voxels = makeRandomVoxels(dims, dims, dims);
+    voxelio::VoxelArray voxels = makeRandomVoxels(dims, dims, dims, true);
 
     const std::string path = suggestRandomOutputPath();
     {

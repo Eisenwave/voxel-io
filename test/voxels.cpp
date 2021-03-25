@@ -93,22 +93,24 @@ void verifyDebugModelVoxels(const VoxelArray &voxels)
     VXIO_ASSERT_EQ(goldenModel, voxels);
 }
 
-void writeRandomVoxels(VoxelArray &out, u32 seed)
+void writeRandomVoxels(VoxelArray &out, bool transparency, u32 seed)
 {
     const Vec3size outDims = out.dimensions();
 
     default_rng rng{seed};
 
+    u32 alphaFix = not transparency * (u32{0xff} << 24);
+
     std::uniform_int_distribution<usize> distrX{0, outDims.x() - 1};
     std::uniform_int_distribution<usize> distrY{0, outDims.y() - 1};
     std::uniform_int_distribution<usize> distrZ{0, outDims.z() - 1};
-    std::uniform_int_distribution<argb32> distrRgb;
+    std::uniform_int_distribution<argb32> distrArgb;
 
     for (usize z = 0; z < outDims.z(); ++z) {
         for (usize y = 0; y < outDims.y(); ++y) {
             for (usize x = 0; x < outDims.x(); ++x) {
                 Vec3size pos = {distrX(rng), distrY(rng), distrZ(rng)};
-                out[pos] = distrRgb(rng);
+                out[pos] = distrArgb(rng) | alphaFix;
             }
         }
     }

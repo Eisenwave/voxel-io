@@ -10,14 +10,14 @@ namespace voxelio::test {
 
 void verifyDebugModelVoxels(const VoxelArray &voxels);
 
-void writeRandomVoxels(VoxelArray &out, u32 seed);
+void writeRandomVoxels(VoxelArray &out, bool transparency, u32 seed = DEFAULT_SEED);
 
 Palette32 paletteFromVoxels(const VoxelArray &voxels);
 
-inline VoxelArray makeRandomVoxels(usize x, usize y, usize z, u32 seed = DEFAULT_SEED)
+inline VoxelArray makeRandomVoxels(usize x, usize y, usize z, bool transparency, u32 seed = DEFAULT_SEED)
 {
     VoxelArray result{x, y, z};
-    writeRandomVoxels(result, seed);
+    writeRandomVoxels(result, transparency, seed);
     return result;
 }
 

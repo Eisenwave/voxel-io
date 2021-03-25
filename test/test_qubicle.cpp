@@ -12,13 +12,11 @@ namespace {
 
 constexpr usize TEST_VOXELS_SIZE = 16;
 
-void qef_iterativeWriteAndReadEqual_write(ByteArrayOutputStream &stream)
+void qef_iterativeWriteAndReadEqual_write(ByteArrayOutputStream &stream, const VoxelArray &voxels)
 {
     FileOutputStream tempStream = openForWriteOrFail(getOutputPath() + '/' + "qef_iterativeWriteAndReadEqual.qef");
 
     for (auto *stream : std::initializer_list<OutputStream *>{&stream, &tempStream}) {
-        const VoxelArray &voxels = makeRandomVoxels(TEST_VOXELS_SIZE, TEST_VOXELS_SIZE, TEST_VOXELS_SIZE);
-
         qef::Writer writer{*stream};
         ResultCode sizeResult = writer.setGlobalVolumeSize(voxels.dimensions().cast<uint32_t>());
         VXIO_ASSERT(isGood(sizeResult));
@@ -36,9 +34,9 @@ void qef_iterativeWriteAndReadEqual_write(ByteArrayOutputStream &stream)
     VXIO_ASSERT(stream.good());
 }
 
-void qef_iterativeWriteAndReadEqual_read(uint8_t buffer[], size_t bufferSize)
+void qef_iterativeWriteAndReadEqual_read(const uint8_t buffer[], size_t bufferSize, const VoxelArray &expectedVoxels)
 {
-    VoxelArray voxels = makeRandomVoxels(TEST_VOXELS_SIZE, TEST_VOXELS_SIZE, TEST_VOXELS_SIZE);
+    VoxelArray actualVoxels{TEST_VOXELS_SIZE, TEST_VOXELS_SIZE, TEST_VOXELS_SIZE};
 
     ByteArrayInputStream stream{buffer, bufferSize};
     qef::Reader reader{stream};
@@ -48,12 +46,12 @@ void qef_iterativeWriteAndReadEqual_read(uint8_t buffer[], size_t bufferSize)
     VXIO_ASSERT(initResult.isGood());
     VXIO_ASSERT(stream.good());
 
-    readIteratively(reader, voxels);
+    readIteratively(reader, actualVoxels);
 
     VXIO_ASSERT(stream.eof());
     VXIO_ASSERT(not stream.err());
 
-    verifyDebugModelVoxels(voxels);
+    VXIO_ASSERT_EQ(actualVoxels, expectedVoxels);
 }
 
 void verifyDebugModel(const qb::Model &model)
@@ -82,7 +80,7 @@ VXIO_TEST(qef, readDebugModelCorrectly)
 
 VXIO_TEST(qb, serializeAndDeserializeEqual)
 {
-    const VoxelArray voxels = makeRandomVoxels(TEST_VOXELS_SIZE, TEST_VOXELS_SIZE, TEST_VOXELS_SIZE);
+    const VoxelArray voxels = makeRandomVoxels(TEST_VOXELS_SIZE, TEST_VOXELS_SIZE, TEST_VOXELS_SIZE, true);
     const qb::Model outModel{qb::Matrix{"test", {}, voxels}};
 
     ByteArrayOutputStream outStream;
@@ -115,9 +113,10 @@ VXIO_TEST(qef, isColorPrintingLossless)
 VXIO_TEST(qef, iterativeWriteAndReadEqual)
 {
     ByteArrayOutputStream outStream;
+    VoxelArray voxels = makeRandomVoxels(TEST_VOXELS_SIZE, TEST_VOXELS_SIZE, TEST_VOXELS_SIZE, false);
 
-    qef_iterativeWriteAndReadEqual_write(outStream);
-    qef_iterativeWriteAndReadEqual_read(outStream.data(), outStream.size());
+    qef_iterativeWriteAndReadEqual_write(outStream, voxels);
+    qef_iterativeWriteAndReadEqual_read(outStream.data(), outStream.size(), voxels);
 }
 
 }  // namespace
