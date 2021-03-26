@@ -8,7 +8,7 @@
 
 namespace voxelio {
 
-[[noreturn]] void defaultAssertHandler()
+[[noreturn]] void defaultAssertHandler() noexcept
 {
     std::terminate();
 }
@@ -29,13 +29,10 @@ void popAssertHandler() noexcept
     assertHandlerStack.pop_back();
 }
 
-[[noreturn]] void assertFail(const char *file,
-                             const unsigned line,
-                             const char *function,
-                             const std::string_view msg) noexcept(false)
+[[noreturn]] void assertFail(const std::string_view msg, SourceLocation loc) noexcept(false)
 {
-    std::string logMsg = "assertion error in " + std::string{function} + std::string{"(): "} + std::string{msg};
-    VXIO_LOG_IMPL(FAILURE, logMsg, file, function, line);
+    std::string logMsg = "assertion error in " + std::string{loc.function} + std::string{"(): "} + std::string{msg};
+    VXIO_LOG_IMPL(FAILURE, logMsg, loc.file, loc.function, loc.line);
     assertHandlerStack.back()();
     VXIO_UNREACHABLE();
 }

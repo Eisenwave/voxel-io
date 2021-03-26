@@ -93,12 +93,6 @@ constexpr bool operator>(LogLevel x, LogLevel y) noexcept
     return static_cast<unsigned>(x) > static_cast<unsigned>(y);
 }
 
-struct SourceLocation {
-    const char *file;
-    const char *function;
-    usize line;
-};
-
 // CONFIGURATION =======================================================================================================
 
 /// The function pointer type of the logging callback.

@@ -13,7 +13,14 @@
 // ASSERTION HANDLING ==================================================================================================
 
 namespace voxelio {
+
 using AssertHandler = void (*)();
+
+struct SourceLocation {
+    const char *file;
+    const char *function;
+    usize line;
+};
 
 #ifndef VXIO_DISABLE_ASSERTS
 /**
@@ -57,32 +64,47 @@ struct AssertHandlerGuard {
 
 namespace voxelio {
 
-[[noreturn]] void assertFail(const char *file,
-                             const unsigned line,
-                             const char *function,
-                             const std::string_view msg) noexcept(false);
+[[noreturn]] void assertFail(std::string_view msg, SourceLocation location) noexcept(false);
 
 }  // namespace voxelio
 
-// this is not defined as a ternary operator so that it doesn't break an else-statement
+// The following definitions using ternary operators and the do ... while(false) pattern circumvent possible syntax
+// breaks in if-else chains.
+//
+// For example,
+//     if (...) ASSERT(...); else ...;
+//
+// ... would break if ASSERT was using an if-statement or regular code-block, because the following semicolon is then an
+// additional statement, disconnecting the else-statement.
 #define VXIO_ASSERT_IMPL(expr, msg) \
-    (static_cast<bool>(expr) ? void(0) : ::voxelio::assertFail(__FILE__, __LINE__, __func__, msg))
+    (static_cast<bool>(expr) ? void(0) : ::voxelio::assertFail(msg, {__FILE__, __func__, __LINE__}))
 
-// FIXME fix multiple evaluations
-#define VXIO_ASSERT_CMP(l, r, op)                                                                             \
-    VXIO_ASSERT_IMPL((l) op(r),                                                                               \
-                     "Comparison failed: " #l " " #op " " #r " (with \"" #l "\"=" + ::voxelio::stringify(l) + \
-                         ", \"" #r "\"=" + ::voxelio::stringify(r) + ")")
+#define VXIO_ASSERT_CMP(l, r, op)                                                                                   \
+    do {                                                                                                            \
+        auto &&tl_ = (l);                                                                                           \
+        auto &&tr_ = (r);                                                                                           \
+        VXIO_ASSERT_IMPL(tl_ op tr_,                                                                                \
+                         "Comparison failed: " #l " " #op " " #r " (with \"" #l "\"=" + ::voxelio::stringify(tl_) + \
+                             ", \"" #r "\"=" + ::voxelio::stringify(tr_) + ")");                                    \
+    } while (false)
 
-#define VXIO_ASSERT_CONSEQUENCE(l, r)                                                                     \
-    VXIO_ASSERT_IMPL(!(l) || (r),                                                                         \
-                     "Consequence failed: " #l " => " #r " (with \"" #l "\"=" + ::voxelio::stringify(l) + \
-                         ", \"" #r "\"=" + ::voxelio::stringify(r) + ")")
+#define VXIO_ASSERT_CONSEQUENCE(l, r)                                                                           \
+    do {                                                                                                        \
+        auto &&tl_ = (l);                                                                                       \
+        auto &&tr_ = (r);                                                                                       \
+        VXIO_ASSERT_IMPL(!tl_ || tr_,                                                                           \
+                         "Consequence failed: " #l " => " #r " (with \"" #l "\"=" + ::voxelio::stringify(tl_) + \
+                             ", \"" #r "\"=" + ::voxelio::stringify(tr_) + ")");                                \
+    } while (false)
 
-#define VXIO_ASSERT_DIVISIBLE(l, r)                                                                       \
-    VXIO_ASSERT_IMPL((l) % (r) == 0,                                                                      \
-                     "Divisibility failed: " #l " | " #r " (with \"" #l "\"=" + ::voxelio::stringify(l) + \
-                         ", \"" #r "\"=" + ::voxelio::stringify(r) + ")")
+#define VXIO_ASSERT_DIVISIBLE(l, r)                                                                             \
+    do {                                                                                                        \
+        auto &&tl_ = (l);                                                                                       \
+        auto &&tr_ = (r);                                                                                       \
+        VXIO_ASSERT_IMPL(tl_ % tr_ == 0,                                                                        \
+                         "Divisibility failed: " #l " / " #r " (with \"" #l "\"=" + ::voxelio::stringify(tl_) + \
+                             ", \"" #r "\"=" + ::voxelio::stringify(tr_) + ")");                                \
+    } while (false)
 
 #else
 
