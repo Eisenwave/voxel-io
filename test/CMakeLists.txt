@@ -9,6 +9,7 @@ add_executable(voxelio-test
                random.cpp
                voxels.cpp
 
+               test_assert.cpp
                test_bits.cpp
                test_intdiv.cpp
                test_color.cpp
