@@ -30,6 +30,8 @@ jobs:
       run: cmake -E make_directory build
       
     - name: CMake
+      env:
+        CXXFLAGS: -Wall -Wpedantic -Wextra -Werror
       run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=$CXX
       
     - name: Make
