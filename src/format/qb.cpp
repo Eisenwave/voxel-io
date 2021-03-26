@@ -93,7 +93,7 @@ ReadResult Reader::init() noexcept
 ReadResult Reader::read(Voxel64 buffer[], usize bufferLength) noexcept
 {
     VXIO_ASSERT_NOTNULL(buffer);
-    VXIO_ASSERT_NE(bufferLength, 0);
+    VXIO_ASSERT_NE(bufferLength, 0u);
 
     if (not initialized) {
         // we must return without reading any voxels so that the user gets an opportunity to handle NEXT_OBJECT
@@ -231,7 +231,7 @@ ReadResult Reader::readUncompressed(Voxel64 buffer[], usize bufferLength) noexce
 {
     VXIO_DEBUG_ASSERT(this->initialized);
     VXIO_DEBUG_ASSERT_LE(index, matVolume);
-    VXIO_DEBUG_ASSERT_GT(bufferLength, 0);
+    VXIO_DEBUG_ASSERT_GT(bufferLength, 0u);
 
     const auto voxelsLeftInMatrixCount = matVolume - index;
     if (voxelsLeftInMatrixCount == 0) return ReadResult::nextObject();
@@ -310,7 +310,7 @@ ReadResult Reader::readCompressed(Voxel64 buffer[], usize bufferLength) noexcept
 {
     VXIO_DEBUG_ASSERT(this->initialized);
     VXIO_DEBUG_ASSERT_LE(index, matVolume);
-    VXIO_DEBUG_ASSERT_GT(bufferLength, 0);
+    VXIO_DEBUG_ASSERT_GT(bufferLength, 0u);
     VXIO_IF_DEBUG(auto oldIndex = index);
 
     u32 readVoxels = 0;
@@ -326,17 +326,17 @@ ReadResult Reader::readCompressed(Voxel64 buffer[], usize bufferLength) noexcept
         const auto z = header.zLeft ? slice : matSizeZ - usize{1} - slice;
         const auto [actualCount, actualVolume] = writeToBuffer(z, resumeData, resumeCount);
         readVoxels += actualCount;
-        VXIO_DEBUG_ASSERT_NE(actualVolume, 0);
+        VXIO_DEBUG_ASSERT_NE(actualVolume, 0u);
         VXIO_DEBUG_ASSERT_GE(resumeCount, actualVolume);
         resumeCount -= actualVolume;
 
         if (resumeCount != 0 || readVoxels == bufferLength) {
             VXIO_DEBUG_ASSERT_GT(index, oldIndex);
-            VXIO_DEBUG_ASSERT_NE(readVoxels, 0);
+            VXIO_DEBUG_ASSERT_NE(readVoxels, 0u);
             return ReadResult::ok(readVoxels);
         }
     }
-    VXIO_DEBUG_ASSERT_EQ(resumeCount, 0);
+    VXIO_DEBUG_ASSERT_EQ(resumeCount, 0u);
 
     for (; slice < matSizeZ; ++slice) {
         const auto z = header.zLeft ? slice : matSizeZ - usize{1} - slice;
@@ -357,8 +357,8 @@ ReadResult Reader::readCompressed(Voxel64 buffer[], usize bufferLength) noexcept
                     resumeCount = static_cast<u32>(count - actualVolume);
                     resumeData = colorData;
                     VXIO_DEBUG_ASSERT_GT(index, oldIndex);
-                    VXIO_DEBUG_ASSERT_NE(actualCount, 0);
-                    VXIO_DEBUG_ASSERT_NE(readVoxels, 0);
+                    VXIO_DEBUG_ASSERT_NE(actualCount, 0u);
+                    VXIO_DEBUG_ASSERT_NE(readVoxels, 0u);
                     return ReadResult::ok(readVoxels);
                 }
             }
@@ -368,8 +368,8 @@ ReadResult Reader::readCompressed(Voxel64 buffer[], usize bufferLength) noexcept
                 readVoxels += actualCount;
                 if (readVoxels == bufferLength) {
                     VXIO_DEBUG_ASSERT_GT(index, oldIndex);
-                    VXIO_DEBUG_ASSERT_NE(actualCount, 0);
-                    VXIO_DEBUG_ASSERT_NE(readVoxels, 0);
+                    VXIO_DEBUG_ASSERT_NE(actualCount, 0u);
+                    VXIO_DEBUG_ASSERT_NE(readVoxels, 0u);
                     return ReadResult::ok(readVoxels);
                 }
             }

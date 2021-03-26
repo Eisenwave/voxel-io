@@ -7,7 +7,7 @@ namespace voxelio {
 void VoxelBufferWriteHelper::reset(Voxel32 *buffer, size_t size) noexcept
 {
     VXIO_ASSERT_NOTNULL(buffer);
-    VXIO_ASSERT_NE(size, 0);
+    VXIO_ASSERT_NE(size, 0u);
 
     buffer32 = buffer;
     index = 0;
@@ -18,7 +18,7 @@ void VoxelBufferWriteHelper::reset(Voxel32 *buffer, size_t size) noexcept
 void VoxelBufferWriteHelper::reset(Voxel64 *buffer, size_t size) noexcept
 {
     VXIO_ASSERT_NOTNULL(buffer);
-    VXIO_ASSERT_NE(size, 0);
+    VXIO_ASSERT_NE(size, 0u);
 
     buffer64 = buffer;
     index = 0;

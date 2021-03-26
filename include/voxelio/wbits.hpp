@@ -60,7 +60,7 @@ constexpr void leftShift(Int dest[], Int shift, usize count)
 {
     constexpr usize typeBits = sizeof(Int) * 8;
 
-    VXIO_DEBUG_ASSERT_NE(count, 0);
+    VXIO_DEBUG_ASSERT_NE(count, 0u);
 
     for (; shift >= typeBits; shift -= typeBits) {
         for (usize i = count; i-- > 1;) {
@@ -89,7 +89,7 @@ constexpr void rightShift(Int dest[], Int shift, usize count)
 {
     constexpr usize typeBits = sizeof(Int) * 8;
 
-    VXIO_DEBUG_ASSERT_NE(count, 0);
+    VXIO_DEBUG_ASSERT_NE(count, 0u);
 
     for (; shift >= typeBits; shift -= typeBits) {
         for (usize i = 0; i < count - 1; ++i) {

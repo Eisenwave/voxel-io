@@ -215,13 +215,13 @@ ReadResult Reader::read(Voxel64 buffer[], usize bufferLength) noexcept
 
 Vec3i8 Transformation::row(usize index) const
 {
-    VXIO_DEBUG_ASSERT_LT(index, 3);
+    VXIO_DEBUG_ASSERT_LT(index, 3u);
     return matrix[index];
 }
 
 Vec3i8 Transformation::col(usize index) const
 {
-    VXIO_DEBUG_ASSERT_LT(index, 3);
+    VXIO_DEBUG_ASSERT_LT(index, 3u);
     return {matrix[0][index], matrix[1][index], matrix[2][index]};
 }
 
@@ -859,7 +859,7 @@ ResultCode Writer::init() noexcept
 
     stream.write(magicOf(FileType::MAGICA_VOX));
     stream.writeLittle<u32>(CURRENT_VERSION);
-    VXIO_DEBUG_ASSERT_EQ(stream.position(), 8);
+    VXIO_DEBUG_ASSERT_EQ(stream.position(), 8u);
 
     return streamBasedResultCode();
 }
@@ -890,9 +890,9 @@ ResultCode Writer::finalize() noexcept
     }
     state = IoState::FINALIZED;
 
-    VXIO_DEBUG_ASSERT_EQ(stream.position(), 8);
+    VXIO_DEBUG_ASSERT_EQ(stream.position(), 8u);
     writeChunkHeader(ChunkType::MAIN, 0, 0);
-    VXIO_DEBUG_ASSERT_EQ(stream.position(), 20);
+    VXIO_DEBUG_ASSERT_EQ(stream.position(), 20u);
 
     writeModels();
     VXIO_FORWARD_ERROR(streamBasedResultCode());
@@ -1020,7 +1020,7 @@ void Writer::writeChunk_layer(u32 id, const std::string &name) noexcept
 
 void Writer::writeChunk_nodeGroup(u32 id, u32 startIndex, u32 count, u32 stepSize) noexcept
 {
-    VXIO_ASSERT_NE(stepSize, 0);
+    VXIO_ASSERT_NE(stepSize, 0u);
 
     writeChunkHeader(ChunkType::nGRP, (3 + count) * sizeof(u32));
     stream.writeLittle<u32>(id);

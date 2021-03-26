@@ -6,9 +6,9 @@ namespace voxelio::deflate {
 
 Deflator::Deflator(OutputStream &stream, DeflateSettings settings) : oStream{stream}
 {
-    VXIO_ASSERT_LT(settings.level, 10);
-    VXIO_ASSERT_NE(settings.memLevel, 0);
-    VXIO_ASSERT_LT(settings.memLevel, 10);
+    VXIO_ASSERT_LT(settings.level, 10u);
+    VXIO_ASSERT_NE(settings.memLevel, 0u);
+    VXIO_ASSERT_LT(settings.memLevel, 10u);
     ResultCode result{mz_deflateInit2(&zStream,
                                       static_cast<int>(settings.level),
                                       MZ_DEFLATED,

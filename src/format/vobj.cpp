@@ -112,7 +112,7 @@ static const std::unordered_set<u8> recognizedPaletteBits{0, 8, 16, 32};
 [[nodiscard]] ReadResult Reader::read(Voxel64 buffer[], usize bufferLength) noexcept
 {
     VXIO_ASSERT_NOTNULL(buffer);
-    VXIO_ASSERT_NE(bufferLength, 0);
+    VXIO_ASSERT_NE(bufferLength, 0u);
 
     if (not initialized) {
         auto result = init();

@@ -116,7 +116,7 @@ ReadResult Reader::parseHeaderLine(const std::string &line)
 ReadResult Reader::read(Voxel64 buffer[], usize bufferLength) noexcept
 {
     VXIO_ASSERT_NOTNULL(buffer);
-    VXIO_ASSERT_NE(bufferLength, 0);
+    VXIO_ASSERT_NE(bufferLength, 0u);
 
     if (not initialized) {
         return init();
@@ -128,7 +128,7 @@ ReadResult Reader::read(Voxel64 buffer[], usize bufferLength) noexcept
         if (not resumeWritingToBuffer(buffer, bufferLength) || state.readVoxels == bufferLength) {
             return ReadResult::incomplete(state.readVoxels);
         }
-        VXIO_DEBUG_ASSERT_EQ(state.resumeCount, 0);
+        VXIO_DEBUG_ASSERT_EQ(state.resumeCount, 0u);
     }
 
     while (true) {

@@ -68,9 +68,9 @@ public:
         , subvoxelBits_{subvoxelBits}
         , voxelSize_{voxelSize}
     {
-        VXIO_ASSERT_NE(this->gridSize_.x(), 0);
-        VXIO_ASSERT_NE(this->gridSize_.y(), 0);
-        VXIO_ASSERT_NE(this->gridSize_.z(), 0);
+        VXIO_ASSERT_NE(this->gridSize_.x(), 0u);
+        VXIO_ASSERT_NE(this->gridSize_.y(), 0u);
+        VXIO_ASSERT_NE(this->gridSize_.z(), 0u);
         VXIO_ASSERT(subvoxelBits > 0 && subvoxelBits <= 16);
     }
     Manifest(Manifest &&) = default;
