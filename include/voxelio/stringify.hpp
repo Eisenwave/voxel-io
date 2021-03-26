@@ -20,10 +20,20 @@ namespace voxelio {
 
 namespace detail {
 
+template <typename T>
+auto isStringifieableUsingStream_impl(int) -> decltype(std::declval<std::ostream>() << std::declval<T>());
+
+template <typename T>
+auto isStringifieableUsingStream_impl(...) -> std::false_type;
+
+template <typename T>
+constexpr bool isStringifieableUsingStream =
+    not std::is_same_v<decltype(detail::isStringifieableUsingStream_impl<T>(0)), std::false_type>;
+
 /**
  * @brief Stringifies a type using a stringstream.
  */
-template <typename T>
+template <typename T, typename = decltype(std::declval<std::ostream>() << std::declval<T>())>
 std::string stringifyUsingStream(const T &t) noexcept
 {
     // Thanks to our implementation which hides construction and destruction of stringstream behind make/free functions,
@@ -212,6 +222,9 @@ auto isStaticCastable_impl(...) -> void;
 template <typename From, typename To>
 constexpr bool isStaticCastable = not std::is_same_v<decltype(isStaticCastable_impl<From, To>(0)), void>;
 
+template <typename>
+constexpr bool alwaysFalse = false;
+
 }  // namespace detail
 
 /**
@@ -260,8 +273,15 @@ std::string stringify(const T &t) noexcept
     else if constexpr (detail::isStaticCastable<T, std::string>) {
         return static_cast<std::string>(t);
     }
-    else {
+    else if constexpr (detail::isStringifieableUsingStream<T>) {
         return detail::stringifyUsingStream<T>(t);
+    }
+    else {
+        static_assert(detail::alwaysFalse<T>,
+                      "The given type is not stringifieable, not even using std::ostream. "
+                      "Implement an operator std::string() or operator<<(std::ostream&,T), "
+                      "and make sure <ostream> is included if it should be.");
+        return {};
     }
 }
 
