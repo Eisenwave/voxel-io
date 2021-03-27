@@ -13,7 +13,7 @@ namespace voxelio::wide {
 // WIDE INTERLEAVING ===================================================================================================
 
 template <usize COUNT, typename Uint, std::enable_if_t<COUNT <= 8 && std::is_unsigned_v<Uint>, int> = 0>
-constexpr void ileave_const(const Uint inputs[], uint64_t outputs[])
+constexpr void ileave_const([[maybe_unused]] const Uint inputs[], [[maybe_unused]] uint64_t outputs[])
 {
     constexpr usize inputBytes = COUNT * sizeof(Uint);
     constexpr usize outputSize = voxelio::divCeil(inputBytes, sizeof(uint64_t));
@@ -154,7 +154,7 @@ constexpr void dileave_naive(const uint64_t inputs[], Uint outputs[], usize coun
 }
 
 template <usize COUNT, typename Uint, std::enable_if_t<COUNT <= 8 && std::is_unsigned_v<Uint>, int> = 0>
-constexpr void dileave_const(const uint64_t inputs[], Uint outputs[])
+constexpr void dileave_const([[maybe_unused]] const uint64_t inputs[], [[maybe_unused]] Uint outputs[])
 {
     constexpr usize outputBytes = COUNT * sizeof(Uint);
     constexpr usize inputSize = voxelio::divCeil(outputBytes, sizeof(uint64_t));
