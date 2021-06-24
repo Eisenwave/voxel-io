@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <numeric>
 
 namespace voxelio::test {
 
