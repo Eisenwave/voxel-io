@@ -11,6 +11,7 @@ add_executable(voxelio-test
 
                test_assert.cpp
                test_bits.cpp
+               test_bufstream.cpp
                test_intdiv.cpp
                test_color.cpp
                test_stringmanip.cpp

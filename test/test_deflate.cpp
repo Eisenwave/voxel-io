@@ -137,7 +137,7 @@ VXIO_TEST(deflate, inflateReversesDeflate)
 
     VXIO_ASSERT_EQ(rawInput.size(), rawOutput.size());
 
-    size_t mismatchOrSize = compareArrays(rawInput.data(), rawOutput.data(), rawInput.size());
+    size_t mismatchOrSize = mismatchIndex(rawInput.data(), rawOutput.data(), rawInput.size());
     VXIO_ASSERT_EQ(mismatchOrSize, rawInput.size());
 }
 

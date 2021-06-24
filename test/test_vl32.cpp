@@ -25,13 +25,10 @@ VXIO_TEST(vl32, writeAndReadEqual)
 
     const std::string path = suggestRandomOutputPath();
     {
-        auto stream = openForWrite(path);
-        VXIO_ASSERT(stream.has_value());
-        VXIO_ASSERT(stream->good());
-
-        voxelio::vl32::Writer writer(*stream);
+        FileOutputStream stream = openForWriteOrFail(path);
+        voxelio::vl32::Writer writer(stream);
         /*size_t writeCount = */ writeIteratively(writer, voxels);
-        VXIO_ASSERT(stream->good());
+        VXIO_ASSERT(stream.good());
         // VXIO_ASSERT_EQ(writeCount, voxels.countVoxels());
     }
 
