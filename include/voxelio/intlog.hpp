@@ -70,7 +70,7 @@ template <typename Uint>
 inline Uint ceilPow2m1_builtin(Uint v)
 {
     Uint log = log2floor_builtin(v);
-    return v | (Uint{1} << log) - Uint{1};
+    return v | ((Uint{1} << log) - Uint{1});
 }
 #endif
 
