@@ -9,6 +9,7 @@
 #include "voxelio/voxelarray.hpp"
 #include "voxelio/voxelio.hpp"
 
+#include <algorithm>
 #include <filesystem>
 
 namespace voxelio::test {
@@ -29,20 +30,38 @@ static std::uniform_int_distribution<unsigned> distributionOf(StringType type)
     VXIO_DEBUG_ASSERT_UNREACHABLE();
 }
 
-std::string makeRandomString(size_t length, StringType type, u32 seed, u32 charRepititions)
+void makeRandomData(u8 *out, usize length, u32 seed) noexcept
+{
+    default_rng rng{seed};
+    std::uniform_int_distribution<unsigned> distr{0, 0xff};
+    for (usize i = 0; i < length; ++i) {
+        out[i] = static_cast<u8>(distr(rng));
+    }
+}
+
+void makeRandomIndexSequence(usize *out, usize length, u32 seed) noexcept
+{
+    std::iota(out, out + length, 0);
+    std::shuffle(out, out + length, default_rng{seed});
+}
+
+void makeRandomChars(char *out, usize length, StringType type, u32 seed, u32 charRepititions) noexcept
 {
     default_rng rng{seed};
     std::uniform_int_distribution<unsigned> distr = distributionOf(type);
 
-    std::string result;
-    result.resize(length * charRepititions);
-
-    for (size_t i = 0; i < length; ++i) {
-        size_t base = i * charRepititions;
-        for (size_t j = 0; j < charRepititions; ++j) {
-            result[base + j] = static_cast<char>(distr(rng));
+    for (usize i = 0; i < length; ++i) {
+        usize base = i * charRepititions;
+        for (usize j = 0; j < charRepititions; ++j) {
+            out[base + j] = static_cast<char>(distr(rng));
         }
     }
+}
+
+std::string makeRandomString(usize length, StringType type, u32 seed, u32 charRepititions)
+{
+    std::string result(length * charRepititions, '\0');
+    makeRandomChars(result.data(), length, type, seed, charRepititions);
     return result;
 }
 
@@ -57,21 +76,21 @@ static std::string initOutputDirectory()
     return tmpPath.string();
 }
 
-FileInputStream openForReadOrFail(const std::string &path, OpenMode::Value mode)
+FileInputStream openForReadOrFail(const std::string &path, OpenMode mode)
 {
-    std::optional<FileInputStream> result = FileInputStream::open(path, mode);
-    VXIO_ASSERTM(result.has_value(), "Failed to open file for read \"" + path + '"');
-    return std::move(*result);
+    FileInputStream result{path, mode};
+    VXIO_ASSERTM(result.good(), "Failed to open file for read \"" + path + '"');
+    return result;
 }
 
-FileOutputStream openForWriteOrFail(const std::string &path, OpenMode::Value mode)
+FileOutputStream openForWriteOrFail(const std::string &path, OpenMode mode)
 {
-    std::optional<FileOutputStream> result = FileOutputStream::open(path, mode);
-    VXIO_ASSERTM(result.has_value(), "Failed to open file for read \"" + path + '"');
-    return std::move(*result);
+    FileOutputStream result{path, mode};
+    VXIO_ASSERTM(result.good(), "Failed to open file for read \"" + path + '"');
+    return result;
 }
 
-FileInputStream openTestAsset(const std::string &path, OpenMode::Value mode)
+FileInputStream openTestAsset(const std::string &path, OpenMode mode)
 {
     std::string fullPath = ASSET_PATH + ('/' + path);
     return openForReadOrFail(fullPath, mode);
@@ -85,19 +104,17 @@ const std::string &getOutputPath()
 
 void dumpString(const std::string &path, const std::string &str)
 {
-    std::optional<FileOutputStream> stream = FileOutputStream::open(path, OpenMode::BINARY);
-    VXIO_ASSERT(stream.has_value());
-
-    stream->writeString(str);
+    FileOutputStream stream = openForWriteOrFail(path, OpenMode::BINARY);
+    stream.writeString(str);
 }
 
 void pipeOrFail(voxelio::InputStream &input, voxelio::OutputStream &output)
 {
-    constexpr size_t bufferSize = 8192;
+    constexpr usize bufferSize = 8192;
     uint8_t buffer[bufferSize];
 
     do {
-        size_t read = input.read(buffer, bufferSize);
+        usize read = input.read(buffer, bufferSize);
         VXIO_ASSERT(not input.err());
         output.write(buffer, read);
         VXIO_ASSERT(not output.err());
@@ -112,13 +129,13 @@ uintmax_t getFileSize(const std::string &file)
 // ITERATIVE WRITING ===================================================================================================
 
 template <bool PALETTE>
-size_t writeIteratively_impl(AbstractListWriter &writer, const VoxelArray &voxels)
+usize writeIteratively_impl(AbstractListWriter &writer, const VoxelArray &voxels)
 {
     auto buffer = std::make_unique<Voxel32[]>(IO_VOXEL_BUFFER_SIZE);
     auto bufferedWriter = ListWriterWriteHelper32{writer, buffer.get(), IO_VOXEL_BUFFER_SIZE};
     auto &palette = writer.palette();
 
-    size_t count = 0;
+    usize count = 0;
     for (const Voxel32 voxel : voxels) {
         argb32 color = voxel.argb;
         if constexpr (PALETTE) {
@@ -132,30 +149,29 @@ size_t writeIteratively_impl(AbstractListWriter &writer, const VoxelArray &voxel
     return count;
 }
 
-size_t writeIteratively(AbstractListWriter &writer, const VoxelArray &voxels)
+usize writeIteratively(AbstractListWriter &writer, const VoxelArray &voxels)
 {
     return writeIteratively_impl<false>(writer, voxels);
 }
 
-size_t writeIteratively(const std::string &path, FileType type, const VoxelArray &voxels)
+usize writeIteratively(const std::string &path, FileType type, const VoxelArray &voxels)
 {
-    auto stream = openForWrite(path);
-    VXIO_ASSERT(stream.has_value());
+    FileOutputStream stream = openForWriteOrFail(path);
 
     VXIO_ASSERT_EQ(type, FileType::VL32);
-    vl32::Writer writer{*stream};
+    vl32::Writer writer{stream};
 
     return writeIteratively(writer, voxels);
 }
 
-size_t writeIteratively(const std::string &path, const VoxelArray &voxels)
+usize writeIteratively(const std::string &path, const VoxelArray &voxels)
 {
     auto fileType = detectFileTypeUsingName(path);
     VXIO_ASSERT(fileType.has_value());
     return writeIteratively(path, *fileType, voxels);
 }
 
-size_t writeIterativelyUsingPalette(AbstractListWriter &writer, const VoxelArray &voxels)
+usize writeIterativelyUsingPalette(AbstractListWriter &writer, const VoxelArray &voxels)
 {
     return writeIteratively_impl<true>(writer, voxels);
 }
@@ -172,8 +188,8 @@ static void readIteratively_impl(AbstractReader &reader, Consumer consumer)
             result = reader.read(buffer.get(), IO_VOXEL_BUFFER_SIZE);
             VXIO_ASSERT(isGood(result));
 
-            for (size_t i = 0; i < result.voxelsRead; ++i) {
-                auto outPos = buffer[i].pos.cast<size_t>();
+            for (usize i = 0; i < result.voxelsRead; ++i) {
+                auto outPos = buffer[i].pos.cast<usize>();
                 auto outRgb = static_cast<argb32>(buffer[i].argb);
                 consumer(Voxel32{outPos.cast<int32_t>(), {outRgb}});
             }
@@ -192,7 +208,7 @@ void readIteratively(AbstractReader &reader, std::vector<Voxel32> &out)
 void readIteratively(AbstractReader &reader, VoxelArray &out)
 {
     readIteratively_impl(reader, [&out](Voxel32 voxel) {
-        for (size_t i = 0; i < 3; ++i) {
+        for (usize i = 0; i < 3; ++i) {
             VXIO_DEBUG_ASSERT_GE(voxel.pos[i], 0);
         }
 
@@ -216,7 +232,7 @@ void readIterativelyAndMoveToOrigin(AbstractReader &reader, VoxelArray &out)
     }
     Vec3i32 min_vxio = min;
     for (const Voxel32 voxel : cache) {
-        Vec3size upos = (voxel.pos - min_vxio).cast<size_t>();
+        Vec3size upos = (voxel.pos - min_vxio).cast<usize>();
         out[upos] = voxel.argb;
     }
 }

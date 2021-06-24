@@ -4,8 +4,8 @@
 #include "voxelio/test/random.hpp"
 
 #include "voxelio/filetype.hpp"
+#include "voxelio/fstream.hpp"
 #include "voxelio/primitives.hpp"
-#include "voxelio/stream.hpp"
 #include "voxelio/voxelarray.hpp"
 #include "voxelio/voxelio.hpp"
 
@@ -21,23 +21,6 @@ namespace voxelio::test {
 
 constexpr const char *ASSET_PATH = VXIO_IN_QUOTES(VXIO_TEST_ASSET_PATH);
 
-enum class StringType {
-    /** String of random bytes [0,0xff] */
-    BYTE,
-    /** String of any ASCII characters [0, 0x7f] */
-    ASCII,
-    /** String of ASCII printable characters. */
-    PRINTABLE,
-    /** String of lower case letters. */
-    LOWER_CHARS,
-    /** String of upper case letters. */
-    UPPER_CHARS,
-    /** String of binary digits. */
-    BINARY,
-    /** String of decimal digits. */
-    DECIMAL
-};
-
 [[nodiscard]] std::string makeRandomString(usize length,
                                            StringType type = StringType::PRINTABLE,
                                            u32 seed = 12345,
@@ -45,11 +28,11 @@ enum class StringType {
 
 void dumpString(const std::string &path, const std::string &str);
 
-[[nodiscard]] FileInputStream openForReadOrFail(const std::string &path, OpenMode::Value = OpenMode::READ);
+[[nodiscard]] FileInputStream openForReadOrFail(const std::string &path, OpenMode = OpenMode::READ);
 
-[[nodiscard]] FileOutputStream openForWriteOrFail(const std::string &path, OpenMode::Value = OpenMode::WRITE);
+[[nodiscard]] FileOutputStream openForWriteOrFail(const std::string &path, OpenMode = OpenMode::WRITE);
 
-[[nodiscard]] FileInputStream openTestAsset(const std::string &path, OpenMode::Value = OpenMode::READ);
+[[nodiscard]] FileInputStream openTestAsset(const std::string &path, OpenMode = OpenMode::READ);
 
 [[nodiscard]] const std::string &getOutputPath();
 
@@ -62,13 +45,13 @@ void pipeOrFail(voxelio::InputStream &input, voxelio::OutputStream &output);
 
 uintmax_t getFileSize(const std::string &file);
 
-size_t writeIteratively(AbstractListWriter &writer, const VoxelArray &voxels);
+usize writeIteratively(AbstractListWriter &writer, const VoxelArray &voxels);
 
-size_t writeIteratively(const std::string &path, FileType type, const VoxelArray &voxels);
+usize writeIteratively(const std::string &path, FileType type, const VoxelArray &voxels);
 
-size_t writeIteratively(const std::string &path, const VoxelArray &voxels);
+usize writeIteratively(const std::string &path, const VoxelArray &voxels);
 
-size_t writeIterativelyUsingPalette(AbstractListWriter &writer, const VoxelArray &voxels);
+usize writeIterativelyUsingPalette(AbstractListWriter &writer, const VoxelArray &voxels);
 
 // ITERATIVE READING ===================================================================================================
 
