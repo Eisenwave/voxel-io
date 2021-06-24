@@ -194,4 +194,16 @@ enum class Endian : unsigned {
 
 }  // namespace voxelio::build
 
+// SOURCE LOCATION =====================================================================================================
+
+namespace voxelio {
+
+struct SourceLocation {
+    const char *file;
+    const char *function;
+    unsigned long line;
+};
+
+}  // namespace voxelio
+
 #endif  // VXIO_BUILD_HPP

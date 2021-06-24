@@ -16,12 +16,6 @@ namespace voxelio {
 
 using AssertHandler = void (*)();
 
-struct SourceLocation {
-    const char *file;
-    const char *function;
-    usize line;
-};
-
 #ifndef VXIO_DISABLE_ASSERTS
 /**
  * @brief Pushes an AssertHandler onto the handler stack.
@@ -120,13 +114,13 @@ constexpr void consumeBool(bool) {}
 #endif
 // COMMON ASSERTS (ALWAYS DEFINED THE SAME) ============================================================================
 
-#define VXIO_ASSERT(expr) VXIO_ASSERT_IMPL(expr, "\"" #expr "\" evaluated to false")
+#define VXIO_ASSERT(...) VXIO_ASSERT_IMPL((__VA_ARGS__), "\"" #__VA_ARGS__ "\" evaluated to false")
 
 #define VXIO_ASSERTM(expr, msg) VXIO_ASSERT_IMPL(expr, '"' + ::std::string{msg} + '"')
-#define VXIO_ASSERT_FAIL(msg) VXIO_ASSERTM(false, msg)
+#define VXIO_ASSERT_FAIL(...) VXIO_ASSERTM(false, __VA_ARGS__)
 
-#define VXIO_ASSERT_NOTNULL(expr) VXIO_ASSERT_IMPL(expr != nullptr, #expr " must never be null")
-#define VXIO_ASSERT_NULL(expr) VXIO_ASSERT_IMPL(expr == nullptr, #expr " must always be null")
+#define VXIO_ASSERT_NOTNULL(...) VXIO_ASSERT_IMPL((__VA_ARGS__) != nullptr, #__VA_ARGS__ " must never be null")
+#define VXIO_ASSERT_NULL(...) VXIO_ASSERT_IMPL((__VA_ARGS__) == nullptr, #__VA_ARGS__ " must always be null")
 #define VXIO_ASSERT_EQ(l, r) VXIO_ASSERT_CMP(l, r, ==)
 #define VXIO_ASSERT_NE(l, r) VXIO_ASSERT_CMP(l, r, !=)
 #define VXIO_ASSERT_LT(l, r) VXIO_ASSERT_CMP(l, r, <)
@@ -134,11 +128,11 @@ constexpr void consumeBool(bool) {}
 #define VXIO_ASSERT_GT(l, r) VXIO_ASSERT_CMP(l, r, >)
 #define VXIO_ASSERT_GE(l, r) VXIO_ASSERT_CMP(l, r, >=)
 
-#define VXIO_DEBUG_ASSERT(expr) VXIO_IF_DEBUG(VXIO_ASSERT(expr))
+#define VXIO_DEBUG_ASSERT(...) VXIO_IF_DEBUG(VXIO_ASSERT(__VA_ARGS__))
 #define VXIO_DEBUG_ASSERTM(expr, msg) VXIO_IF_DEBUG(VXIO_ASSERTM(expr, msg))
-#define VXIO_DEBUG_ASSERT_FAIL(msg) VXIO_IF_DEBUG(VXIO_ASSERT_FAIL(msg))
-#define VXIO_DEBUG_ASSERT_NOTNULL(expr) VXIO_IF_DEBUG(VXIO_ASSERT_NOTNULL(expr))
-#define VXIO_DEBUG_ASSERT_NULL(expr) VXIO_IF_DEBUG(VXIO_ASSERT_NULL(expr))
+#define VXIO_DEBUG_ASSERT_FAIL(...) VXIO_IF_DEBUG(VXIO_ASSERT_FAIL(__VA_ARGS__))
+#define VXIO_DEBUG_ASSERT_NOTNULL(...) VXIO_IF_DEBUG(VXIO_ASSERT_NOTNULL(__VA_ARGS__))
+#define VXIO_DEBUG_ASSERT_NULL(...) VXIO_IF_DEBUG(VXIO_ASSERT_NULL(__VA_ARGS__))
 #define VXIO_DEBUG_ASSERT_EQ(l, r) VXIO_IF_DEBUG(VXIO_ASSERT_CMP(l, r, ==))
 #define VXIO_DEBUG_ASSERT_NE(l, r) VXIO_IF_DEBUG(VXIO_ASSERT_CMP(l, r, !=))
 #define VXIO_DEBUG_ASSERT_LT(l, r) VXIO_IF_DEBUG(VXIO_ASSERT_CMP(l, r, <))
