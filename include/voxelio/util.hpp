@@ -16,27 +16,62 @@
 
 namespace voxelio {
 
+#if 0
+namespace detail {
+
+
+template <typename T>
+struct Swappability {
+    template <typename T2 = T>
+    static auto swappableByMember(...)
+    -> std::false_type;
+
+    template <typename T2 = T>
+    static auto swappableByMember(int)
+    -> decltype(std::declval<T2&>().swap(std::declval<T2&>()), std::true_type{});
+
+    template <typename T2 = T>
+    static auto nothrowSwappablyByMember(...)
+    -> std::false_type;
+
+    template <typename T2 = T>
+    static auto nothrowSwappablyByMember(int)
+    -> std::integral_constant<bool, noexcept(std::declval<T2&>().swap(std::declval<T2&>()))>;
+
+
+    static constexpr bool byMember = decltype(swappableByMember(0))::value;
+    static constexpr bool nothrowByMember = decltype(nothrowSwappablyByMember(0))::value;
+};
+
+}
+
+template <typename T>
+constexpr bool isSwappableByMemberFunction = detail::Swappability<T>::byMember;
+
+template <typename T>
+constexpr bool isNothrowSwappableByMemberFunction = detail::Swappability<T>::nothrowByMember;
+#endif
+
 /**
- * @brief Performs a cast between types where the raw bits of one type are reinterpreted as that of another.
- * This allows reinterpretation of e.g. an int as a float without undefined behavior.
- * @param from the source type
- * @return the casted result
+ * @brief constexpr swap for trivial types.
+ * This is necessary because std::swap is not constexpr pre C++20.
+ *
+ * It is constrained to trivial types so that we don't have to worry about noexcept correctness.
  */
-template <typename To, typename From>
-inline To bitcast(const From &from)
+template <typename T>
+constexpr std::enable_if_t<std::is_trivial_v<T>, void> trivialSwap(T &a, T &b) noexcept
 {
-    static_assert(sizeof(To) == sizeof(From));
-    To result;
-    std::memcpy(&result, &from, sizeof(To));
-    return result;
+    T tmp = a;
+    a = b;
+    b = tmp;
 }
 
 /**
  * @brief performs downcast of one reference to another.
  * On debug builds, this will terminate if the cast fails.
  */
-template <typename DERIVED, typename BASE, std::enable_if_t<std::is_reference_v<DERIVED>, int> = 0>
-constexpr DERIVED downcast(BASE &src) noexcept
+template <typename DERIVED, typename BASE>
+constexpr std::enable_if_t<std::is_reference_v<DERIVED>, DERIVED> downcast(BASE &src) noexcept
 {
     return VXIO_IF_DEBUG_ELSE(dynamic_cast<DERIVED>(src), static_cast<DERIVED>(src));
 }
@@ -46,8 +81,8 @@ constexpr DERIVED downcast(BASE &src) noexcept
  * On debug builds, this will terminate if the cast fails.
  * Downcasting a nullptr is always allowed.
  */
-template <typename DERIVED, typename BASE, std::enable_if_t<std::is_pointer_v<DERIVED>, int> = 0>
-constexpr DERIVED downcast(BASE *src) noexcept
+template <typename DERIVED, typename BASE>
+constexpr std::enable_if_t<std::is_pointer_v<DERIVED>, DERIVED> downcast(BASE *src) noexcept
 {
     if constexpr (build::DEBUG) {
         DERIVED result = dynamic_cast<DERIVED>(src);
@@ -68,27 +103,33 @@ constexpr DERIVED downcast(BASE *src) noexcept
  * @return the index of the first mismatch
  */
 template <typename T>
-constexpr usize compareArrays(const T arr0[], const T arr1[], usize size)
+constexpr usize mismatchIndex(const T arr0[], const T arr1[], usize size) noexcept
 {
-    for (usize i = 0; i < size; ++i) {
+    usize i = 0;
+    for (; i < size; ++i) {
         if (arr0[i] != arr1[i]) {
-            return i;
+            break;
         }
     }
-    return size;
+    return i;
 }
 
-/**
- * @brief Reverses an array.
- * @param arr the array to reverse
- * @param size the size of the array
- */
 template <typename T>
-constexpr void reverseArray(T arr[], usize size)
+constexpr std::underlying_type_t<T> toUnderlying(T t) noexcept
 {
-    for (size_t i = 0; i < size / 2; ++i) {
-        std::swap(arr[i], arr[size - i - 1]);
-    }
+    return static_cast<std::underlying_type_t<T>>(t);
+}
+
+template <typename T>
+constexpr std::make_unsigned_t<T> toUnsigned(T t) noexcept
+{
+    return static_cast<std::make_unsigned_t<T>>(t);
+}
+
+template <typename T>
+constexpr std::make_signed_t<T> toSigned(T t) noexcept
+{
+    return static_cast<std::make_signed_t<T>>(t);
 }
 
 }  // namespace voxelio
