@@ -1,5 +1,5 @@
-#ifndef STREAMFWD_HPP
-#define STREAMFWD_HPP
+#ifndef VXIO_STREAMFWD_HPP
+#define VXIO_STREAMFWD_HPP
 
 namespace voxelio {
 
@@ -20,4 +20,4 @@ class StdOutputStream;
 
 }  // namespace voxelio
 
-#endif  // STREAMFWD_HPP
+#endif  // VXIO_STREAMFWD_HPP
