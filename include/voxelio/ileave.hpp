@@ -301,7 +301,7 @@ namespace detail {
 // alternative implementation using a naive algorithm
 constexpr u64 ileaveBytes_naive(u64 bytes, usize count) noexcept
 {
-    VXIO_DEBUG_ASSERT_LE(count, 8);
+    VXIO_DEBUG_ASSERT_LE(count, 8u);
     VXIO_ASSUME(count <= 8);
 
     u64 result = 0;
@@ -315,7 +315,7 @@ constexpr u64 ileaveBytes_naive(u64 bytes, usize count) noexcept
 // alternative implementation adapting ileave_bytes_const to work with a runtime parameter
 constexpr u64 ileaveBytes_jmp(u64 bytes, usize count) noexcept
 {
-    VXIO_DEBUG_ASSERT_LE(count, 8);
+    VXIO_DEBUG_ASSERT_LE(count, 8u);
     VXIO_ASSUME(count <= 8);
 
     switch (count) {
@@ -367,8 +367,8 @@ namespace detail {
 // alternative implementation adapting ileave_bytes_const to work with a runtime parameter
 constexpr u64 dileaveBytes_jmp(u64 bytes, usize count) noexcept
 {
-    VXIO_DEBUG_ASSERT_LE(count, 8);
-    VXIO_ASSUME(count <= 8);
+    VXIO_DEBUG_ASSERT_LE(count, 8u);
+    VXIO_ASSUME(count <= 8u);
 
     switch (count) {
     case 0: return dileaveBytes_const<0>(bytes);

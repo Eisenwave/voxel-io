@@ -16,6 +16,24 @@
 
 namespace voxelio {
 
+#if defined(VXIO_HAS_BUILTIN_CLZ) || defined(VXIO_HAS_BUILTIN_MSB)
+#define VXIO_HAS_BUILTIN_LOG2FLOOR
+namespace detail {
+
+template <typename Int>
+inline Int log2floor_builtin(Int v)
+{
+#ifdef VXIO_HAS_BUILTIN_MSB
+    return builtin::mostSignificantBit(v);
+#elif defined(VXIO_HAS_BUILTIN_CLZ)
+    constexpr int maxIndex = bits_v<Int> - 1;
+    return (v != 0) * static_cast<Int>(maxIndex - builtin::countLeadingZeros(v));
+#endif
+}
+
+}  // namespace detail
+#endif
+
 // POWER OF 2 TESTING ==================================================================================================
 
 /**
@@ -24,7 +42,7 @@ namespace voxelio {
  * @param val the parameter to test
  * @return true if val is a power of 2 or if val is zero
  */
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
 constexpr bool isPow2or0(Uint val)
 {
     return (val & (val - 1)) == 0;
@@ -36,7 +54,7 @@ constexpr bool isPow2or0(Uint val)
  * @return true if val is a power of 2
  * @see is_pow2_or_zero
  */
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
 constexpr bool isPow2(Uint val)
 {
     return val != 0 && isPow2or0(val);
@@ -44,19 +62,22 @@ constexpr bool isPow2(Uint val)
 
 // POWER OF 2 ROUNDING =================================================================================================
 
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint log2floor_naive(Uint val) noexcept;
+namespace detail {
 
-/**
- * @brief Rounds up an unsigned integer to the next power of 2, minus 1.
- * 0 underflows to ~0.
- * Examples: 100 -> 127, 1 -> 1, 3 -> 3, 3000 -> 4095, 64 -> 127
- * @param v the value to round up
- */
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint ceilPow2m1(Uint v)
+#ifdef VXIO_HAS_BUILTIN_LOG2FLOOR
+#define VXIO_HAS_BUILTIN_CEILPOW2
+template <typename Uint>
+inline Uint ceilPow2m1_builtin(Uint v)
 {
-    constexpr usize iterations = log2floor_naive(bits_v<Uint>);
+    Uint log = log2floor_builtin(v);
+    return v | (Uint{1} << log) - Uint{1};
+}
+#endif
+
+template <typename Uint>
+constexpr Uint ceilPow2m1_shift(Uint v)
+{
+    constexpr usize iterations = log2bits_v<Uint>;
     for (usize i = 0; i < iterations; ++i) {
         // after all iterations, all bits right to the msb will be filled with 1
         v |= v >> (1 << i);
@@ -64,14 +85,35 @@ constexpr Uint ceilPow2m1(Uint v)
     return v;
 }
 
+}  // namespace detail
+
+/**
+ * @brief Rounds up an unsigned integer to the next power of 2, minus 1.
+ * 0 is not rounded up and stays zero.
+ * Examples: 100 -> 127, 1 -> 1, 3 -> 3, 3000 -> 4095, 64 -> 127
+ * @param v the value to round up
+ */
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
+constexpr Uint ceilPow2m1(Uint v)
+{
+// The codegen on other platforms such as ARM is actually better for the repeated shift version.
+// Each step on ARM can be performed with a flexible operand which performs a shift.
+#if defined(VXIO_HAS_BUILTIN_CEILPOW2) && defined(VXIO_X86_OR_X64)
+    if (not isConstantEvaluated()) {
+        return detail::ceilPow2m1_builtin(v);
+    }
+#endif
+    return detail::ceilPow2m1_shift(v);
+}
+
 /**
  * @brief Rounds up an unsigned integer to the next power of 2.
  * Powers of two are not affected.
- * 0 is not a power of 2 but treated as such and not rounded up.
+ * 0 is not rounded and stays zero.
  * Examples: 100 -> 128, 1 -> 1, 3 -> 4, 3000 -> 4096
  * @param v the value to round up
  */
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
 constexpr Uint ceilPow2(Uint v)
 {
     return ceilPow2m1(v - 1) + 1;
@@ -80,11 +122,11 @@ constexpr Uint ceilPow2(Uint v)
 /**
  * @brief Rounds down an unsigned integer to the next power of 2.
  * Powers of 2 are not affected.
- * 0 can't be rounded down and is not a power of 2, so it is rounded up to 1 instead.
+ * The result of floorPow2(0) is undefined.
  * Examples: 100 -> 64, 1 -> 1, 3 -> 2, 3000 -> 2048
  * @param v the value to round down
  */
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
 constexpr Uint floorPow2(Uint v)
 {
     return ceilPow2m1(v >> 1) + 1;
@@ -95,7 +137,7 @@ constexpr Uint floorPow2(Uint v)
 /**
  * @brief Naive implementation of log2 using repeated single-bit rightshifting.
  */
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int>>
+template <typename Uint>
 constexpr Uint log2floor_naive(Uint val) noexcept
 {
     Uint result = 0;
@@ -130,10 +172,10 @@ constexpr Uint log2floor_naive(Uint val) noexcept
     r >>= shift;
     r |= shift;
  */
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <typename Uint>
 constexpr Uint log2floor_fast(Uint v) noexcept
 {
-    constexpr usize iterations = log2floor_naive(bits_v<Uint>);
+    constexpr usize iterations = log2bits_v<Uint>;
     unsigned result = 0;
 
     for (usize i = iterations; i != 0; --i) {
@@ -149,8 +191,9 @@ constexpr Uint log2floor_fast(Uint v) noexcept
 
 namespace detail {
 
-constexpr u32 MultiplyDeBruijnBitPosition[32] = {0, 9,  1,  10, 13, 21, 2,  29, 11, 14, 16, 18, 22, 25, 3, 30,
-                                                 8, 12, 20, 28, 15, 17, 24, 7,  19, 27, 23, 6,  26, 5,  4, 31};
+constexpr unsigned char MultiplyDeBruijnBitPosition[32] = {0,  9,  1,  10, 13, 21, 2,  29, 11, 14, 16,
+                                                           18, 22, 25, 3,  30, 8,  12, 20, 28, 15, 17,
+                                                           24, 7,  19, 27, 23, 6,  26, 5,  4,  31};
 
 }
 
@@ -182,24 +225,19 @@ constexpr u32 log2floor_debruijn(u32 val) noexcept
  * @param v the value
  * @return the floored binary logarithm
  */
-template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
-constexpr Int log2floor(Int v) noexcept
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
+constexpr Uint log2floor(Uint v) noexcept
 {
-#ifdef VXIO_HAS_BUILTIN_MSB
+#ifdef VXIO_HAS_BUILTIN_LOG2FLOOR
     if (not isConstantEvaluated()) {
-        return builtin::mostSignificantBit(v);
-    }
-#elif defined(VXIO_HAS_BUILTIN_CLZ)
-    if (not isConstantEvaluated()) {
-        constexpr int maxIndex = bits_v<Int> - 1;
-        return (v != 0) * static_cast<Int>(maxIndex - builtin::countLeadingZeros(v));
+        return detail::log2floor_builtin(v);
     }
 #endif
-    if constexpr (std::is_same_v<Int, u32>) {
+    if constexpr (std::is_same_v<Uint, u32>) {
         return log2floor_debruijn(v);
     }
     else {
-        return log2floor_fast<Int>(v);
+        return log2floor_fast<Uint>(v);
     }
 }
 
@@ -215,10 +253,10 @@ constexpr Int log2floor(Int v) noexcept
  * @param v the value
  * @return the floored binary logarithm
  */
-template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
-constexpr Int log2ceil(Int val) noexcept
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
+constexpr Uint log2ceil(Uint val) noexcept
 {
-    const Int result = log2floor(val);
+    const Uint result = log2floor(val);
     return result + not isPow2or0(val);
 }
 
@@ -226,18 +264,20 @@ constexpr Int log2ceil(Int val) noexcept
  * @brief Computes the number of bits required to represent a given number.
  * Examples: bitLength(0) = 1, bitLength(3) = 2, bitLength(123) = 7, bitLength(4) = 3
  */
-template <typename Int, std::enable_if_t<std::is_unsigned_v<Int>, int> = 0>
-constexpr Int bitCount(Int val) noexcept
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
+constexpr Uint bitCount(Uint val) noexcept
 {
     return log2floor(val) + 1;
 }
 
 // ARBITRARY BASE LOGARITHMS ===========================================================================================
 
+namespace detail {
+
 /**
  * @brief Naive implementation of log base N using repeated division.
  */
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
 constexpr Uint logFloor_naive(Uint val, unsigned base) noexcept
 {
     Uint result = 0;
@@ -247,25 +287,29 @@ constexpr Uint logFloor_naive(Uint val, unsigned base) noexcept
     return result;
 }
 
+}  // namespace detail
+
 /**
  * @brief The maximum possible exponent for a given base that can still be represented by a given integer type.
  * Example: maxExp<uint8_t, 10> = 2, because 10^2 is representable by an 8-bit unsigned integer but 10^3 isn't.
  */
-template <typename Uint, unsigned BASE, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint maxExp = logFloor_naive<Uint>(static_cast<Uint>(~Uint{0u}), BASE);
+template <unsigned BASE, VXIO_UNSIGNED_TYPENAME(Uint)>
+constexpr Uint maxExp = detail::logFloor_naive<Uint>(static_cast<Uint>(~Uint{0u}), BASE);
 
-static_assert(maxExp<uint8_t, 10> == 2);
-static_assert(maxExp<u16, 10> == 4);
-static_assert(maxExp<u32, 10> == 9);
+static_assert(maxExp<10, u8> == 2);
+static_assert(maxExp<10, u16> == 4);
+static_assert(maxExp<10, u32> == 9);
+
+namespace detail {
 
 /**
  * @brief Simple implementation of log base N using repeated multiplication.
  * This method is slightly more sophisticated than logFloor_naive because it avoids division.
  */
-template <unsigned BASE, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <unsigned BASE, VXIO_UNSIGNED_TYPENAME(Uint)>
 constexpr Uint logFloor_simple(Uint val) noexcept
 {
-    constexpr Uint limit = maxExp<Uint, BASE>;
+    constexpr Uint limit = maxExp<BASE, Uint>;
 
     Uint i = 0;
     Uint pow = BASE;
@@ -277,13 +321,13 @@ constexpr Uint logFloor_simple(Uint val) noexcept
     return i;
 }
 
-namespace detail {
-
 /**
  * @brief Tiny array implementation to avoid including <array>.
  */
-template <typename T, usize N, std::enable_if_t<N != 0, int> = 0>
+template <typename T, usize N>
 struct Table {
+    static_assert(N != 0, "Can't create zero-size tables");
+
     static constexpr usize size = N;
     T data[N];
 
@@ -322,9 +366,9 @@ constexpr Table<uint8_t, bits_v<Uint>> makeGuessTable()
 }
 
 template <typename Uint, usize BASE, typename TableUint = nextLargerUintType<Uint>>
-constexpr Table<TableUint, maxExp<Uint, BASE> + 2> makePowerTable()
+constexpr Table<TableUint, maxExp<BASE, Uint> + 2> makePowerTable()
 {
-    // the size of the table is maxPow<Uint, BASE> + 2 because we need to store the maximum power
+    // the size of the table is maxPow<BASE, Uint> + 2 because we need to store the maximum power
     // +1 because we need to contain it, we are dealing with a size, not an index
     // +1 again because for narrow integers, we access one beyond the "end" of the table
     //
@@ -339,25 +383,6 @@ constexpr Table<TableUint, maxExp<Uint, BASE> + 2> makePowerTable()
     return result;
 }
 
-}  // namespace detail
-
-/**
- * @brief Computes pow(BASE, exponent) where BASE is known at compile-time.
- */
-template <usize BASE, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint powConst(Uint exponent)
-{
-    if constexpr (isPow2(BASE)) {
-        return 1 << (exponent * log2floor(BASE));
-    }
-    else {
-        constexpr auto powers = detail::makePowerTable<Uint, BASE, Uint>();
-        return static_cast<Uint>(powers.data[exponent]);
-    }
-}
-
-namespace detail {
-
 // table that maps from log_2(val) -> approximate log_N(val)
 template <typename Uint, usize BASE>
 constexpr auto logFloor_guesses = detail::makeGuessTable<Uint, BASE>();
@@ -366,7 +391,24 @@ constexpr auto logFloor_guesses = detail::makeGuessTable<Uint, BASE>();
 template <typename Uint, usize BASE>
 constexpr auto logFloor_powers = detail::makePowerTable<Uint, BASE>();
 
+template <typename Uint, usize BASE>
+constexpr auto powConst_powers = detail::makePowerTable<Uint, BASE, Uint>();
+
 }  // namespace detail
+
+/**
+ * @brief Computes pow(BASE, exponent) where BASE is known at compile-time.
+ */
+template <usize BASE, VXIO_UNSIGNED_TYPENAME(Uint)>
+constexpr Uint powConst(Uint exponent)
+{
+    if constexpr (isPow2(BASE)) {
+        return 1 << (exponent * log2floor(BASE));
+    }
+    else {
+        return detail::powConst_powers<Uint, BASE>[exponent];
+    }
+}
 
 /**
  * @brief Computes the floored logarithm of a number with a given base.
@@ -384,7 +426,7 @@ constexpr auto logFloor_powers = detail::makePowerTable<Uint, BASE>();
  * @param val the input value
  * @return floor(log(val, BASE))
  */
-template <usize BASE = 10, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <usize BASE = 10, VXIO_UNSIGNED_TYPENAME(Uint)>
 constexpr Uint logFloor(Uint val) noexcept
 {
     if constexpr (isPow2(BASE)) {
@@ -408,7 +450,7 @@ constexpr Uint logFloor(Uint val) noexcept
 /**
  * @brief Convenience function that forwards to logFloor<10>.
  */
-template <typename Uint>
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
 constexpr Uint log10floor(Uint val)
 {
     return logFloor<10, Uint>(val);
@@ -417,7 +459,7 @@ constexpr Uint log10floor(Uint val)
 /**
  * @brief Computes the number of digits required to represent a number with a given base.
  */
-template <usize BASE = 10, typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <usize BASE = 10, VXIO_UNSIGNED_TYPENAME(Uint)>
 constexpr Uint digitCount(Uint val) noexcept
 {
     return logFloor<BASE>(val) + 1;

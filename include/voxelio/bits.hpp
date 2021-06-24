@@ -21,47 +21,42 @@ namespace voxelio {
 
 // BIT GETTING / SETTING ===============================================================================================
 
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr bool getBit(Uint input, usize index) noexcept
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
+[[nodiscard]] constexpr bool getBit(Uint input, unsigned index) noexcept
 {
-    return (input >> index) & 1;
+    return (input >> index) & Uint{1};
 }
 
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint setBit(Uint input, usize index) noexcept
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
+[[nodiscard]] constexpr Uint clearBit(Uint input, unsigned index) noexcept
 {
-    return input | (1 << index);
+    return input & ~(Uint{1} << index);
 }
 
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint setBit(Uint input, usize index, bool value) noexcept
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
+[[nodiscard]] constexpr Uint flipBit(Uint input, unsigned index) noexcept
 {
-    return input ^ ((getBit(input) ^ value) << index);
+    return input ^ (Uint{1} << index);
 }
 
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint clearBit(Uint input, usize index) noexcept
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
+[[nodiscard]] constexpr Uint setBit(Uint input, unsigned index) noexcept
 {
-    return input & ~(1 << index);
+    return input | (Uint{1} << index);
 }
 
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
-constexpr Uint flipBit(Uint input, usize index) noexcept
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
+[[nodiscard]] constexpr Uint setBit(Uint input, unsigned index, bool value) noexcept
 {
-    return input ^ (1 << index);
+    return clearBit(input, index) | (Uint{value} << index);
 }
 
 // PORTABLE BYTE SWAP IMPLEMENTATION ===================================================================================
 
 namespace detail {
 
-/**
- * @brief Reverses the bytes of any integer.
- * This implementation does not use any builtin function.
- * @param integer the integer
- */
 template <typename Int>
-constexpr Int reverseBytes_shift(Int integer) noexcept
+constexpr Int reverseBytes_naive(Int integer) noexcept
 {
     // Compiler Explorer experiments have shown that we can't use encode/decode with different endians, as gcc
     // loses the ability to recognize the byte swap with bswap automatically.
@@ -79,6 +74,30 @@ constexpr Int reverseBytes_shift(Int integer) noexcept
     return result;
 }
 
+template <typename Int>
+constexpr Int reverseBits_shift(Int integer, const unsigned bitLimit = 0) noexcept
+{
+    constexpr unsigned start = log2bits_v<Int>;
+
+    for (unsigned i = start; --i != (bitLimit - 1);) {
+        Int lo = integer & ALTERNATING_MASKS<Int>[i];
+        Int hi = integer & ~ALTERNATING_MASKS<Int>[i];
+
+        lo <<= 1 << i;
+        hi >>= 1 << i;
+
+        integer = lo | hi;
+    }
+
+    return integer;
+}
+
+template <typename Int>
+constexpr Int reverseBytes_shift(Int integer) noexcept
+{
+    return reverseBits_shift<Int>(integer, 3);
+}
+
 }  // namespace detail
 
 /**
@@ -86,15 +105,11 @@ constexpr Int reverseBytes_shift(Int integer) noexcept
  * This implementation uses builtin::byteSwap().
  * @param integer the integer
  */
-template <typename Int>
-[[nodiscard]] constexpr Int reverseBytes(Int integer) noexcept
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
+[[nodiscard]] constexpr Uint reverseBytes(Uint integer) noexcept
 {
-    if constexpr (sizeof(Int) == 1) {
+    if constexpr (sizeof(Uint) == 1) {
         return integer;
-    }
-    else if constexpr (std::is_signed_v<Int>) {
-        auto unsignedSwapped = reverseBytes(static_cast<std::make_unsigned_t<Int>>(integer));
-        return static_cast<Int>(unsignedSwapped);
     }
     else {
 #ifdef VXIO_HAS_BUILTIN_BSWAP
@@ -105,13 +120,20 @@ template <typename Int>
     }
 }
 
-static_assert(reverseBytes(0x11223344) == 0x44332211);
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
+[[nodiscard]] constexpr Uint reverseBits(Uint integer) noexcept
+{
+#ifdef VXIO_HAS_BUILTIN_BITREV
+    return isConstantEvaluated() ? detail::reverseBits_shift(integer) : builtin::bitReverse(integer);
+#endif
+    return detail::reverseBits_shift(integer);
+}
 
 // BIT ROTATION ========================================================================================================
 
 namespace detail {
 
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
 [[nodiscard]] constexpr Uint leftRot_shift(Uint n, unsigned char rot) noexcept
 {
     constexpr unsigned char mask = 8 * sizeof(Uint) - 1;
@@ -122,7 +144,7 @@ template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
     return hi | lo;
 }
 
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
 [[nodiscard]] constexpr Uint rightRot_shift(Uint n, unsigned char rot) noexcept
 {
     constexpr unsigned char mask = 8 * sizeof(Uint) - 1;
@@ -142,7 +164,7 @@ template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
  * @param n the number to shift
  * @param rot bit count
  */
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
 [[nodiscard]] constexpr Uint leftRot(Uint n, unsigned char rot = 1) noexcept
 {
 #ifdef VXIO_HAS_BUILTIN_ROTL
@@ -159,7 +181,7 @@ template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
  * @param n the number to shift
  * @param rot bit count
  */
-template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint>, int> = 0>
+template <VXIO_UNSIGNED_TYPENAME(Uint)>
 [[nodiscard]] constexpr Uint rightRot(Uint n, unsigned char rot = 1) noexcept
 {
 #ifdef VXIO_HAS_BUILTIN_ROTL

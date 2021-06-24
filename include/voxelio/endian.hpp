@@ -31,7 +31,9 @@ template <Endian ENDIAN, typename Int>
 constexpr void encode_reverse(Int integer, u8 out[sizeof(Int)])
 {
     if constexpr (ENDIAN != Endian::NATIVE) {
-        integer = reverseBytes(integer);
+        using Uint = std::make_unsigned_t<Int>;
+
+        integer = static_cast<Int>(reverseBytes(static_cast<Uint>(integer)));
     }
     std::memcpy(out, &integer, sizeof(Int));
 }
@@ -39,42 +41,12 @@ constexpr void encode_reverse(Int integer, u8 out[sizeof(Int)])
 template <Endian ENDIAN, typename Int>
 constexpr Int decode_reverse(const u8 buffer[sizeof(Int)])
 {
-    Int result = 0;
+    Int result;
     std::memcpy(&result, buffer, sizeof(Int));
     if constexpr (ENDIAN != Endian::NATIVE) {
-        result = reverseBytes(result);
-    }
-    return result;
-}
+        using Uint = std::make_unsigned_t<Int>;
 
-template <Endian ENDIAN, typename Int>
-constexpr void encode_naive(Int integer, u8 out[sizeof(Int)])
-{
-    for (usize i = 0; i < sizeof(Int); ++i) {
-        usize shift = 0;
-        if constexpr (ENDIAN == Endian::LITTLE) {
-            shift = (i * 8);
-        }
-        else {
-            shift = (sizeof(Int) - i - 1) * 8;
-        }
-        out[i] = integer >> shift;
-    }
-}
-
-template <Endian ENDIAN, typename Int>
-constexpr Int decode_naive(const u8 buffer[sizeof(Int)])
-{
-    Int result = 0;
-    for (usize i = 0; i < sizeof(Int); ++i) {
-        usize shift = 0;
-        if constexpr (ENDIAN == Endian::LITTLE) {
-            shift = i * 8;
-        }
-        else {
-            shift = (sizeof(Int) - i - 1) * 8;
-        }
-        result += buffer[i] << shift;
+        result = static_cast<Int>(reverseBytes(static_cast<Uint>(result)));
     }
     return result;
 }
