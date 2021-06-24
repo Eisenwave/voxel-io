@@ -1,5 +1,6 @@
 #include "voxelio/log.hpp"
 
+#include "voxelio/assert.hpp"
 #include "voxelio/build.hpp"
 #include "voxelio/stringmanip.hpp"
 

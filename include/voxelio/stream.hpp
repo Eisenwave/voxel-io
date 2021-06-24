@@ -20,10 +20,9 @@
 #include "assert.hpp"
 #include "endian.hpp"
 #include "primitives.hpp"
+#include "util.hpp"
 
 #include <cstddef>
-#include <iosfwd>
-#include <optional>
 
 namespace voxelio {
 
@@ -512,7 +511,7 @@ public:
      * @brief Returns true if a write operation failed.
      * @return true if a write operation failed
      */
-    bool err() const
+    bool err() const noexcept
     {
         return flags.err;
     }
@@ -521,7 +520,7 @@ public:
      * @brief Returns true if no error occured.
      * @return true if no error occured.
      */
-    bool good() const
+    bool good() const noexcept
     {
         return not err();
     }
@@ -686,25 +685,6 @@ private:
     }
 };
 
-/**
- * @brief The mode in which files are opened by FileInputStream and FileOutputStream.
- */
-struct OpenMode {
-    enum Value : unsigned {
-        /** Indicates that the stream should be opened for reading. Is always set for FileInputStream. */
-        READ = 1 << 0,
-        /** Indicates that the stream should be opened for writing. Is always set for FileOutputStream. */
-        WRITE = 1 << 1,
-        /** Indicates that when writing, new bytes should be appended at the end of the file. */
-        APPEND = 1 << 2,
-        /** Indicates that the stream is to be opened in binary mode.
-         * This means that CRLF endings are not translated automatically by the OS. */
-        BINARY = 1 << 3,
-        /** Indicates that new files should not be overwritten by opening a FileOutputStream. */
-        PRESERVE = 1 << 4
-    };
-};
-
 // NULL STREAMS ========================================================================================================
 
 /**
@@ -716,9 +696,14 @@ private:
     u64 pos = 0;
 
 public:
-    NullInputStream() noexcept;
-    NullInputStream(NullInputStream &&) = default;
-    ~NullInputStream() final = default;
+    NullInputStream() noexcept
+    {
+        this->flags.eof = false;
+        this->flags.err = false;
+    }
+
+    NullInputStream(NullInputStream &&) noexcept = default;
+    ~NullInputStream() noexcept final = default;
 
     u8 read() final
     {
@@ -726,28 +711,32 @@ public:
         return 0;
     }
 
-    usize read(u8 buffer[], usize size) final
+    usize read(u8 buffer[], usize size) noexcept final
     {
         std::fill_n(buffer, size, 0);
         pos += size;
         return size;
     }
 
-    void seekRelative(i64 offset) final
+    void seekRelative(i64 offset) noexcept final
     {
         pos += static_cast<u64>(offset);
     }
 
-    void seekAbsolute(u64 offset) final
+    void seekAbsolute(u64 offset) noexcept final
     {
         pos = offset;
     }
 
-    u64 position() final
+    u64 position() noexcept final
     {
         return pos;
     }
-    void clearErrors() final {}
+    void clearErrors() noexcept final {}
+
+private:
+    /// Allows placing the vtable in only one TU while while all other virtual functions are defined in the class.
+    virtual void vtablePlacer();
 };
 
 /**
@@ -759,35 +748,43 @@ private:
     u64 pos = 0;
 
 public:
-    NullOutputStream() noexcept;
-    NullOutputStream(NullOutputStream &&) = default;
-    ~NullOutputStream() final = default;
+    NullOutputStream() noexcept
+    {
+        this->flags.err = false;
+    }
 
-    void write(u8) final
+    NullOutputStream(NullOutputStream &&) noexcept = default;
+    ~NullOutputStream() noexcept final = default;
+
+    void write(u8) noexcept final
     {
         pos++;
     }
 
-    void write(const u8 *, usize size) final
+    void write(const u8 *, usize size) noexcept final
     {
         pos += size;
     }
 
-    void seekRelative(i64 offset) final
+    void seekRelative(i64 offset) noexcept final
     {
         pos += static_cast<u64>(offset);
     }
 
-    void seekAbsolute(u64 offset) final
+    void seekAbsolute(u64 offset) noexcept final
     {
         pos = offset;
     }
 
-    u64 position() final
+    u64 position() noexcept final
     {
         return pos;
     }
-    void flush() final {}
+    void flush() noexcept final {}
+
+private:
+    /// Allows placing the vtable in only one TU while while all other virtual functions are defined in the class.
+    virtual void vtablePlacer();
 };
 
 // BYTE STREAMS ========================================================================================================
@@ -799,22 +796,49 @@ private:
     usize pos = 0;
 
 public:
-    ByteArrayInputStream(const u8 data[], usize size) noexcept;
-    ByteArrayInputStream(ByteArrayInputStream &&) = default;
-    ~ByteArrayInputStream() final = default;
-
-    explicit ByteArrayInputStream(const ByteArrayOutputStream &outputStream);
-
-    u8 read() final;
-
-    usize read(u8 buffer[], usize size) final;
-
-    void seekRelative(i64 offset) final
+    ByteArrayInputStream(const u8 data[], usize size) noexcept : data_{data}, size_{size}
     {
+        this->flags.eof = false;
+        this->flags.err = false;
+    }
+
+    ByteArrayInputStream(ByteArrayInputStream &&) noexcept = default;
+    ~ByteArrayInputStream() noexcept final = default;
+
+    explicit ByteArrayInputStream(const ByteArrayOutputStream &outputStream) noexcept;
+
+    u8 read() noexcept final
+    {
+        if (pos >= size()) {
+            this->flags.eof = true;
+            return 0;
+        }
+        return data_[pos++];
+    }
+
+    usize read(u8 buffer[], usize size) noexcept final
+    {
+        if (this->pos >= this->size()) {
+            this->flags.eof = true;
+            return 0;
+        }
+        usize readCount = std::min(this->size() - this->pos, size);
+        if (readCount != size) {
+            this->flags.eof = true;
+        }
+        std::copy(data_ + pos, data_ + pos + readCount, buffer);
+        pos += readCount;
+        return readCount;
+    }
+
+    void seekRelative(i64 offset) noexcept final
+    {
+        VXIO_DEBUG_ASSERT_GE(static_cast<i64>(pos) + offset, 0);
+        // intentional, works because of two's complement
         seekAbsolute(pos + static_cast<u64>(offset));
     }
 
-    void seekAbsolute(u64 offset) final
+    void seekAbsolute(u64 offset) noexcept final
     {
         pos = offset;
         if (pos >= size()) {
@@ -822,26 +846,29 @@ public:
         }
     }
 
-    u64 position() final
+    u64 position() noexcept final
     {
         return pos;
     }
 
-    void clearErrors() final
+    void clearErrors() noexcept final
     {
         this->flags.eof = false;
         this->flags.err = false;
     }
 
-    size_t size() const
+    size_t size() const noexcept
     {
         return size_;
     }
 
-    const u8 *data() const
+    const u8 *data() const noexcept
     {
         return data_;
     }
+
+private:
+    virtual void vtablePlacer();
 };
 
 class ByteArrayOutputStream final : public OutputStream {
@@ -853,7 +880,7 @@ private:
     void *sink;  // actually a std::vector<u8>, but not explicitly typed to avoid a <vector> include
 
 public:
-    ByteArrayOutputStream(usize initialSize = DEFAULT_INITIAL_SIZE) noexcept;
+    ByteArrayOutputStream(usize initialSize = DEFAULT_INITIAL_SIZE);
 
     ByteArrayOutputStream(ByteArrayOutputStream &&moveOf) noexcept : pos{moveOf.pos}, sink{moveOf.sink}
     {
@@ -867,12 +894,14 @@ public:
     void write(u8) final;
     void write(const u8 *, usize size) final;
 
-    void seekRelative(i64 offset) final
+    void seekRelative(i64 offset) noexcept final
     {
+        VXIO_DEBUG_ASSERT_GE(static_cast<i64>(pos) + offset, 0);
+        // intentional, works because of two's complement
         pos += static_cast<u64>(offset);
     }
 
-    void seekAbsolute(u64 offset) final
+    void seekAbsolute(u64 offset) noexcept final
     {
         pos = offset;
         if (pastEnd()) {
@@ -880,20 +909,20 @@ public:
         }
     }
 
-    u64 position() final
+    u64 position() noexcept final
     {
         return pos;
     }
 
-    void flush() final {}
+    void flush() noexcept final {}
 
-    void clear();
+    void clear() noexcept;
 
     void reserve(usize size);
 
-    u8 *data();
+    u8 *data() noexcept;
 
-    const u8 *data() const;
+    const u8 *data() const noexcept;
 
     /**
      * @brief Returns the total number of bytes written to the stream.
@@ -904,175 +933,23 @@ public:
      *
      * @return the total number of written bytes
      */
-    usize size() const;
+    usize size() const noexcept;
 
 private:
-    bool atEnd()
+    bool atEnd() const noexcept
     {
         return pos == size();
     }
-    bool pastEnd()
+    bool pastEnd() const noexcept
     {
         return pos > size();
     }
 };
 
-inline ByteArrayInputStream::ByteArrayInputStream(const ByteArrayOutputStream &outputStream)
+inline ByteArrayInputStream::ByteArrayInputStream(const ByteArrayOutputStream &outputStream) noexcept
     : ByteArrayInputStream{outputStream.data(), outputStream.size()}
 {
 }
-
-// FILE STREAMS ========================================================================================================
-
-/**
- * @brief Implementation of InputStream using the C-File-API.
- */
-class FileInputStream final : public InputStream {
-public:
-    static std::optional<FileInputStream> open(const char *path, OpenMode::Value mode = OpenMode::READ);
-
-    static std::optional<FileInputStream> open(const std::string &path, OpenMode::Value mode = OpenMode::READ)
-    {
-        return open(path.c_str(), mode);
-    }
-
-private:
-    cfile file;
-
-public:
-    FileInputStream(cfile file) : file{file}
-    {
-        if constexpr (build::DEBUG) {
-            cfile stdoutput = stdout;
-            VXIO_ASSERT_NE(file, stdoutput);
-        }
-        flags.err = file == nullptr || std::ferror(file);
-        flags.eof = file != nullptr && std::feof(file);
-    }
-
-    FileInputStream(FileInputStream &&);
-    ~FileInputStream() final;
-
-    FileInputStream &operator=(FileInputStream &&);
-
-    u8 read() final;
-    usize read(u8 buffer[], usize size) final;
-    void seekRelative(i64 offset) final;
-    void seekAbsolute(u64 offset) final;
-    u64 position() final;
-    void clearErrors() final;
-
-private:
-    void updateErrorFlags();
-};
-
-/**
- * @brief Implementation of OutputStream using the C-File-API.
- */
-class FileOutputStream final : public OutputStream {
-public:
-    static std::optional<FileOutputStream> open(const char *path, OpenMode::Value mode = OpenMode::WRITE);
-
-    static std::optional<FileOutputStream> open(const std::string &path, OpenMode::Value mode = OpenMode::WRITE)
-    {
-        return open(path.c_str(), mode);
-    }
-
-private:
-    cfile file;
-
-public:
-    FileOutputStream(cfile file) : file{file}
-    {
-        if constexpr (build::DEBUG) {
-            cfile stdinput = stdin;
-            VXIO_ASSERT_NE(file, stdinput);
-        }
-        flags.err = file == nullptr || std::ferror(file);
-    }
-
-    FileOutputStream(FileOutputStream &&);
-    ~FileOutputStream() final;
-
-    FileOutputStream &operator=(FileOutputStream &&);
-
-    void write(u8 byte) final;
-    void write(const u8 *buffer, usize size) final;
-    void write(const char *string) final;
-    void seekRelative(i64 offset) final;
-    void seekAbsolute(u64 offset) final;
-    u64 position() final;
-    void flush() final;
-
-private:
-    void updateErrorFlags();
-};
-
-inline std::optional<FileInputStream> openForRead(const char *path, OpenMode::Value mode = OpenMode::READ)
-{
-    return FileInputStream::open(path, mode);
-}
-
-inline std::optional<FileInputStream> openForRead(const std::string &path, OpenMode::Value mode = OpenMode::READ)
-{
-    return FileInputStream::open(path, mode);
-}
-
-inline std::optional<FileOutputStream> openForWrite(const char *path, OpenMode::Value mode = OpenMode::WRITE)
-{
-    return FileOutputStream::open(path, mode);
-}
-
-inline std::optional<FileOutputStream> openForWrite(const std::string &path, OpenMode::Value mode = OpenMode::WRITE)
-{
-    return FileOutputStream::open(path, mode);
-}
-
-// STANDARD STREAM WRAPPERS ============================================================================================
-
-/**
- * @brief Adapter which allows using std::istream as a voxelio::InputStream.
- */
-class StdInputStream final : public InputStream {
-private:
-    std::istream *stream;
-
-public:
-    explicit StdInputStream(std::istream &stream);
-
-    u8 read() final;
-    usize read(u8 *buffer, usize size) final;
-    void readStringToUntil(std::string &out, char delimiter) final;
-    void seekRelative(i64 offset) final;
-    void seekAbsolute(u64 offset) final;
-    u64 position() final;
-    void clearErrors() final;
-
-private:
-    void updateErrorFlags();
-};
-
-/**
- * @brief Adapter which allows using std::ostream as a voxelio::OutputStream.
- */
-class StdOutputStream final : public OutputStream {
-private:
-    std::ostream *stream;
-
-public:
-    explicit StdOutputStream(std::ostream &stream);
-
-    void write(u8 byte) final;
-    void write(const u8 *buffer, usize size) final;
-    void write(const char *string) final;
-    void seekRelative(i64 offset) final;
-    void seekAbsolute(u64 offset) final;
-    u64 position() final;
-    void flush() final;
-
-private:
-    void updateErrorFlags();
-};
 
 }  // namespace voxelio
 
