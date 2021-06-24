@@ -155,6 +155,7 @@ public:
     void seekAbsolute(u64 offset) noexcept final;
     u64 position() noexcept final;
     void clearErrors() noexcept final;
+    bool close() noexcept final;
 
 private:
     void updateErrorFlags() noexcept;
@@ -217,6 +218,7 @@ public:
     void seekAbsolute(u64 offset) noexcept final;
     u64 position() noexcept final;
     void flush() noexcept final;
+    bool close() noexcept final;
 
 private:
     void updateErrorFlags() noexcept;
@@ -241,6 +243,7 @@ public:
     void seekAbsolute(u64 offset) final;
     u64 position() final;
     void clearErrors() final;
+    bool close() final;
 
 private:
     void updateErrorFlags();
@@ -263,6 +266,7 @@ public:
     void seekAbsolute(u64 offset) final;
     u64 position() final;
     void flush() final;
+    bool close() final;
 
 private:
     void updateErrorFlags();

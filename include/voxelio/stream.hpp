@@ -87,6 +87,13 @@ public:
     virtual void seekAbsolute(u64 position) = 0;
 
     /**
+     * @brief Moves the read position relatively by a given offset.
+     * May set eof and err.
+     * @param offset the offset from the current read position
+     */
+    virtual void seekRelative(i64 offset) = 0;
+
+    /**
      * @brief Returns the current read position.
      * May set err.
      * @return the current read position
@@ -99,6 +106,12 @@ public:
      * For example, we need to clear error flags before seeking a position in the file after EOF has been reached.
      */
     virtual void clearErrors() = 0;
+
+    /**
+     * @brief Closes the stream.
+     * @return whether the stream could be closed
+     */
+    virtual bool close() = 0;
 
     // DEFAULTS --------------------------------------------------------------------------------------------------------
 
@@ -169,19 +182,6 @@ public:
         } while (good());
     }
 
-    /**
-     * @brief Moves the read position relatively by a given offset.
-     * May set eof and err.
-     * @param offset the offset from the current read position
-     */
-    virtual void seekRelative(i64 offset)
-    {
-        i64 pos = static_cast<i64>(position()) + offset;
-        if (not err()) {
-            seekAbsolute(static_cast<u64>(pos));
-        }
-    }
-
     // FLAG HANDLING ---------------------------------------------------------------------------------------------------
 
     /**
@@ -190,7 +190,7 @@ public:
      * When the final byte of a file is read correctly, this flag will not be set.
      * @return true if the EOF has been reached
      */
-    bool eof() const
+    bool eof() const noexcept
     {
         return flags.eof;
     }
@@ -199,7 +199,7 @@ public:
      * @brief Returns true if a read operation failed.
      * @return true if a read operation failed
      */
-    bool err() const
+    bool err() const noexcept
     {
         return flags.err;
     }
@@ -208,7 +208,7 @@ public:
      * @brief Returns true if neither eof nor err are set.
      * @return true if neither eof nor err are set
      */
-    bool good() const
+    bool good() const noexcept
     {
         return !eof() && !err();
     }
@@ -467,6 +467,13 @@ public:
     virtual void seekAbsolute(u64 position) = 0;
 
     /**
+     * @brief Moves the write position relatively by a given offset.
+     * May set err.
+     * @param offset the offset from the current write position
+     */
+    virtual void seekRelative(i64 offset) = 0;
+
+    /**
      * @brief Returns the current write position.
      * May set err.
      * @return the current write position
@@ -480,6 +487,12 @@ public:
      */
     virtual void flush() = 0;
 
+    /**
+     * @brief Closes the stream.
+     * @return whether the stream could be closed
+     */
+    virtual bool close() = 0;
+
     // DEFAULTS --------------------------------------------------------------------------------------------------------
 
     /**
@@ -490,19 +503,6 @@ public:
     virtual void write(const char *string)
     {
         write(reinterpret_cast<const u8 *>(string), std::strlen(string));
-    }
-
-    /**
-     * @brief Moves the write position relatively by a given offset.
-     * May set err.
-     * @param offset the offset from the current write position
-     */
-    virtual void seekRelative(i64 offset)
-    {
-        i64 pos = static_cast<i64>(position()) + offset;
-        if (not err()) {
-            seekAbsolute(static_cast<u64>(pos));
-        }
     }
 
     // FLAG HANDLING ---------------------------------------------------------------------------------------------------
@@ -732,7 +732,13 @@ public:
     {
         return pos;
     }
+
     void clearErrors() noexcept final {}
+
+    bool close() noexcept final
+    {
+        return true;
+    }
 
 private:
     /// Allows placing the vtable in only one TU while while all other virtual functions are defined in the class.
@@ -780,7 +786,13 @@ public:
     {
         return pos;
     }
+
     void flush() noexcept final {}
+
+    bool close() noexcept final
+    {
+        return true;
+    }
 
 private:
     /// Allows placing the vtable in only one TU while while all other virtual functions are defined in the class.
@@ -844,6 +856,11 @@ public:
         if (pos >= size()) {
             this->flags.eof = true;
         }
+    }
+
+    bool close() noexcept final
+    {
+        return true;
     }
 
     u64 position() noexcept final
@@ -915,6 +932,11 @@ public:
     }
 
     void flush() noexcept final {}
+
+    bool close() noexcept final
+    {
+        return true;
+    }
 
     void clear() noexcept;
 

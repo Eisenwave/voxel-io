@@ -169,6 +169,11 @@ public:
         source->clearErrors();
     }
 
+    bool close() noexcept
+    {
+        return source->close();
+    }
+
     bool eof() const noexcept
     {
         VXIO_DEBUG_ASSERT_LE(head, limit);

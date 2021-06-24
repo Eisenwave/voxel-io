@@ -156,6 +156,15 @@ void FileInputStream::clearErrors() noexcept
     flags.err = false;
 }
 
+bool FileInputStream::close() noexcept
+{
+    VXIO_ASSERT_NOTNULL(file);
+    bool err = std::fclose(file) != 0;
+    flags.err |= err;
+    file = nullptr;
+    return err;
+}
+
 void FileInputStream::updateErrorFlags() noexcept
 {
     VXIO_ASSERT_NOTNULL(file);
@@ -225,6 +234,15 @@ void FileOutputStream::flush() noexcept
     }
 }
 
+bool FileOutputStream::close() noexcept
+{
+    VXIO_ASSERT_NOTNULL(file);
+    bool err = std::fclose(file) != 0;
+    flags.err |= err;
+    file = nullptr;
+    return err;
+}
+
 void FileOutputStream::updateErrorFlags() noexcept
 {
     VXIO_ASSERT_NOTNULL(file);
@@ -288,6 +306,11 @@ void StdInputStream::clearErrors()
     flags.err = false;
 }
 
+bool StdInputStream::close()
+{
+    return stream->rdbuf(nullptr) != nullptr;
+}
+
 void StdInputStream::updateErrorFlags()
 {
     flags.eof = stream->eof();
@@ -342,6 +365,11 @@ void StdOutputStream::flush()
 {
     stream->flush();
     updateErrorFlags();
+}
+
+bool StdOutputStream::close()
+{
+    return stream->rdbuf(nullptr) != nullptr;
 }
 
 void StdOutputStream::updateErrorFlags()
