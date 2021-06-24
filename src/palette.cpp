@@ -54,7 +54,7 @@ HexTree seedClusterCenters(const argb32 colors[], usize colorCount, usize cluste
             }
             const u32 distanceToOtherClusters = clusterCenters.distanceSqr(randomColor);
             avgDistance += distanceToOtherClusters;
-            VXIO_DEBUG_ASSERT_NE(distanceToOtherClusters, 0);
+            VXIO_DEBUG_ASSERT_NE(distanceToOtherClusters, 0u);
 
             std::uniform_int_distribution<u32> rejectDistr{0, *avgDistance * 2};
 
@@ -108,7 +108,7 @@ HexTree computeNewClusterCentersAndResetAccumulators(Accumulator accumulators[],
             // Degenerate situation where a cluster center has no points closest to it.
             // Not even sure if this case can ever occur; it didn't ever happen in my tests.
             // We handle it anyways to make sure.
-            VXIO_DEBUG_ASSERT_EQ(detail::lengthSqr(acc.sum.cast<int>()), 0);
+            VXIO_DEBUG_ASSERT_EQ(detail::lengthSqr(acc.sum.cast<int>()), 0u);
             VXIO_LOG(WARNING, "Rare degenerate case in k-means clustering occured (isolated cluster center)");
             newCenters.insert(pack4b(acc.previousCenter), clusterIndex);
             continue;
@@ -118,7 +118,7 @@ HexTree computeNewClusterCentersAndResetAccumulators(Accumulator accumulators[],
         const Vec4u8 center8 = center.cast<u8>();
         if constexpr (build::DEBUG) {
             for (usize i = 0; i < 4; ++i) {
-                VXIO_DEBUG_ASSERT_LT(center[i], 256);
+                VXIO_DEBUG_ASSERT_LT(center[i], 256u);
             }
         }
 
@@ -138,7 +138,7 @@ namespace truncate {
 
 u32 chooseRepresentative(const MortonAndIndex pairs[], const u32 count)
 {
-    VXIO_DEBUG_ASSERT_NE(count, 0);
+    VXIO_DEBUG_ASSERT_NE(count, 0u);
 
     // the highest morton digit / nibble should is assumed to be the same for all values
     const u8 highestNibble = pairs[0].morton >> 28;
