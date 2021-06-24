@@ -19,7 +19,7 @@ namespace voxelio {
 
 // STATIC ASSERTSIONS FOR ALL TYPES ====================================================================================
 
-static_assert(sizeof(std::uint8_t) == 1, "u8 must be one char in size");
+static_assert(std::numeric_limits<unsigned char>::digits == 8, "unsigned char must be 8 bits");
 static_assert(sizeof(float) == 4, "float must be a 32-bit floating point number");
 static_assert(sizeof(double) == 8, "double must be a 64-bit floating point number");
 
@@ -41,8 +41,8 @@ static_assert(std::numeric_limits<double>::is_iec559, "voxelio depends on IEC 55
  * It's not logically consistent and provides zero utility.
  */
 
-/// Unsigned 8-bit integer.
-using u8 = std::uint8_t;
+/// Unsigned 8-bit integer. Defined as unsigned char to get aliasing guarantees.
+using u8 = unsigned char;
 /// Unsigned 16-bit integer.
 using u16 = std::uint16_t;
 /// Unsigned 32-bit integer.
@@ -54,8 +54,8 @@ using umax = std::uintmax_t;
 /// Unsigned integer which can represent array sizes. Usually 64-bit on 64-bit platforms, else 32-bit.
 using usize = std::size_t;
 
-/// Signed 8-bit integer.
-using i8 = std::int8_t;
+/// Signed 8-bit integer. Defiend as signed char to get aliasing guarantees.
+using i8 = signed char;
 /// Signed 16-bit integer.
 using i16 = std::int16_t;
 /// Signed 32-bit integer.
@@ -79,9 +79,6 @@ using fmax = long double;
  * B (blue) is the least significant byte.
  */
 using argb32 = u32;
-
-/// Alias for C-file pointers.
-using cfile = std::FILE *;
 
 }  // namespace voxelio
 
