@@ -7,8 +7,8 @@
  * The current log level can be set thread-locally using voxelio::logLevel
  */
 
-#include "assert.hpp"
 #include "build.hpp"
+#include "builtin.hpp"
 
 #include <string>
 
@@ -53,7 +53,7 @@ constexpr const char *nameOf(LogLevel level) noexcept
     case LogLevel::SPAM: return "SPAM";
     case LogLevel::SUPERSPAM: return "SUPERSPAM";
     }
-    VXIO_DEBUG_ASSERT_UNREACHABLE();
+    VXIO_UNREACHABLE();
 }
 
 constexpr const char *fixedWidthNameOf(LogLevel level) noexcept
@@ -70,7 +70,7 @@ constexpr const char *fixedWidthNameOf(LogLevel level) noexcept
     case LogLevel::SPAM: return "SPAM";
     case LogLevel::SUPERSPAM: return "SSPM";
     }
-    VXIO_DEBUG_ASSERT_UNREACHABLE();
+    VXIO_UNREACHABLE();
 }
 
 constexpr bool operator<=(LogLevel x, LogLevel y) noexcept
