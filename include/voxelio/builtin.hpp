@@ -551,6 +551,20 @@ __forceinline uint64_t byteSwap(uint64_t val) noexcept
 #endif
 #endif
 
+// uintXX_t bitReverse(uintXX_t ...):
+//     Reverse the order of bits in an integer
+#if defined(VXIO_CLANG) && VXIO_HAS_BUILTIN(__builtin_bitreverse64)
+#define VXIO_HAS_BUILTIN_BITREV
+template <typename Uint, std::enable_if_t<std::is_unsigned_v<Uint> && (sizeof(Uint) <= 8), int> = 0>
+Uint bitReverse(Uint x) noexcept
+{
+    if constexpr (sizeof(x) == 1) return __builtin_bitreverse8(x);
+    if constexpr (sizeof(x) == 2) return __builtin_bitreverse16(x);
+    if constexpr (sizeof(x) == 4) return __builtin_bitreverse32(x);
+    if constexpr (sizeof(x) == 8) return __builtin_bitreverse64(x);
+}
+#endif
+
 // BMI2 BITWISE OPS ====================================================================================================
 
 // uintXX_t depositBits(uintXX_t val, uintXX_t mask):
