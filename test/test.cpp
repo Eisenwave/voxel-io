@@ -41,7 +41,7 @@ void forEachTest(TestConsumer *action)
         return;
     }
 
-    std::sort(testsPtr->begin(), testsPtr->end(), [](const auto &l, const auto &r) -> bool {
+    std::stable_sort(testsPtr->begin(), testsPtr->end(), [](const auto &l, const auto &r) -> bool {
         unsigned lp = getPriority(l->category);
         unsigned rp = getPriority(r->category);
         return lp < rp;
