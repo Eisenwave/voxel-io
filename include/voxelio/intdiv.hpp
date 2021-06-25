@@ -87,7 +87,7 @@ constexpr signed char divUp_sgn(T n)
     else {
         return (n > T{0}) - (n < T{0});
     }
-};
+}
 
 }  // namespace detail
 
