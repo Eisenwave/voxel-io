@@ -4,6 +4,7 @@
 
 #include "voxelio/log.hpp"
 
+#include <exception>
 #include <vector>
 
 namespace voxelio {
