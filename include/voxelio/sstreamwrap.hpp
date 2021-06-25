@@ -6,6 +6,8 @@
 
 namespace voxelio::detail {
 
+using signedSize = std::make_signed_t<std::size_t>;
+
 std::istringstream *istringstream_make();
 std::ostringstream *ostringstream_make();
 std::istringstream *istringstream_make(std::string);
@@ -19,7 +21,7 @@ void ostream_free(std::ostream *);
 bool istream_fail(std::istream *);
 void istream_free(std::istream *);
 
-void ostream_precision(std::ostream *, std::streamsize);
+void ostream_precision(std::ostream *, signedSize);
 std::string ostringstream_to_string(std::ostringstream *);
 
 }  // namespace voxelio::detail

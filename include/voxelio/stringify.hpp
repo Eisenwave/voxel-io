@@ -137,7 +137,7 @@ std::string stringifyFloat(Float f, usize precision) noexcept
     std::ostringstream *const stream = detail::ostringstream_make();
     std::ostream *const ostream = detail::ostringstream_to_ostream(stream);
 
-    detail::ostream_precision(ostream, static_cast<std::streamsize>(precision));
+    detail::ostream_precision(ostream, static_cast<detail::signedSize>(precision));
     *ostream << f;
     std::string result = detail::ostringstream_to_string(stream);
     detail::ostream_free(ostream);

@@ -4,6 +4,8 @@
 
 namespace voxelio::detail {
 
+static_assert(std::is_same_v<signedSize, std::streamsize>);
+
 std::istringstream *istringstream_make()
 {
     return new std::istringstream;
