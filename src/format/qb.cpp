@@ -233,7 +233,7 @@ ReadResult Reader::readUncompressed(Voxel64 buffer[], usize bufferLength) noexce
     VXIO_DEBUG_ASSERT_LE(index, matVolume);
     VXIO_DEBUG_ASSERT_GT(bufferLength, 0u);
 
-    const auto voxelsLeftInMatrixCount = matVolume - index;
+    const usize voxelsLeftInMatrixCount = matVolume - index;
     if (voxelsLeftInMatrixCount == 0) return ReadResult::nextObject();
 
     const auto tmpBufferSize = std::min(bufferLength, voxelsLeftInMatrixCount);
