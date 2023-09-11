@@ -1,6 +1,7 @@
 #ifndef VXIO_SSTREAMWRAP_HPP
 #define VXIO_SSTREAMWRAP_HPP
 
+#include <ios>
 #include <iosfwd>
 #include <string>
 

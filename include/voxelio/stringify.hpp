@@ -15,6 +15,7 @@
 #include <cmath>
 #include <iosfwd>
 #include <string>
+#include <ios>
 
 namespace voxelio {
 

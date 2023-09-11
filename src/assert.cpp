@@ -6,6 +6,7 @@
 
 #include <exception>
 #include <vector>
+#include <exception>
 
 namespace voxelio {
 
